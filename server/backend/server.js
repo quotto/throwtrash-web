@@ -88,7 +88,7 @@ app.post("/trashes",(req,res)=> {
         }
     }
     dynamoClient.get(params,(err,data)=>{
-        if(err) {
+        if(err || typeof(data.Item)==="undefined") {
             console.log("DB get error")
             console.log(err)
             res.status(500).end("情報の取得に失敗しました。スキル開発者にお問い合わせください。")
