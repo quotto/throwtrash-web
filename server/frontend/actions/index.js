@@ -4,8 +4,7 @@ export const ActionType = {
     CHANGE_SCHEDULE: 'CHANGE_SCHEDULE',
     CHANGE_INPUT: 'CHANGE_INPUT',
     DEL_TRASH: 'DEL_TRASH',
-    SET_SUBMITTING: 'SET_SUBMITTING',
-    SUBMIT_FORM: 'SUBMIT_FORM'
+    SET_SUBMITTING: 'SET_SUBMITTING'
 }
 
 export const addTrash = () => {
@@ -51,11 +50,5 @@ export const setSubmitting = (status)=> {
     return {
         type: ActionType.SET_SUBMITTING,
         value: status
-    }
-}
-
-export const submitForm = ()=> {
-    return {
-        type: ActionType.SUBMIT_FORM
     }
 }

@@ -105,26 +105,7 @@ const updateState = (state=initialState,action)=> {
                 error: error_check(new_trashes) || new_trashes.length==0
             })
         case ActionType.SET_SUBMITTING:
-            console.log("submitting")
             return Object.assign({},state,{submitting:action.value})
-        case ActionType.SUBMIT_FORM:
-            // console.log("submit")
-            // new Promise((resolve,reject)=>{
-            //     axios.post("/regist",JSON.stringify(state.trashes),{headers:{'Content-Type':'application/json'}})
-            //             .then((response)=> {
-            //                 console.log(response)
-            //                 resolve(true)
-            //             }).catch((error) =>{
-            //                 console.log("error")
-            //                 reject(false)
-            //             })
-            //     }).then(()=>{
-            //         return Object.assign({},state,{submitting:true})})
-            //     .catch(()=>{
-            //         console.log("submit error")
-            //         return Object.assign({},state,{submitting:false})})
-            // return result
-            // return Object.assign({},state,{submitting:result})
         default:
             return state
     }

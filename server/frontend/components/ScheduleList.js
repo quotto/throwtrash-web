@@ -9,13 +9,11 @@ import axios from 'axios'
 class ScheduleList extends React.Component {
     render() {
         if(this.props.submitting) {
-            console.log("submit")
             axios.post("/regist",JSON.stringify(this.props.trashes),{headers:{'Content-Type':'application/json'}})
                 .then((response)=> {
-                    console.log(response)
-                    this.props.onSubmit(true)
+                    window.location=response.data
                 }).catch((error) =>{
-                    console.log("error")
+                    alert("登録に失敗しました。","お知らせ")
                     this.props.onSubmit(false)
                 })
         }

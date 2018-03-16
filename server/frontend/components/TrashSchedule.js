@@ -42,7 +42,6 @@ const WeekdayType =  {
 }
 
 const required = (value) => {
-    console.log("required:"+value)
     return value ? undefined : 'Required'
 }
 
@@ -163,7 +162,7 @@ class TrashSchedule extends React.Component {
                                     id={`trash${i}`}
                                     name={`trash${i}`}
                                     value={this.props.trashes[i].type}
-                                    onChange={(e)=>{console.log(e);this.props.onChangeTrash(i,e.target.value)}}
+                                    onChange={(e)=>{this.props.onChangeTrash(i,e.target.value)}}
                                     style={{"text-align":"center"}}>
                                         {trashOptionTag}
                                 </Select>
