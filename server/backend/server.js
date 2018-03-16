@@ -75,6 +75,8 @@ app.get('/oauth/request_token',(req,res)=>{
     req.session.client_id = req.query.client_id
     req.session.vendor_id = req.query.vendor_id
     req.session.redirect_uri = req.query.redirect_uri
+
+    res.redirect('/index.html')
 });
 
 app.post("/trashes",(req,res)=> {
