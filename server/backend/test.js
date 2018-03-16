@@ -68,7 +68,7 @@ const test_data2=[
       },
       {
         "type": "month",
-        "value": "11"
+        "value": "16"
       },
       {
         "type": "none",
@@ -163,3 +163,4 @@ const test_data3 = [
     }
 ]
 console.log(Util.check_schedule(JSON.stringify(test_data3)))
+console.log(Util.create_id())

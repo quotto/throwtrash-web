@@ -10,8 +10,7 @@ var ActionType = exports.ActionType = {
     CHANGE_SCHEDULE: 'CHANGE_SCHEDULE',
     CHANGE_INPUT: 'CHANGE_INPUT',
     DEL_TRASH: 'DEL_TRASH',
-    SET_SUBMITTING: 'SET_SUBMITTING',
-    SUBMIT_FORM: 'SUBMIT_FORM'
+    SET_SUBMITTING: 'SET_SUBMITTING'
 };
 
 var addTrash = exports.addTrash = function addTrash() {
@@ -57,12 +56,6 @@ var setSubmitting = exports.setSubmitting = function setSubmitting(status) {
     return {
         type: ActionType.SET_SUBMITTING,
         value: status
-    };
-};
-
-var submitForm = exports.submitForm = function submitForm() {
-    return {
-        type: ActionType.SUBMIT_FORM
     };
 };
 
@@ -241,12 +234,10 @@ var ScheduleList = function (_React$Component) {
             var _this2 = this;
 
             if (this.props.submitting) {
-                console.log("submit");
                 _axios2.default.post("/regist", JSON.stringify(this.props.trashes), { headers: { 'Content-Type': 'application/json' } }).then(function (response) {
-                    console.log(response);
-                    _this2.props.onSubmit(true);
+                    window.location = response.data;
                 }).catch(function (error) {
-                    console.log("error");
+                    alert("登録に失敗しました。", "お知らせ");
                     _this2.props.onSubmit(false);
                 });
             }
@@ -358,7 +349,6 @@ var WeekdayType = {
 };
 
 var required = function required(value) {
-    console.log("required:" + value);
     return value ? undefined : 'Required';
 };
 
@@ -597,7 +587,7 @@ var TrashSchedule = function (_React$Component) {
                                     name: 'trash' + i,
                                     value: _this2.props.trashes[i].type,
                                     onChange: function onChange(e) {
-                                        console.log(e);_this2.props.onChangeTrash(i, e.target.value);
+                                        _this2.props.onChangeTrash(i, e.target.value);
                                     },
                                     style: { "text-align": "center" } },
                                 trashOptionTag
@@ -710,7 +700,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var asynchSubmit = function asynchSubmit() {};
 
 var mapPropsState = function mapPropsState(state) {
-    console.log("change props");
     return {
         trashes: state.updateState.trashes,
         submit_error: state.updateState.error,
@@ -719,7 +708,6 @@ var mapPropsState = function mapPropsState(state) {
 };
 
 var mapDispatchToProps = function mapDispatchToProps(dispatch) {
-    console.log("dispath");
     return {
         onChangeTrash: function onChangeTrash(i, value) {
             dispatch((0, _actions.changeTrashType)(i, value));
@@ -894,26 +882,7 @@ var updateState = function updateState() {
                 error: error_check(new_trashes) || new_trashes.length == 0
             });
         case _actions.ActionType.SET_SUBMITTING:
-            console.log("submitting");
             return Object.assign({}, state, { submitting: action.value });
-        case _actions.ActionType.SUBMIT_FORM:
-        // console.log("submit")
-        // new Promise((resolve,reject)=>{
-        //     axios.post("/regist",JSON.stringify(state.trashes),{headers:{'Content-Type':'application/json'}})
-        //             .then((response)=> {
-        //                 console.log(response)
-        //                 resolve(true)
-        //             }).catch((error) =>{
-        //                 console.log("error")
-        //                 reject(false)
-        //             })
-        //     }).then(()=>{
-        //         return Object.assign({},state,{submitting:true})})
-        //     .catch(()=>{
-        //         console.log("submit error")
-        //         return Object.assign({},state,{submitting:false})})
-        // return result
-        // return Object.assign({},state,{submitting:result})
         default:
             return state;
     }
