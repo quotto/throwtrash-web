@@ -5,7 +5,7 @@ const Client = require('client.js')
 
 const APP_ID = 'amzn1.ask.skill.2ef932ba-f1a7-4638-ba85-90ad90a1f0c0'
 
-const NothingMessage = '今日出せるゴミはありません。'
+const NothingMessage = '出せるゴミはありません。'
 
 const ErrorMessage = 'エラーが発生しました。'
 
@@ -22,26 +22,36 @@ const TrashType = {
     coarse: '<say-as interpret-as="interjection">粗大ゴミ</say-as>'
 }
 
+const TargetDay = {
+    '今日':0,
+    'きょう':0,
+    '明日':1,
+    'あした':1,
+    '明後日':2,
+    'あさって':2
+}
+
 const handlers = {
     'LaunchRequest': function () {
         this.emit('AMAZON.HelpIntent')
     },
     'GetTrashes' : function() {
+        const targetDay = this.event.request.intent.slots.TargetDay.value; // スロットTargetDayを参照
         // アクセストークンの取得
-        var accessToken = this.event.session.user.accessToken
+        const accessToken = this.event.session.user.accessToken
         if(accessToken == null) {
             // トークン未定義の場合はユーザーに許可を促す
             this.emit(':tellWithLinkAccountCard',AccountLinkMessage)
             return
         }
-        Client.getEnableTrashes(accessToken).then((response)=>{
+        Client.getEnableTrashes(accessToken,TargetDay[targetDay]).then((response)=>{
             if(response.length > 0) {
                 const textArray = response.map((key)=>{
                     return TrashType[key]
                 })
-                this.emit(':tell',`今日出せるゴミは、${textArray.join('、')}、です。`)
+                this.emit(':tell',`${targetDay}出せるゴミは、${textArray.join('、')}、です。`)
             } else {
-                this.emit(':tell',NothingMessage)
+                this.emit(':tell',`${targetDay}${NothingMessage}`)
             }
         },(error)=>{
             this.emit(':tell',error)

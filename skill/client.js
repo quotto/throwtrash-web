@@ -15,6 +15,21 @@ const dynamoClient = new AWS.DynamoDB.DocumentClient({
 })
 
 exports.getEnableTrashes = (access_token) => {
+/**
+target_day: 対象とする日を特定するための値。0なら今日、1なら明日……となる。
+**/
+const calculateJSTTime = (target_day) => {
+    var localdt = new Date(); // 実行サーバのローカル時間
+    var jsttime = localdt.getTime() + (localdt.getTimezoneOffset() * 60 * 1000) + JSTOffset + (60 * 24 * 60 * 1000 * target_day);
+    var dt = new Date(jsttime);
+    return dt;
+}
+
+/**
+access_token: ユーザーを特定するためのuuid
+target_day: 0:今日,1:明日
+**/
+exports.getEnableTrashes = (access_token,target_day) => {
     return new Promise((resolve,reject) => {
         var params = {
             TableName: 'TrashSchedule',
@@ -33,15 +48,16 @@ exports.getEnableTrashes = (access_token) => {
             } else {
                 const result = check_schedule(data)
                 console.log(`[INFO] Sucess Check Schedule（${access_token}）`)
+                const result = check_schedule(body,target_day)
                 resolve(result)
             }
         })
     })
 }
 
-const check_schedule = (data)=>{
+const check_schedule = (data,target_day)=>{
     const result = []
-    const dt = calculateJSTTime()
+    const dt = calculateJSTTime(target_day)
     const trashes = JSON.parse(data['Item']['description'])
     trashes.forEach((trash,index,arr) => {
         const type =  trash['type']
@@ -79,11 +95,4 @@ const check_schedule = (data)=>{
     return result.filter((value,index,self)=>{
         return self.indexOf(value)===index
     })
-}
-
-const calculateJSTTime = () => {
-    var localdt = new Date(); // 実行サーバのローカル時間
-    var jsttime = localdt.getTime() + (localdt.getTimezoneOffset() * 60 * 1000) + JSTOffset;
-    var dt = new Date(jsttime);
-    return dt;
 }
