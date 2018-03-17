@@ -1,8 +1,6 @@
 const Client = require('./client.js')
 
-Client.getEnableTrashes("731739605817397250-E6xRTQ2ngBa5BYaMdEoGd5sQXZYysDg","EmL2SlbmkBf3aw9u4Z25ayeCc81TEG4NmUEAGk4K86bJu")
+Client.getEnableTrashes("1439d8b1-b41e-45f9-9afc-ecdfdaea1d83")
 .then((response)=> {
     console.log(response)
-    var body = JSON.parse(response)
-    console.log(body.result[0])
 })
