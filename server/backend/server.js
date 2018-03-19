@@ -68,24 +68,18 @@ app.get(/.+\..+/,(req,res,next)=>{
 app.get('/oauth/request_token',(req,res)=>{
     req.session.state = req.query.state
     req.session.client_id = req.query.client_id
-    req.session.vendor_id = req.query.vendor_id
     req.session.redirect_uri = req.query.redirect_uri
-    if(!req.session.state || !req.session.client_id || !req.session.vendor_id || !req.session.redirect_uri) {
+    if(req.session.state && req.session.client_id && req.session.redirect_uri) {
+        res.redirect('/index.html')
+    } else {
         logger.write("Bad Request","ERROR")
         res.status(400).end("bad request")
         return
     }
-
-    res.redirect('/index.html')
 });
 
 app.post("/regist",(req,res,next)=>{
-    if(!req.session.state || !req.session.client_id || !req.session.vendor_id || !req.session.redirect_uri) {
-        logger.write("Bad Request","ERROR")
-        res.status(400).end("bad request")
-        return
-    } else {
-
+    if(req.session.state && req.session.client_id && req.session.redirect_uri) {
         const user_id = Util.create_id()
         var item = {
             id: user_id,
@@ -105,5 +99,9 @@ app.post("/regist",(req,res,next)=>{
                 res.status(200).end(redirect_url)
             }
         })
+    } else {
+        logger.write("Bad Request","ERROR")
+        res.status(400).end("bad request")
+        return
     }
 })
