@@ -70,7 +70,7 @@ app.get('/oauth/request_token',(req,res)=>{
     req.session.client_id = req.query.client_id
     req.session.vendor_id = req.query.vendor_id
     req.session.redirect_uri = req.query.redirect_uri
-    if(!req.session.state || !req.session.client_id || !req.session.vendor_id || req.session.redirect_uri) {
+    if(!req.session.state || !req.session.client_id || !req.session.vendor_id || !req.session.redirect_uri) {
         logger.write("Bad Request","ERROR")
         res.status(400).end("bad request")
         return
@@ -80,7 +80,7 @@ app.get('/oauth/request_token',(req,res)=>{
 });
 
 app.post("/regist",(req,res,next)=>{
-    if(!req.session.state || !req.session.client_id || !req.session.vendor_id || req.session.redirect_uri) {
+    if(!req.session.state || !req.session.client_id || !req.session.vendor_id || !req.session.redirect_uri) {
         logger.write("Bad Request","ERROR")
         res.status(400).end("bad request")
         return
