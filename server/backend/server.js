@@ -27,6 +27,13 @@ app.use(bodyParser.json());
 app.use(cookieParser())
 app.use(session({secret: process.env.TRASHES_SECRET}))
 
+var credential = new aws.Credentials(process.env.AWS_ACCESS_TOKEN,process.env.AWS_ACCESS_TOKEN_SECRET,null)
+const dynamoClient = new aws.DynamoDB.DocumentClient({
+    region:'ap-northeast-1',
+    apiVersion: '2012-08-10',
+    credentials: credential
+})
+
 var mime = {
     '.html':'text/html',
     '.css':'text/css',
