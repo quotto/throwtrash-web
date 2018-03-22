@@ -1,3 +1,4 @@
 server/node_modules
 skill/node_modules
 server/backend/certs
+**/*.log
