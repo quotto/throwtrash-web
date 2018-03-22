@@ -7,28 +7,32 @@ const url='https://api.twitter.com/1.1/statuses/update.json'
 
 const JSTOffset = 60 * 9 * 60 * 1000; // JST時間を求めるためのオフセット
 
+var credential = new AWS.Credentials(process.env.AWS_ACCESS_TOKEN,process.env.AWS_ACCESS_TOKEN_SECRET,null)
+const dynamoClient = new AWS.DynamoDB.DocumentClient({
+    region:'ap-northeast-1',
+    apiVersion: '2012-08-10',
+    credentials: credential
+})
+
 exports.getEnableTrashes = (access_token) => {
     return new Promise((resolve,reject) => {
-        const params = {
-            user_id: access_token
+        var params = {
+            TableName: 'TrashSchedule',
+            Key: {
+                id: access_token
+            }
         }
-
-        const options = {
-            url: `https://${process.env.TRASHES_SERVER}/trashes`,
-            headers: {
-                "Content-Type": 'application/json'
-            },
-            body: JSON.stringify(params)
-        };
-        request.post(options ,(error,response,body) => {
-            if(error) {
-                console.log("error:"+error)
-                reject("問題が発生しました。スキルの開発者にお問い合わせください。")
-            } else if(response.statusCode!=200) {
-                console.log("bad status:"+body)
-                reject(body)
+        dynamoClient.get(params,(err,data)=>{
+            if(err) {
+                console.log("[ERROR] DB Access Error")
+                console.log(err)
+                reject("情報の取得に失敗しました。スキル開発者にお問い合わせください。")
+            } else if(typeof(data["Item"])==="undefined") {
+                console.log("[ERROR] User Not Found")
+                reject("登録情報が見つかりません。アカウントリンクを行ってから再度お試しください。")
             } else {
-                const result = check_schedule(body)
+                const result = check_schedule(data)
+                console.log(`[INFO] Sucess Check Schedule（${access_token}）`)
                 resolve(result)
             }
         })
@@ -38,14 +42,12 @@ exports.getEnableTrashes = (access_token) => {
 const check_schedule = (data)=>{
     const result = []
     const dt = calculateJSTTime()
-    const trashes = JSON.parse(JSON.parse(data)['Item']['description'])
+    const trashes = JSON.parse(data['Item']['description'])
     trashes.forEach((trash,index,arr) => {
         const type =  trash['type']
-        console.log(`checkschedule:${type}`)
         trash['schedules'].some((schedule)=>{
             if(schedule['type'] === 'weekday') {
                 if(Number(schedule['value']) === dt.getDay()) {
-                    console.log(`hit weekday:${schedule['value']}`)
                     result.push(type)
                     return true
                 }
@@ -63,13 +65,11 @@ const check_schedule = (data)=>{
                 }
 
                 if(Number(weekday) === dt.getDay() && Number(turn) === nowturn) {
-                    console.log(`hit biweek:${schedule['value']}`)
                     result.push(type)
                     return true
                 }
             } else if(schedule['type'] === 'month') {
                 if(dt.getDate() === Number(schedule['value'])) {
-                    console.log(`hit month:${schedule['value']}`)
                     result.push(type)
                     return true
                 }

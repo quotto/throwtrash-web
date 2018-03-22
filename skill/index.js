@@ -44,7 +44,6 @@ const handlers = {
                 this.emit(':tell',NothingMessage)
             }
         },(error)=>{
-            console.log(error)
             this.emit(':tell',error)
         })
     },
@@ -59,6 +58,8 @@ const handlers = {
     'AMAZON.StopIntent': function () {
         this.emit(':tell', this.t('STOP_MESSAGE'))
     },
+    'SessionEndedRequest': function(){
+    }
 };
 
 exports.handler = function (event, context) {
