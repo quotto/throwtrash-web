@@ -22,13 +22,28 @@ const TrashType = {
     coarse: '<say-as interpret-as="interjection">粗大ゴミ</say-as>'
 }
 
-const TargetDay = {
+const PointDayValue = {
     '今日':0,
-    'きょう':0,
     '明日':1,
-    'あした':1,
+    'あす':1,
     '明後日':2,
-    'あさって':2
+}
+
+const WeekDayValue = {
+    '日曜日':0,
+    '月曜日':1,
+    '火曜日':2,
+    '水曜日':3,
+    '木曜日':4,
+    '金曜日':5,
+    '土曜日':6,
+    '日曜':0,
+    '月曜':1,
+    '火曜':2,
+    '水曜':3,
+    '木曜':4,
+    '金曜':5,
+    '土曜':6
 }
 
 const handlers = {
@@ -36,7 +51,6 @@ const handlers = {
         this.emit('AMAZON.HelpIntent')
     },
     'GetTrashes' : function() {
-        const targetDay = this.event.request.intent.slots.TargetDay.value; // スロットTargetDayを参照
         // アクセストークンの取得
         const accessToken = this.event.session.user.accessToken
         if(accessToken == null) {
@@ -44,7 +58,53 @@ const handlers = {
             this.emit(':tellWithLinkAccountCard',AccountLinkMessage)
             return
         }
-        Client.getEnableTrashes(accessToken,TargetDay[targetDay]).then((response)=>{
+        Client.getEnableTrashes(accessToken,0).then((response)=>{
+            if(response.length > 0) {
+                const textArray = response.map((key)=>{
+                    return TrashType[key]
+                })
+                this.emit(':tell',`今日出せるゴミは、${textArray.join('、')}、です。`)
+            } else {
+                this.emit(':tell',`${今日}${NothingMessage}`)
+            }
+        },(error)=>{
+            this.emit(':tell',error)
+        })
+    },
+    'GetWeekDayTrashes' : function() {
+        const slotValue =this.event.request.intent.slots.DaySlot.value
+        // アクセストークンの取得
+        const accessToken = this.event.session.user.accessToken
+        if(accessToken == null) {
+            // トークン未定義の場合はユーザーに許可を促す
+            this.emit(':tellWithLinkAccountCard',AccountLinkMessage)
+            return
+        }
+        const targetDay = WeekdayDayValue[slotValue]
+        Client.getEnableTrashes(accessToken,targetDay).then((response)=>{
+            if(response.length > 0) {
+                const textArray = response.map((key)=>{
+                    return TrashType[key]
+                })
+                this.emit(':tell',`${targetDay}に出せるゴミは、${textArray.join('、')}、です。`)
+            } else {
+                this.emit(':tell',`${targetDay}に${NothingMessage}`)
+            }
+        },(error)=>{
+            this.emit(':tell',error)
+        })
+    },
+    'GetPointDayTrashes' : function() {
+        const slotValue =this.event.request.intent.slots.WeekDaySlot.value
+        // アクセストークンの取得
+        const accessToken = this.event.session.user.accessToken
+        if(accessToken == null) {
+            // トークン未定義の場合はユーザーに許可を促す
+            this.emit(':tellWithLinkAccountCard',AccountLinkMessage)
+            return
+        }
+        const targetDay = PointDayValue[slotValue]
+        Client.getEnableTrashes(accessToken,targetDay).then((response)=>{
             if(response.length > 0) {
                 const textArray = response.map((key)=>{
                     return TrashType[key]
