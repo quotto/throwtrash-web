@@ -59,7 +59,7 @@ exports.getEnableTrashes = (access_token,target_day) => {
                 console.log(err)
                 reject("情報の取得に失敗しました。スキル開発者にお問い合わせください。")
             } else if(typeof(data["Item"])==="undefined") {
-                console.log("[ERROR] User Not Found")
+                console.log(`[ERROR] User Not Found => ${access_token}`)
                 reject("登録情報が見つかりません。アカウントリンクを行ってから再度お試しください。")
             } else {
                 const result = this.check_schedule(data,target_day)

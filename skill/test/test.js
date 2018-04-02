@@ -71,6 +71,13 @@ describe('Client',function(){
                 done()
             })
         })
+        it('水曜日',function(done){
+            Client.getEnableTrashesByWeekday(rightAccessToken,3).then((response)=>{
+                assert.equal(response.length,1)
+                assert.equal('burn',response[0])
+                done()
+            })
+        })
         it('土曜日',function(done){
             Client.getEnableTrashesByWeekday(rightAccessToken,6).then((response)=>{
                 assert.equal(response.length,1)
