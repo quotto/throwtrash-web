@@ -17,7 +17,7 @@ const dynamoClient = new AWS.DynamoDB.DocumentClient({
 /**
 target_day: 対象とする日を特定するための値。0なら今日、1なら明日……となる。
 **/
-exports.calculateJSTTime = (target_day) => {
+const calculateJSTTime = (target_day) => {
     var localdt = new Date(); // 実行サーバのローカル時間
     var jsttime = localdt.getTime() + (localdt.getTimezoneOffset() * 60 * 1000) + JSTOffset + (60 * 24 * 60 * 1000 * target_day);
     var dt = new Date(jsttime);
@@ -30,8 +30,8 @@ exports.calculateJSTTime = (target_day) => {
 access_token: ユーザーを特定するためのuuid
 weekday: 指定された曜日 0=日曜日 始まり
 **/
-exports.getEnableTrashesByWeekday = (access_token,target_weekday) => {
-    const dt = this.calculateJSTTime(0)
+exports.getEnableTrashesByWeekday = function(access_token,target_weekday) {
+    const dt = calculateJSTTime(0)
     const now_weekday = dt.getDay()
     let target_day = target_weekday - now_weekday
     //1より小さい場合は翌週分
@@ -62,7 +62,7 @@ exports.getEnableTrashes = (access_token,target_day) => {
                 console.log(`[ERROR] User Not Found => ${access_token}`)
                 reject("登録情報が見つかりません。アカウントリンクを行ってから再度お試しください。")
             } else {
-                const result = this.check_schedule(data,target_day)
+                const result = check_schedule(data,target_day)
                 console.log(`[INFO] Sucess Check Schedule（${access_token}）`)
                 resolve(result)
             }
@@ -76,9 +76,9 @@ data:   DynamoDBから取得したJSON形式のパラメータ。
         の形式。
 target_day: チェックするn日目。0なら今日、1なら明日......
 **/
-exports.check_schedule = (data,target_day)=>{
+const check_schedule = (data,target_day)=>{
     const result = []
-    const dt = this.calculateJSTTime(target_day)
+    const dt = calculateJSTTime(target_day)
     const trashes = JSON.parse(data['Item']['description'])
     trashes.forEach((trash,index,arr) => {
         const type =  trash['type']
