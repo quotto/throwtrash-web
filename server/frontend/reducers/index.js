@@ -1,6 +1,7 @@
 import {TrashType,ScheduleType} from '../components/ScheduleList'
 import {ActionType} from '../actions'
 import {combineReducers} from 'redux'
+import _ from 'lodash'
 
 const error_check = (trashes) => {
     return trashes.some((trash) => {
@@ -37,45 +38,34 @@ const createInitialTrash = ()=> {
     }
 }
 
-const initialState = {
+export const initialState = {
     trashes: [createInitialTrash()],
     error: true
 }
 
-const updateState = (state=initialState,action)=> {
+export const updateState = (state=initialState,action)=> {
     switch(action.type) {
         case ActionType.ADD_TRASH:
-            var new_trashes = Object.assign([],state.trashes)
-            new_trashes.push(createInitialTrash())
-            return (
-                Object.assign({},state,{
-                    trashes: new_trashes,
-                    error: true
-                })
-            )
+            var new_state = _.cloneDeep(state)
+            new_state.trashes.push(createInitialTrash())
+            return new_state
         case ActionType.CHANGE_TRASH:
-            var new_trashes = Object.assign([],state.trashes)
-            new_trashes[action.index].type=action.value
-            return (
-                Object.assign({},state,{
-                    trashes: new_trashes
-                })
-            )
+            var new_state =_.cloneDeep(state)
+            new_state.trashes[action.index].type=action.value
+            return new_state
         case ActionType.CHANGE_SCHEDULE:
             var i = action.index[0]
             var j = action.index[1]
 
-            var new_trashes = Object.assign([],state.trashes)
-            new_trashes[i].schedules[j] = Object.assign({},initialSchedule,{
+            var new_state = _.cloneDeep(state)
+            new_state.trashes[i].schedules[j] = {
                 type: action.value,
                 value: initialScheduleValue[action.value]
-            })
-            new_trashes[i].error = schedule_exist(new_trashes[i].schedules)
+            }
+            new_state.trashes[i].error = schedule_exist(new_state.trashes[i].schedules)
 
-            return Object.assign({},state,{
-                trashes: new_trashes,
-                error: action.value==='month' || error_check(new_trashes) //スケジュールタイプが毎月の場合、値は未入力
-            })
+            new_state.error = (action.value==='month' || error_check(new_state.trashes)) //スケジュールタイプが毎月の場合、値は未入力
+            return new_state
         case ActionType.CHANGE_INPUT:
             var i = action.index[0]
             var j = action.index[1]
