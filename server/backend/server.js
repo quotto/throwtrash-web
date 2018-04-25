@@ -29,7 +29,7 @@ app.use(session({secret: process.env.TRASHES_SECRET}))
 
 var credential = new aws.Credentials(process.env.AWS_ACCESS_TOKEN,process.env.AWS_ACCESS_TOKEN_SECRET,null)
 const dynamoClient = new aws.DynamoDB.DocumentClient({
-    region:'ap-northeast-1',
+    region:process.env.AWS_DYNAMO_REGION,
     apiVersion: '2012-08-10',
     credentials: credential
 })
@@ -76,8 +76,13 @@ app.get('/oauth/request_token',(req,res)=>{
     req.session.state = req.query.state
     req.session.client_id = req.query.client_id
     req.session.redirect_uri = req.query.redirect_uri
+    const version=req.query.version
     if(req.session.state && req.session.client_id && req.session.redirect_uri) {
-        res.redirect('/index.html')
+        if(version) {
+            res.redirect(`/v${version}/index.html`)
+        } else {
+            res.redirect('/index.html')
+        }
     } else {
         logger.write("Bad Request","ERROR")
         res.status(400).end("bad request")
