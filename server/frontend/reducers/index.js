@@ -3,6 +3,19 @@ import {ActionType} from '../actions'
 import {combineReducers} from 'redux'
 import _ from 'lodash'
 
+const required = (value) => {
+    return value ? undefined : '値を入力してください'
+}
+
+const number = value => {return value && isNaN(Number(value)) ? '数字を入力してください' : undefined}
+const minValue = (value,min=1) => {
+  return value && value < min ? `${min}以上の数字を入力してください` : undefined
+}
+
+const maxValue = (value,max=31) => {
+    return value && value > max ? `${max}以下の数字を入力してください` : undefined
+}
+
 const error_check = (trashes) => {
     return trashes.some((trash) => {
         return trash.schedules.some((schedule) => {
@@ -24,16 +37,18 @@ const initialScheduleValue = {
     'month': ''
 }
 
-const initialSchedule = {
-    type: 'none',
-    value: '',
-    error: undefined
+const initialSchedule = ()=>{
+    return{
+        type: 'none',
+        value: '',
+        error: undefined
+    }
 }
 
 const createInitialTrash = ()=> {
     return {
         type: 'burn',
-        schedules: [initialSchedule,initialSchedule,initialSchedule],
+        schedules: [initialSchedule(),initialSchedule(),initialSchedule()],
         error: undefined
     }
 }
@@ -70,30 +85,24 @@ export const updateState = (state=initialState,action)=> {
             var i = action.index[0]
             var j = action.index[1]
 
+            var new_state = _.cloneDeep(state)
+
             var error = undefined
-            action.validate.some((element)=>{
-                error = element()
-                return error
-            })
+            if(new_state.trashes[i].schedules[j].type==="month") {
+                [required,number,minValue,maxValue].some((validate)=>{
+                    error = validate(action.value)
+                    return error
+                })
+            }
 
-            var new_schedule = Object.assign({},state.trashes[i].schedules[j],{
-                value: action.value,
-                error: error
-            })
-
-            var new_trashes = Object.assign([],state.trashes)
-            new_trashes[i].schedules[j] = new_schedule
-            return Object.assign({},state,{
-                trashes: new_trashes,
-                error: error_check(new_trashes)
-            })
+            Object.assign(new_state.trashes[i].schedules[j],{value:action.value,error:error})
+            new_state.error = error_check(new_state.trashes)
+            return new_state
         case ActionType.DEL_TRASH:
-            var new_trashes = Object.assign([],state.trashes)
-            new_trashes.splice(action.index,1)
-            return Object.assign({},state,{
-                trashes: new_trashes,
-                error: error_check(new_trashes) || new_trashes.length==0
-            })
+            var new_state = _.cloneDeep(state)
+            new_state.trashes.splice(action.index,1)
+            new_state.error = error_check(new_state.trashes) || (new_state.trashes==0)
+            return new_state
         case ActionType.SET_SUBMITTING:
             return Object.assign({},state,{submitting:action.value})
         default:

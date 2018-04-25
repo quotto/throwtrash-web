@@ -18,6 +18,8 @@ const TrashType = {
     unburn: 'もえないゴミ',
     plastic: 'プラスチック',
     bottole: 'ビン・カン',
+    bin: 'ビン',
+    can: 'カン',
     petbottle: 'ペットボトル',
     paper: '古紙',
     resource: '資源ごみ',
@@ -27,7 +29,7 @@ const TrashType = {
 const ScheduleType = {
     none: undefined,
     weekday: '毎週',
-    biweek: '隔週',
+    biweek: '第○ ×曜日',
     month: '毎月'
 }
 

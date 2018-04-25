@@ -14,6 +14,8 @@ const TrashType = {
     unburn: 'もえないゴミ',
     plastic: 'プラスチック',
     bottole: 'ビン<break time="1ms"/>カン',
+    bin: 'ビン',
+    can: 'カン',
     petbottle: 'ペットボトル',
     paper: '古紙',
     resource: '<say-as interpret-as="interjection">資源ゴミ</say-as>',
