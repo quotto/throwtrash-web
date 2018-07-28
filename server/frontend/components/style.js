@@ -32,7 +32,8 @@ export const AppStyle=theme=>({
         }
     },
     trashTypeInput: {
-        "width": "50%"
+        "width": "40%",
+        "margin-right": "10px"
     },
     scheduleTypeInput: {
         "margin-right":"10px",

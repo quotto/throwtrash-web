@@ -158,8 +158,10 @@ class TrashSchedule extends React.Component {
 
             trashTag.push(
                 <Grid container justify="center" spacing={24} style={{"margin-bottom":"10px"}}>
-                    <Grid item sm={5} xs={12} className={`${this.props.classes.xsTextCenter} ${this.props.classes.smTextRight}`}>
-                            <Button className={`${this.props.classes.xsHidden}`} color="secondary" onClick={()=>this.props.onClick(i)}>削除</Button>
+                    <Grid item sm={5} className={`${this.props.classes.xsHidden} ${this.props.classes.smTextRight}`}>
+                        <Button className={`${this.props.classes.xsHidden}`} color="secondary" onClick={()=>this.props.onClick(i)}>削除</Button>
+                    </Grid>
+                    <Grid item sm={5} xs={12} className={`${this.props.classes.xsTextCenter} ${this.props.classes.smTextLeft}`}>
                             <FormControl className={this.props.classes.trashTypeInput}>
                                 <InputLabel htmlFor={`trash${i}`}>ゴミの種類{i+1}</InputLabel>
                                 <Select
@@ -173,26 +175,28 @@ class TrashSchedule extends React.Component {
                                 </Select>
                                 <FormHelperText error={this.props.trashes[i].trash_type_error}>{this.props.trashes[i].trash_type_error}</FormHelperText>
                             </FormControl>
+                            {this.props.trashes[i].type==='other' && (
+                                <FormControl className={this.props.classes.trashTypeInput}>
+                                    <InputLabel htmlFor={`othertrashtype${i}`}>任意のゴミを入力</InputLabel>
+                                        <Input
+                                            id={`othertrashtype${i}`}
+                                            name={`othertrashtype${i}`}
+                                            placeholder='任意のゴミを入力'
+                                            required={true}
+                                            inputProps={{maxLength:"10"}}
+                                            value={this.props.trashes[i].trash_val}
+                                            onChange={(e)=>{this.props.onInputTrashType(i,e.target.value)}}/>
+                                        <FormHelperText error={this.props.trashes[i].input_trash_type_error}>{this.props.trashes[i].input_trash_type_error}</FormHelperText>
+                                </FormControl>
+                            )}
                     </Grid>
+                    <Grid item sm={2} className={this.props.classes.xsHidden}></Grid>
+
+                    <Grid item sm={5} className={this.props.classes.xsHidden}></Grid>
                     {scheduleTag[0]}
                     <Grid item sm={2} className={this.props.classes.xsHidden}></Grid>
 
-                    <Grid item sm={5} className={`${this.props.classes.xsHidden} ${this.props.classes.smTextRight}`}>
-                        {this.props.trashes[i].type==='other' && (
-                            <FormControl className={this.props.classes.trashTypeInput}>
-                                <InputLabel htmlFor={`othertrashtype${i}`}>選択肢にないゴミの種類</InputLabel>
-                                    <Input
-                                        id={`othertrashtype${i}`}
-                                        name={`othertrashtype${i}`}
-                                        placeholder='ゴミの種類を入力'
-                                        required={true}
-                                        inputProps={{maxLength:"10"}}
-                                        value={this.props.trashes[i].trash_val}
-                                        onChange={(e)=>{this.props.onInputTrashType(i,e.target.value)}}/>
-                                    <FormHelperText error={this.props.trashes[i].input_trash_type_error}>{this.props.trashes[i].input_trash_type_error}</FormHelperText>
-                            </FormControl>
-                        )}
-                    </Grid>
+                    <Grid item sm={5} className={this.props.classes.xsHidden}></Grid>
                     {scheduleTag[1]}
                     <Grid item sm={2} className={this.props.classes.xsHidden}></Grid>
 

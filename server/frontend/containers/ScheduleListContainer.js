@@ -15,7 +15,6 @@ const asynchSubmit = ()=>{
 }
 
 const mapPropsState = (state) => {
-    console.log(state);
     return {
         trashes: state.updateState.trashes,
         submit_error: state.updateState.error,
