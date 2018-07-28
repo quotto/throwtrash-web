@@ -1,35 +1,7 @@
-import {TrashType,ScheduleType} from '../components/ScheduleList'
-import {ActionType} from '../actions'
-import {combineReducers} from 'redux'
-import _ from 'lodash'
-
-const required = (value) => {
-    return value ? undefined : '値を入力してください'
-}
-
-const number = value => {return value && isNaN(Number(value)) ? '数字を入力してください' : undefined}
-const minValue = (value,min=1) => {
-  return value && value < min ? `${min}以上の数字を入力してください` : undefined
-}
-
-const maxValue = (value,max=31) => {
-    return value && value > max ? `${max}以下の数字を入力してください` : undefined
-}
-
-const error_check = (trashes) => {
-    return trashes.some((trash) => {
-        return trash.schedules.some((schedule) => {
-            return schedule.error
-        }) || schedule_exist(trash.schedules)
-    })
-}
-
-const schedule_exist = (schedules) => {
-    let result = schedules.some((element)=>{
-        return (element.type!="none")
-    })
-    return result ? undefined : '一つ以上のスケジュールを設定してください'
-}
+import {ActionType} from '../actions';
+import {combineReducers} from 'redux';
+import _ from 'lodash';
+import common_check from '../../common_check';
 
 const initialScheduleValue = {
     'weekday': '0',
@@ -48,8 +20,10 @@ const initialSchedule = ()=>{
 const createInitialTrash = ()=> {
     return {
         type: 'burn',
+        trash_val: '',
         schedules: [initialSchedule(),initialSchedule(),initialSchedule()],
-        error: undefined
+        trash_type_error: undefined,
+        input_trash_type_error: undefined
     }
 }
 
@@ -59,54 +33,61 @@ export const initialState = {
 }
 
 export const updateState = (state=initialState,action)=> {
+    let new_state = _.cloneDeep(state)
     switch(action.type) {
-        case ActionType.ADD_TRASH:
-            var new_state = _.cloneDeep(state)
-            new_state.trashes.push(createInitialTrash())
-            return new_state
-        case ActionType.CHANGE_TRASH:
-            var new_state =_.cloneDeep(state)
-            new_state.trashes[action.index].type=action.value
-            return new_state
-        case ActionType.CHANGE_SCHEDULE:
-            var i = action.index[0]
-            var j = action.index[1]
+        case ActionType.ADD_TRASH:{
+            new_state.trashes.push(createInitialTrash());
+            new_state.error = common_check.exist_error(new_state.trashes);
+            return new_state;
+        }
+        case ActionType.CHANGE_TRASH:{
+            Object.assign(new_state.trashes[action.index],{type:action.value});
+            new_state.error = common_check.exist_error(new_state.trashes);
+            return new_state;
+        }
+        case ActionType.CHANGE_SCHEDULE:{
+            const i = action.index[0];
+            const j = action.index[1];
 
-            var new_state = _.cloneDeep(state)
             new_state.trashes[i].schedules[j] = {
                 type: action.value,
-                value: initialScheduleValue[action.value]
+                value: initialScheduleValue[action.value],
+                error: undefined
             }
-            new_state.trashes[i].error = schedule_exist(new_state.trashes[i].schedules)
+            new_state.trashes[i].trash_type_error = common_check.schedule_exist(new_state.trashes[i].schedules);
 
-            new_state.error = (action.value==='month' || error_check(new_state.trashes)) //スケジュールタイプが毎月の場合、値は未入力
-            return new_state
-        case ActionType.CHANGE_INPUT:
-            var i = action.index[0]
-            var j = action.index[1]
+            new_state.error = common_check.exist_error(new_state.trashes); //スケジュールタイプが毎月の場合、値は未入力
+            return new_state;
+        }
+        case ActionType.CHANGE_INPUT:{
+            const i = action.index[0];
+            const j = action.index[1];
 
-            var new_state = _.cloneDeep(state)
-
-            var error = undefined
+            let error = undefined;
             if(new_state.trashes[i].schedules[j].type==="month") {
-                [required,number,minValue,maxValue].some((validate)=>{
-                    error = validate(action.value)
-                    return error
-                })
+                error = common_check.input_month_check(action.value);
             }
 
-            Object.assign(new_state.trashes[i].schedules[j],{value:action.value,error:error})
-            new_state.error = error_check(new_state.trashes)
-            return new_state
-        case ActionType.DEL_TRASH:
-            var new_state = _.cloneDeep(state)
-            new_state.trashes.splice(action.index,1)
-            new_state.error = error_check(new_state.trashes) || (new_state.trashes==0)
-            return new_state
-        case ActionType.SET_SUBMITTING:
-            return Object.assign({},state,{submitting:action.value})
+            Object.assign(new_state.trashes[i].schedules[j],{value:action.value,error:error});
+            new_state.error = common_check.exist_error(new_state.trashes);
+            return new_state;
+        }
+        case ActionType.INPUT_TRASH_TYPE:{
+            Object.assign(new_state.trashes[action.index],{trash_val: action.value});
+            Object.assign(new_state.trashes[action.index],{input_trash_type_error: common_check.input_trash_type_check(new_state.trashes[action.index])});
+            new_state.error = common_check.exist_error(new_state.trashes);
+            return new_state;
+        }
+        case ActionType.DEL_TRASH:{
+            new_state.trashes.splice(action.index,1);
+            new_state.error = common_check.exist_error(new_state.trashes);
+            return new_state;
+        }
+        case ActionType.SET_SUBMITTING:{
+            return Object.assign({},state,{submitting:action.value});
+        }
         default:
-            return state
+            return state;
     }
 }
 
@@ -114,4 +95,4 @@ const TrashScheduleApp = combineReducers({
     updateState
 })
 
-export default TrashScheduleApp
+export default TrashScheduleApp;

@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/.bin/browserify frontend/index.js -t babelify --outfile backend/public/v2/bundle.js",
-    "test": "./node_modules/.bin/mocha --require babel-core/register ./frontend/test"
+    "build": "./node_modules/.bin/browserify frontend/index.js -t babelify --outfile backend/public/v3/bundle.js",
+    "test": "./node_modules/.bin/mocha --require babel-core/register ./frontend/test",
+    "deploy": "python ../deploy/deploy.py"
   },
   "author": "",
   "license": "ISC",

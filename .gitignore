@@ -1,4 +1,6 @@
 server/node_modules
-skill/node_modules
+skill/src/node_modules
+skill/deploy/deploy.properties
+skill/deploy/skill.zip
 server/backend/certs
 **/*.log
