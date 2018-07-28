@@ -31,6 +31,33 @@ export const AppStyle=theme=>({
             display: "none"
         }
     },
+    trashTypeInput: {
+        "width": "50%"
+    },
+    scheduleTypeInput: {
+        "margin-right":"10px",
+        "width":"40%",
+        "vertical-align":"top",
+        "text-align":"center"
+    },
+    scheduleTypeMonth: {
+        "display":"inline-block",
+        "vertical-align":"top",
+        "text-align":"center",
+        "width":"40%"
+    },
+    scheduleTypeWeek: {
+        "display":"inline-block",
+        "vertical-align":"top",
+        "width":"40%"
+    },
+    scheduleWeekSelect: {
+        "width":"100%",
+        "text-align":"center"
+    },
+    scheduleTypeSelect: {
+        "text-align": "center"
+    },
     component: {
         width: "90%",
         margin: "0 auto"

@@ -6,6 +6,7 @@ import { withStyles } from 'material-ui/styles';
 import { AppStyle } from './style'
 import axios from 'axios'
 
+const MAX_SCHEDULE = 10;
 class ScheduleList extends React.Component {
     render() {
         if(this.props.submitting) {
@@ -24,13 +25,15 @@ class ScheduleList extends React.Component {
                     onChangeSchedule={this.props.onChangeSchedule}
                     onChangeTrash={this.props.onChangeTrash}
                     onChangeInput={this.props.onChangeInput}
-                    onClick={this.props.onClickDelete} />
+                    onClick={this.props.onClickDelete}
+                    onInputTrashType={this.props.onInputTrashType}
+                    />
                 <Grid item xs={2}></Grid>
                 <Grid item xs={8} style={{"text-align":"center"}}>
                     <Button
                         variant="raised"
                         color="secondary"
-                        disabled={this.props.trashes.length===5}
+                        disabled={this.props.trashes.length===MAX_SCHEDULE}
                         onClick={()=>this.props.onClickAdd()}>
                         ゴミの種類を追加
                     </Button>

@@ -5,6 +5,7 @@ import {
     addTrash,
     deleteTrash,
     changeTrashType,
+    inputTrashType,
     changeInput,
     setSubmitting
 } from '../actions'
@@ -14,6 +15,7 @@ const asynchSubmit = ()=>{
 }
 
 const mapPropsState = (state) => {
+    console.log(state);
     return {
         trashes: state.updateState.trashes,
         submit_error: state.updateState.error,
@@ -29,8 +31,11 @@ const mapDispatchToProps = (dispatch) => {
         onChangeSchedule: (i,j,value) => {
             dispatch(changeSchedule(i,j,value))
         },
-        onChangeInput: (i,j,value,validate=[]) => {
-            dispatch(changeInput(i,j,value,validate))
+        onChangeInput: (i,j,value) => {
+            dispatch(changeInput(i,j,value))
+        },
+        onInputTrashType: (i,value) => {
+            dispatch(inputTrashType(i,value))
         },
         onClickAdd: () => {
             dispatch(addTrash())
