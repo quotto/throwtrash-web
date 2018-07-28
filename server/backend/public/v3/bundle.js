@@ -423,7 +423,7 @@ var TrashType = {
     paper: '古紙',
     resource: '資源ごみ',
     coarse: '粗大ごみ',
-    other: '上記以外'
+    other: 'その他（自分で入力）'
 };
 
 var ScheduleType = {
