@@ -214,7 +214,7 @@ var App = function (_React$Component) {
                             _react2.default.createElement(
                                 'li',
                                 null,
-                                '\u6700\u59275\u7A2E\u985E\u306E\u30B4\u30DF\u51FA\u3057\u4E88\u5B9A\u3092\u767B\u9332\u3067\u304D\u307E\u3059\u3002'
+                                '\u6700\u592710\u7A2E\u985E\u306E\u30B4\u30DF\u51FA\u3057\u4E88\u5B9A\u3092\u767B\u9332\u3067\u304D\u307E\u3059\u3002'
                             ),
                             _react2.default.createElement(
                                 'li',
@@ -651,14 +651,18 @@ var TrashSchedule = function (_React$Component) {
                     { container: true, justify: 'center', spacing: 24, style: { "margin-bottom": "10px" } },
                     _react2.default.createElement(
                         _materialUi.Grid,
-                        { item: true, sm: 5, xs: 12, className: _this2.props.classes.xsTextCenter + ' ' + _this2.props.classes.smTextRight },
+                        { item: true, sm: 5, className: _this2.props.classes.xsHidden + ' ' + _this2.props.classes.smTextRight },
                         _react2.default.createElement(
                             _materialUi.Button,
                             { className: '' + _this2.props.classes.xsHidden, color: 'secondary', onClick: function onClick() {
                                     return _this2.props.onClick(i);
                                 } },
                             '\u524A\u9664'
-                        ),
+                        )
+                    ),
+                    _react2.default.createElement(
+                        _materialUi.Grid,
+                        { item: true, sm: 5, xs: 12, className: _this2.props.classes.xsTextCenter + ' ' + _this2.props.classes.smTextLeft },
                         _react2.default.createElement(
                             _materialUi.FormControl,
                             { className: _this2.props.classes.trashTypeInput },
@@ -686,25 +690,19 @@ var TrashSchedule = function (_React$Component) {
                                 { error: _this2.props.trashes[i].trash_type_error },
                                 _this2.props.trashes[i].trash_type_error
                             )
-                        )
-                    ),
-                    scheduleTag[0],
-                    _react2.default.createElement(_materialUi.Grid, { item: true, sm: 2, className: _this2.props.classes.xsHidden }),
-                    _react2.default.createElement(
-                        _materialUi.Grid,
-                        { item: true, sm: 5, className: _this2.props.classes.xsHidden + ' ' + _this2.props.classes.smTextRight },
+                        ),
                         _this2.props.trashes[i].type === 'other' && _react2.default.createElement(
                             _materialUi.FormControl,
                             { className: _this2.props.classes.trashTypeInput },
                             _react2.default.createElement(
                                 _materialUi.InputLabel,
                                 { htmlFor: 'othertrashtype' + i },
-                                '\u9078\u629E\u80A2\u306B\u306A\u3044\u30B4\u30DF\u306E\u7A2E\u985E'
+                                '\u4EFB\u610F\u306E\u30B4\u30DF\u3092\u5165\u529B'
                             ),
                             _react2.default.createElement(_materialUi.Input, {
                                 id: 'othertrashtype' + i,
                                 name: 'othertrashtype' + i,
-                                placeholder: '\u30B4\u30DF\u306E\u7A2E\u985E\u3092\u5165\u529B',
+                                placeholder: '\u4EFB\u610F\u306E\u30B4\u30DF\u3092\u5165\u529B',
                                 required: true,
                                 inputProps: { maxLength: "10" },
                                 value: _this2.props.trashes[i].trash_val,
@@ -718,6 +716,11 @@ var TrashSchedule = function (_React$Component) {
                             )
                         )
                     ),
+                    _react2.default.createElement(_materialUi.Grid, { item: true, sm: 2, className: _this2.props.classes.xsHidden }),
+                    _react2.default.createElement(_materialUi.Grid, { item: true, sm: 5, className: _this2.props.classes.xsHidden }),
+                    scheduleTag[0],
+                    _react2.default.createElement(_materialUi.Grid, { item: true, sm: 2, className: _this2.props.classes.xsHidden }),
+                    _react2.default.createElement(_materialUi.Grid, { item: true, sm: 5, className: _this2.props.classes.xsHidden }),
                     scheduleTag[1],
                     _react2.default.createElement(_materialUi.Grid, { item: true, sm: 2, className: _this2.props.classes.xsHidden }),
                     _react2.default.createElement(_materialUi.Grid, { item: true, sm: 5, className: _this2.props.classes.xsHidden }),
@@ -790,7 +793,8 @@ var AppStyle = exports.AppStyle = function AppStyle(theme) {
             display: "none"
         }), _smHidden),
         trashTypeInput: {
-            "width": "50%"
+            "width": "40%",
+            "margin-right": "10px"
         },
         scheduleTypeInput: {
             "margin-right": "10px",
@@ -843,7 +847,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var asynchSubmit = function asynchSubmit() {};
 
 var mapPropsState = function mapPropsState(state) {
-    console.log(state);
     return {
         trashes: state.updateState.trashes,
         submit_error: state.updateState.error,
