@@ -23,7 +23,8 @@ const TrashType = {
     petbottle: 'ペットボトル',
     paper: '古紙',
     resource: '資源ごみ',
-    coarse: '粗大ごみ'
+    coarse: '粗大ごみ',
+    other: 'その他（自分で入力）'
 }
 
 const ScheduleType = {
@@ -81,14 +82,14 @@ class TrashSchedule extends React.Component {
                             weekdayOption.push(<MenuItem value={key}>{WeekdayType[key]}</MenuItem>)
                         }
 
-                        inputTag = <FormControl style={{"display":"inline-block","vertical-align":"top","width":"40%"}}>
+                        inputTag = <FormControl className={this.props.classes.scheduleTypeWeek}>
                                     <InputLabel htmlFor={`scinput-${i}-${j}`}>曜日</InputLabel>
                                     <Select
                                         id={`scinput-${i}-${j}`}
                                         name={`scinput-${i}-${j}`}
                                         value={target_schedule.value}
                                         onChange={(e)=>this.props.onChangeInput(i,j,e.target.value)}
-                                        style={{"width":"100%","text-align":"center"}}
+                                        className={this.props.classes.scheduleWeekSelect}
                                     >
                                     {weekdayOption}
                                     </Select>
@@ -102,21 +103,22 @@ class TrashSchedule extends React.Component {
                                 biweekOption.push(<MenuItem value={key+"-"+num}>{'第'+num+WeekdayType[key]}</MenuItem>)
                             }
                         }
-                        inputTag = <FormControl style={{"display":"inline-block","vertical-align":"top","width":"40%"}}>
+                        inputTag = <FormControl className={this.props.classes.scheduleTypeWeek}>
                                         <InputLabel htmlFor={`scinput-${i}-${j}`}>曜日</InputLabel>
                                         <Select
                                             id={`scinput-${i}-${j}`}
                                             name={`scinput-${i}-${j}`}
                                             value={target_schedule.value}
                                             onChange={(e)=>this.props.onChangeInput(i,j,e.target.value)}
-                                            style={{"width":"100%","text-align":"center"}}>
+                                            className={this.props.classes.scheduleWeekSelect}
+                                        >
                                                 {biweekOption}
                                         </Select>
                                         <FormHelperText error={target_schedule.error}>{target_schedule.error}</FormHelperText>
                                     </FormControl>
                         break
                     case 'month':
-                        inputTag = <FormControl style={{"display":"inline-block","vertical-align":"top","text-align":"center","width":"40%"}}>
+                        inputTag = <FormControl className={this.props.classes.scheduleTypeMonth}>
                                         <InputLabel htmlFor={`scinput-${i}-${j}`}>日にち</InputLabel>
                                         <Input
                                             id={`scinput-${i}-${j}`}
@@ -125,7 +127,7 @@ class TrashSchedule extends React.Component {
                                             placeholder='1～31の数字を入力'
                                             required={true}
                                             value={target_schedule.value}
-                                            onChange={(e)=>this.props.onChangeInput(i,j,e.target.value,[()=>required(e.target.value),()=>number(e.target.value),()=>minValue(1,e.target.value),()=>maxValue(31,e.target.value)])}
+                                            onChange={(e)=>this.props.onChangeInput(i,j,e.target.value)}
                                             endAdornment={<InputAdornment position="end">日</InputAdornment>}
                                             inputProps={{style:{"text-align":"center"}}}
                                         />
@@ -137,14 +139,14 @@ class TrashSchedule extends React.Component {
                 }
                 scheduleTag.push(
                     <Grid item sm={5} xs={12} className={`${this.props.classes.xsTextCenter} ${this.props.classes.smTextLeft}`}>
-                        <FormControl style={{"margin-right":"10px","width":"40%","vertical-align":"top","text-align":"center"}}>
+                        <FormControl className={this.props.classes.scheduleTypeInput}>
                             <InputLabel htmlFor={`schedule-${i}-${j}`}>スケジュール{j+1}</InputLabel>
                             <Select
                                 id={`schedule-${i}-${j}`}
                                 name={`schedule-${i}-${j}`}
                                 value={target_schedule.type}
                                 onChange={(e,children)=>this.props.onChangeSchedule(i,j,e.target.value)}
-                                style={{"text-align":"center"}}>
+                                className={this.props.classes.scheduleTypeSelect}>
                                     {scheduleOptionTag}
                             </Select>
                             <FormHelperText></FormHelperText>
@@ -156,21 +158,41 @@ class TrashSchedule extends React.Component {
 
             trashTag.push(
                 <Grid container justify="center" spacing={24} style={{"margin-bottom":"10px"}}>
-                    <Grid item sm={5} xs={12} className={`${this.props.classes.xsTextCenter} ${this.props.classes.smTextRight}`}>
-                            <Button className={`${this.props.classes.xsHidden}`} color="secondary" onClick={()=>this.props.onClick(i)}>削除</Button>
-                            <FormControl style={{"width":"50%"}}>
+                    <Grid item sm={5} className={`${this.props.classes.xsHidden} ${this.props.classes.smTextRight}`}>
+                        <Button className={`${this.props.classes.xsHidden}`} color="secondary" onClick={()=>this.props.onClick(i)}>削除</Button>
+                    </Grid>
+                    <Grid item sm={5} xs={12} className={`${this.props.classes.xsTextCenter} ${this.props.classes.smTextLeft}`}>
+                            <FormControl className={this.props.classes.trashTypeInput}>
                                 <InputLabel htmlFor={`trash${i}`}>ゴミの種類{i+1}</InputLabel>
                                 <Select
                                     id={`trash${i}`}
                                     name={`trash${i}`}
                                     value={this.props.trashes[i].type}
                                     onChange={(e)=>{this.props.onChangeTrash(i,e.target.value)}}
-                                    style={{"text-align":"center"}}>
+                                    className={this.props.classes.scheduleTypeSelect}
+                                    >
                                         {trashOptionTag}
                                 </Select>
-                                <FormHelperText error={this.props.trashes[i].error}>{this.props.trashes[i].error}</FormHelperText>
+                                <FormHelperText error={this.props.trashes[i].trash_type_error}>{this.props.trashes[i].trash_type_error}</FormHelperText>
                             </FormControl>
+                            {this.props.trashes[i].type==='other' && (
+                                <FormControl className={this.props.classes.trashTypeInput}>
+                                    <InputLabel htmlFor={`othertrashtype${i}`}>任意のゴミを入力</InputLabel>
+                                        <Input
+                                            id={`othertrashtype${i}`}
+                                            name={`othertrashtype${i}`}
+                                            placeholder='任意のゴミを入力'
+                                            required={true}
+                                            inputProps={{maxLength:"10"}}
+                                            value={this.props.trashes[i].trash_val}
+                                            onChange={(e)=>{this.props.onInputTrashType(i,e.target.value)}}/>
+                                        <FormHelperText error={this.props.trashes[i].input_trash_type_error}>{this.props.trashes[i].input_trash_type_error}</FormHelperText>
+                                </FormControl>
+                            )}
                     </Grid>
+                    <Grid item sm={2} className={this.props.classes.xsHidden}></Grid>
+
+                    <Grid item sm={5} className={this.props.classes.xsHidden}></Grid>
                     {scheduleTag[0]}
                     <Grid item sm={2} className={this.props.classes.xsHidden}></Grid>
 

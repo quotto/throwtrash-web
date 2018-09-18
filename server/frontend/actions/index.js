@@ -3,6 +3,7 @@ export const ActionType = {
     CHANGE_TRASH: 'CHANGE_TRASH',
     CHANGE_SCHEDULE: 'CHANGE_SCHEDULE',
     CHANGE_INPUT: 'CHANGE_INPUT',
+    INPUT_TRASH_TYPE: 'INPUT_TRASH_TYPE',
     DEL_TRASH: 'DEL_TRASH',
     SET_SUBMITTING: 'SET_SUBMITTING'
 }
@@ -30,12 +31,19 @@ export const changeTrashType = (i,value,validate) => {
     }
 }
 
-export const changeInput = (i,j,value,validate) => {
+export const changeInput = (i,j,value) => {
     return {
         type: ActionType.CHANGE_INPUT,
         index: [i,j],
-        value: value,
-        validate: validate
+        value: value
+    }
+}
+
+export const inputTrashType = (i,value) => {
+    return {
+        type: ActionType.INPUT_TRASH_TYPE,
+        index: i,
+        value: value
     }
 }
 
