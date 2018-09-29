@@ -41,6 +41,7 @@ var mime = {
     '.js':'application/javascript'
 }
 
+
 //. 鍵ファイルと証明書ファイルを指定して、https で待受け
 const port = process.argv[2] ? process.argv[2] : 443;
 const server = https.createServer( options, app ).listen(port, ()=>{
@@ -100,9 +101,10 @@ app.post("/regist",(req,res,next)=>{
         }
 
         const user_id = Util.create_id();
+        const regist_data = Util.adjustData(req.body);
         var item = {
             id: user_id,
-            description: JSON.stringify(req.body,null,2)
+            description: JSON.stringify(regist_data,null,2)
         }
         var params = {
             TableName: 'TrashSchedule',

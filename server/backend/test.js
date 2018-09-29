@@ -162,5 +162,57 @@ const test_data3 = [
         ]
     }
 ]
-console.log(Util.check_schedule(JSON.stringify(test_data3)))
-console.log(Util.create_id())
+
+const testdata4 = [
+    {
+        type: "bottle",
+        trash_val: '',
+        schedules: [
+            {
+                type: "weekday",
+                value: "1"
+            },
+            {
+                type: "montsh",
+                value: "12"
+            },
+            {
+                type: "none",
+                value: ''
+            }
+        ],
+    },
+    {
+        type: "other",
+        trash_val: '新聞紙',
+        schedules: [
+            {
+                type: 'evweek',
+                value: {
+                    week: '5',
+                    start: 'thisweek'
+                }
+            }
+        ],
+        input_trash_error: undefined
+    },
+    {
+        type: 'week',
+        trash_val: undefined,
+        schedules: [
+            {
+                type: 'biweek',
+                value: '2-1'
+            },
+            {
+                type: 'evweek',
+                value: {
+                    week: '0',
+                    start: 'nextweek'
+                }
+            }
+        ]
+    }
+];
+console.log(Util.create_id());
+console.log(JSON.stringify(Util.adjustData(testdata4)));

@@ -123,6 +123,34 @@ const get_enable_trashes = (data,target_day)=>{
                     result.push(trash_name);
                     return true;
                 }
+            } else if(schedule['type'] === 'evweek') {
+                if(Number(schedule.value.weekday) === dt.getDay()) {
+                    const start_dt = new Date(schedule.value.start);
+                    start_dt.setHours(0);
+                    start_dt.setMinutes(0);
+                    start_dt.setSeconds(0);
+                    start_dt.setMilliseconds(0);
+                    console.log(start_dt);
+
+                    // 今週の日曜日を求める
+                    let current_dt = new Date(dt.toISOString());
+                    current_dt.setHours(0);
+                    current_dt.setMinutes(0);
+                    current_dt.setSeconds(0);
+                    current_dt.setMilliseconds(0);
+                    current_dt.setDate(current_dt.getDate() - current_dt.getDay());
+                    console.log(current_dt);
+
+                    // 登録されている日付からの経過日数を求める
+                    const past_date = (current_dt - start_dt) / 1000 / 60 / 60 / 24;
+                    console.log(past_date);
+
+                    // 差が0またはあまりが0であれば隔週に該当
+                    if(past_date === 0 || past_date % 7 === 0) {
+                        result.push(trash_name);
+                        return true;
+                    }
+                }
             }
         })
     })

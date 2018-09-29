@@ -1,8 +1,8 @@
 import React from 'react'
 import {Field} from 'redux-form'
 import TrashSchedule from './TrashSchedule'
-import {Button,Grid} from 'material-ui'
-import { withStyles } from 'material-ui/styles';
+import {Button,Grid} from '@material-ui/core'
+import { withStyles } from '@material-ui/core/styles';
 import { AppStyle } from './style'
 import axios from 'axios'
 

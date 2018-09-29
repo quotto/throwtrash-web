@@ -6,7 +6,8 @@ import common_check from '../../common_check';
 const initialScheduleValue = {
     'weekday': '0',
     'biweek': '0-1',
-    'month': ''
+    'month': '',
+    'evweek': {weekday: 'sunday',start:'thisweek'}
 }
 
 const initialSchedule = ()=>{
@@ -41,7 +42,7 @@ export const updateState = (state=initialState,action)=> {
             return new_state;
         }
         case ActionType.CHANGE_TRASH:{
-            Object.assign(new_state.trashes[action.index],{type:action.value});
+            Object.assign(new_state.trashes[action.index],{type:action.value,trash_val: undefined,input_trash_type_error: undefined});
             new_state.error = common_check.exist_error(new_state.trashes);
             return new_state;
         }
