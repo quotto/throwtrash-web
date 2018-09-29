@@ -1,8 +1,8 @@
 import React from 'react'
 import SubmitForm from './Form'
-import {Grid} from 'material-ui'
+import {Grid} from '@material-ui/core'
 import {AppStyle} from './style.js'
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 
 class App extends React.Component {
 
