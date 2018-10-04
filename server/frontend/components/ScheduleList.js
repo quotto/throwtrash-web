@@ -1,22 +1,21 @@
-import React from 'react'
-import {Field} from 'redux-form'
-import TrashSchedule from './TrashSchedule'
-import {Button,Grid} from 'material-ui'
-import { withStyles } from 'material-ui/styles';
-import { AppStyle } from './style'
-import axios from 'axios'
+import React from 'react';
+import TrashSchedule from './TrashSchedule';
+import {Button,Grid} from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
+import { AppStyle } from './style';
+import axios from 'axios';
 
 const MAX_SCHEDULE = 10;
 class ScheduleList extends React.Component {
     render() {
         if(this.props.submitting) {
-            axios.post("/regist",JSON.stringify(this.props.trashes),{headers:{'Content-Type':'application/json'}})
+            axios.post('/regist',JSON.stringify(this.props.trashes),{headers:{'Content-Type':'application/json'}})
                 .then((response)=> {
-                    window.location=response.data
+                    window.location=response.data;
                 }).catch((error) =>{
-                    alert("登録に失敗しました。","お知らせ")
-                    this.props.onSubmit(false)
-                })
+                    alert('登録に失敗しました。','お知らせ');
+                    this.props.onSubmit(false);
+                });
         }
         return (
             <Grid container spacing={24}>
@@ -27,9 +26,9 @@ class ScheduleList extends React.Component {
                     onChangeInput={this.props.onChangeInput}
                     onClick={this.props.onClickDelete}
                     onInputTrashType={this.props.onInputTrashType}
-                    />
+                />
                 <Grid item xs={2}></Grid>
-                <Grid item xs={8} style={{"text-align":"center"}}>
+                <Grid item xs={8} style={{textAlign:'center'}}>
                     <Button
                         variant="raised"
                         color="secondary"
@@ -40,7 +39,7 @@ class ScheduleList extends React.Component {
                 </Grid>
                 <Grid item xs={2}></Grid>
                 <Grid item xs={4}></Grid>
-                <Grid item xs={4} style={{"text-align":"center"}}>
+                <Grid item xs={4} style={{textAlign:'center'}}>
                     <Button
                         variant="raised"
                         color="primary"
@@ -51,8 +50,8 @@ class ScheduleList extends React.Component {
                 </Grid>
                 <Grid item xs={4}></Grid>
             </Grid>
-        )
+        );
     }
 }
 
-export default withStyles(AppStyle)(ScheduleList)
+export default withStyles(AppStyle)(ScheduleList);

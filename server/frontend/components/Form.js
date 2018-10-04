@@ -1,12 +1,14 @@
-import React from 'react'
-import ScheduleListContainer from '../containers/ScheduleListContainer'
+import React from 'react';
+import ScheduleListContainer from '../containers/ScheduleListContainer';
 import {Field, Form,reduxForm} from 'redux-form'
 
-const  SubmitForm = ()=>{
-    return (
-        <form name="registform">
-            <ScheduleListContainer />
-        </form>
-    )
+class  SubmitForm extends React.Component {
+    render() {
+        return (
+            <form name="registform">
+                <ScheduleListContainer />
+            </form>
+        );
+    }
 }
-export default SubmitForm
+export default SubmitForm;
