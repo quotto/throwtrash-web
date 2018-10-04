@@ -1,5 +1,5 @@
-import {connect} from 'react-redux'
-import ScheduleList from '../components/ScheduleList'
+import {connect} from 'react-redux';
+import ScheduleList from '../components/ScheduleList';
 import {
     changeSchedule,
     addTrash,
@@ -8,49 +8,45 @@ import {
     inputTrashType,
     changeInput,
     setSubmitting
-} from '../actions'
-
-const asynchSubmit = ()=>{
-
-}
+} from '../actions';
 
 const mapPropsState = (state) => {
     return {
         trashes: state.updateState.trashes,
         submit_error: state.updateState.error,
         submitting: state.updateState.submitting
-    }
-}
+    };
+};
 
 const mapDispatchToProps = (dispatch) => {
     return {
         onChangeTrash: (i,value) => {
-            dispatch(changeTrashType(i,value))
+            dispatch(changeTrashType(i,value));
         },
         onChangeSchedule: (i,j,value) => {
-            dispatch(changeSchedule(i,j,value))
+            dispatch(changeSchedule(i,j,value));
         },
         onChangeInput: (i,j,value) => {
-            dispatch(changeInput(i,j,value))
+            dispatch(changeInput(i,j,value));
         },
         onInputTrashType: (i,value) => {
-            dispatch(inputTrashType(i,value))
+            dispatch(inputTrashType(i,value));
         },
         onClickAdd: () => {
-            dispatch(addTrash())
+            dispatch(addTrash());
         },
         onClickDelete: (i) =>{
-            dispatch(deleteTrash(i))
+            dispatch(deleteTrash(i));
         },
         onSubmit: (status)=>{
-            dispatch(setSubmitting(status))
+            dispatch(setSubmitting(status));
         }
-    }
-}
+    };
+};
 
 const ScheduleListContainer = connect(
     mapPropsState,
     mapDispatchToProps
-)(ScheduleList)
+)(ScheduleList);
 
-export default ScheduleListContainer
+export default ScheduleListContainer;
