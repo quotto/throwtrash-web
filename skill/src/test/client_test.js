@@ -18,20 +18,20 @@ const update_table = (value)=>{
         Key: {
             id: rightAccessToken
         },
-        UpdateExpression: "set description = :val",
+        UpdateExpression: 'set description = :val',
         ExpressionAttributeValues: {
-            ":val": value
+            ':val': value
         },
-        ReturnValues:"UPDATED_NEW"
-    }
+        ReturnValues:'UPDATED_NEW'
+    };
     dynamoClient.update(params,(err,data)=>{
-       if (err) {
-           console.error("Unable to update ite. Error JSON:", JSON.stringify(err, null, 2));
-       } else {
-           console.log("Restore succeeded:", JSON.stringify(data, null, 2));
-       }
-    })
-}
+        if (err) {
+            console.error('Unable to update ite. Error JSON:', JSON.stringify(err, null, 2));
+        } else {
+            console.log('Restore succeeded:', JSON.stringify(data, null, 2));
+        }
+    });
+};
 
 describe('Client',function(){
     describe('calculateJSTTime',function(){
@@ -44,50 +44,51 @@ describe('Client',function(){
 
         it('明日の日付',function(){
             let dt = _invocate_calculateJSTTime(1);
-            assert.equal(dt.getDate(),(new Date()).getDate()+1);
-            assert.equal(dt.getDay(),(new Date()).getDay()+1-(Math.floor((new Date().getDay()+1)/7)*7));
+            var tommorow = (new Date(new Date().valueOf() + (24*60*60*1000)));
+            assert.equal(dt.getDate(),tommorow.getDate());
+            assert.equal(dt.getDay(),tommorow.getDay());
         })
     })
 
     describe('get_enable_trashes',function(){
         let _invocate_check_schedule = Client.__get__('get_enable_trashes');
-        const testdata = { "Item": { "description": '[ { "type": "burn","trash_val": "", "schedules": [ { "type": "weekday", "value": "3" }, { "type": "weekday", "value": "6" }, { "type": "none", "value": "" } ] }, { "type": "plastic", "trash_val": "","schedules": [ { "type": "weekday", "value": "1" }, { "type": "none", "value": "" }, { "type": "none", "value": "" } ] }, { "type": "paper","trash_val": "", "schedules": [ { "type": "none", "value": "" }, { "type": "biweek", "value": "1-2" }, { "type": "none", "value": "" } ]}, { "type": "bottole", "trash_val": "","schedules": [ { "type": "weekday", "value": "4" }, { "type": "none", "value": "" }, { "type": "none", "value": "" } ] }, { "type": "petbottle", "trash_val": "","schedules": [ { "type": "weekday", "value": "4" }, { "type": "month", "value": "11" }, { "type": "none", "value": "" } ] } ]'} }
+        const testdata = { 'Item': { 'description': "[ { 'type': 'burn','trash_val': '', 'schedules': [ { 'type': 'weekday', 'value': '3' }, { 'type': 'weekday', 'value': '6' }, { 'type': 'none', 'value': '' } ] }, { 'type': 'plastic', 'trash_val': '','schedules': [ { 'type': 'weekday', 'value': '1' }, { 'type': 'none', 'value': '' }, { 'type': 'none', 'value': '' } ] }, { 'type': 'paper','trash_val': '', 'schedules': [ { 'type': 'none', 'value': '' }, { 'type': 'biweek', 'value': '1-2' }, { 'type': 'none', 'value': '' } ]}, { 'type': 'bottole', 'trash_val': '','schedules': [ { 'type': 'weekday', 'value': '4' }, { 'type': 'none', 'value': '' }, { 'type': 'none', 'value': '' } ] }, { 'type': 'petbottle', 'trash_val': '','schedules': [ { 'type': 'weekday', 'value': '4' }, { 'type': 'month', 'value': '11' }, { 'type': 'none', 'value': '' } ] } ]"} }
         it('weekday',function(){
             let revert = Client.__set__({
-                            'calculateJSTTime':()=>{
-                                return new Date('2018/03/01');
-                            }
-                        })
+                'calculateJSTTime':()=>{
+                    return new Date('2018/03/01');
+                }
+            });
 
             let result = _invocate_check_schedule(testdata,0);
             assert.equal(result.length,2);
             assert.equal('ビン<break time="1ms"/>カン',result[0]);
-            assert.equal("ペットボトル",result[1]);
+            assert.equal('ペットボトル',result[1]);
 
             revert();
         })
         it('biweek',function(){
             let revert = Client.__set__({
-                            'calculateJSTTime':()=>{
-                                return new Date('2018/03/12');
-                            }
-                        });
+                'calculateJSTTime':()=>{
+                    return new Date('2018/03/12');
+                }
+            });
             let result = _invocate_check_schedule(testdata,0);
             assert.equal(2,result.length);
-            assert.equal("プラスチック",result[0]);
-            assert.equal("古紙",result[1]);
+            assert.equal('プラスチック',result[0]);
+            assert.equal('古紙',result[1]);
 
             revert();
         });
         it('month',function(){
             let revert = Client.__set__({
-                            'calculateJSTTime':()=>{
-                                return new Date('2018/03/11');
-                            }
-                        })
+                'calculateJSTTime':()=>{
+                    return new Date('2018/03/11');
+                }
+            });
             let result = _invocate_check_schedule(testdata,0);
             assert.equal(1,result.length);
-            assert.equal("ペットボトル",result[0]);
+            assert.equal('ペットボトル',result[0]);
 
             revert();
         });
@@ -101,7 +102,7 @@ describe('Client',function(){
                     [
                         {
                             // 曜日が一致し該当週のため対象
-                            type: "burn",
+                            type: 'burn',
                             schedules: [
                                 {
                                     type: 'evweek',
@@ -114,7 +115,7 @@ describe('Client',function(){
                         },
                         {
                             // 該当集だが曜日が一致しないので対象外
-                            type: "other",
+                            type: 'other',
                             trash_val: '新運',
                             schedules: [
                                 {
@@ -128,7 +129,7 @@ describe('Client',function(){
                         },
                         {
                             // 登録週=今週かつ曜日が一致のため対象
-                            type: "plastic",
+                            type: 'plastic',
                             schedules: [
                                 {
                                     type: 'evweek',
@@ -141,12 +142,12 @@ describe('Client',function(){
                         },
                         {
                             // 翌週が該当週のため対象外
-                            type: "can",
+                            type: 'can',
                             schedules: [
                                 {
                                     type: 'evweek',
                                     value: {
-                                        weekday: '4',
+                                        weekday: '3',
                                         start: '2018-09-30'
                                     }
                                 }
@@ -154,7 +155,7 @@ describe('Client',function(){
                         },
                         {
                             // 前週が該当のため対象外
-                            type: "paper",
+                            type: 'paper',
                             schedules: [
                                 {
                                     type: 'evweek',
@@ -164,20 +165,35 @@ describe('Client',function(){
                                     }
                                 }
                             ]
+                        },
+                        {
+                            // 4週間前のため一致
+                            type: 'bin',
+                            schedules: [
+                                {
+                                    type: 'evweek',
+                                    value: {
+                                        weekday: '3',
+                                        start: '2018-08-26'
+                                    }
+                                }
+                            ]
                         }
-                    ]
+                    ];
 
             let result = _invocate_check_schedule({Item: {description:JSON.stringify(testdata)}},0);
+            assert.equal(result.length,3);
             assert.equal(result[0],'もえるゴミ');
             assert.equal(result[1],'プラスチック');
+            assert.equal(result[2],'ビン');
             revert();
-        })
+        });
         it('none',function(){
             let revert = Client.__set__({
-                            'calculateJSTTime':()=>{
-                                return new Date('2018/03/04');
-                            }
-                        });
+                'calculateJSTTime':()=>{
+                    return new Date('2018/03/04');
+                }
+            });
             let result = _invocate_check_schedule(testdata,0);
             assert.equal(0,result.length);
 
@@ -186,137 +202,136 @@ describe('Client',function(){
     });
     describe('get_enable_trashes 重複排除機能',function(){
         let _invocate_check_schedule = Client.__get__('get_enable_trashes');
-        it('重複の排除',function(done){
+        it('重複の排除',function(){
             let testdata = {'Item': {'description' :
             JSON.stringify([
                 {
-                    "type": "burn",
-                    "trash_val": "",
-                    "schedules": [
+                    'type': 'burn',
+                    'trash_val': '',
+                    'schedules': [
                         {
-                            "type": "weekday",
-                            "value": "0"
+                            'type': 'weekday',
+                            'value': '0'
                         },
                         {
-                            "type": "weekday",
-                            "value": "6"
+                            'type': 'weekday',
+                            'value': '6'
                         },
                         {
-                            "type": "none",
-                            "value": ""
+                            'type': 'none',
+                            'value': ''
                         }
                     ]
                 },
                 {
-                    "type": "burn",
-                    "trash_val": "",
-                    "schedules": [
+                    'type': 'burn',
+                    'trash_val': '',
+                    'schedules': [
                         {
-                            "type": "weekday",
-                            "value": "0"
+                            'type': 'weekday',
+                            'value': '0'
                         },
                         {
-                            "type": "weekday",
-                            "value": "6"
+                            'type': 'weekday',
+                            'value': '6'
                         },
                         {
-                            "type": "none",
-                            "value": ""
+                            'type': 'none',
+                            'value': ''
                         }
                     ]
                 }
             ])}};
             let revert = Client.__set__({
                 'calculateJSTTime':()=>{
-                    return new Date('2018/09/29');
+                    return new Date('2018-09-29 00:00');
                 }
             });
             const response = _invocate_check_schedule(testdata,0);
             assert.equal(response.length,1);
             revert();
-            done();
         });
         it('otherの場合はtrash_valが同じ場合のみ重複排除',function(){
             let testdata = {'Item': {'description' :
                 JSON.stringify(
                     [
-                    {
-                        "type": "other",
-                        "trash_val": "廃品",
-                        "schedules": [
-                            {
-                                "type": "weekday",
-                                "value": "0"
-                            },
-                            {
-                                "type": "weekday",
-                                "value": "6"
-                            },
-                            {
-                                "type": "none",
-                                "value": ""
-                            }
-                        ]
-                    },
-                    {
-                        "type": "other",
-                        "trash_val": "発泡スチロール",
-                        "schedules": [
-                            {
-                                "type": "weekday",
-                                "value": "0"
-                            },
-                            {
-                                "type": "weekday",
-                                "value": "6"
-                            },
-                            {
-                                "type": "none",
-                                "value": ""
-                            }
-                        ]
-                    },
-                    {
-                        "type": "other",
-                        "trash_val": "廃品",
-                        "schedules": [
-                            {
-                                "type": "weekday",
-                                "value": "0"
-                            },
-                            {
-                                "type": "weekday",
-                                "value": "6"
-                            },
-                            {
-                                "type": "none",
-                                "value": ""
-                            }
-                        ]
-                    }
-                ])}};
+                        {
+                            'type': 'other',
+                            'trash_val': '廃品',
+                            'schedules': [
+                                {
+                                    'type': 'weekday',
+                                    'value': '0'
+                                },
+                                {
+                                    'type': 'weekday',
+                                    'value': '6'
+                                },
+                                {
+                                    'type': 'none',
+                                    'value': ''
+                                }
+                            ]
+                        },
+                        {
+                            'type': 'other',
+                            'trash_val': '発泡スチロール',
+                            'schedules': [
+                                {
+                                    'type': 'weekday',
+                                    'value': '0'
+                                },
+                                {
+                                    'type': 'weekday',
+                                    'value': '6'
+                                },
+                                {
+                                    'type': 'none',
+                                    'value': ''
+                                }
+                            ]
+                        },
+                        {
+                            'type': 'other',
+                            'trash_val': '廃品',
+                            'schedules': [
+                                {
+                                    'type': 'weekday',
+                                    'value': '0'
+                                },
+                                {
+                                    'type': 'weekday',
+                                    'value': '6'
+                                },
+                                {
+                                    'type': 'none',
+                                    'value': ''
+                                }
+                            ]
+                        }
+                    ])}};
             let revert = Client.__set__({
                 'calculateJSTTime':()=>{
-                    return new Date('2018/09/29');
+                    return new Date('2018-09-29 00:00');
                 }
             });
             let response = _invocate_check_schedule(testdata,0);
             assert.equal(response.length,2);
-            assert.equal(response[0],"廃品");
-            assert.equal(response[1],"発泡スチロール");
+            assert.equal(response[0],'廃品');
+            assert.equal(response[1],'発泡スチロール');
             revert();
         });
     });
     describe('getEnableTrashes',function(){
         it('不正なパラメータ',function(done){
-            Client.getEnableTrashes({test:"aaa"},0).then((response)=>{}).catch((error)=>{
-                assert.equal(error,"情報の取得に失敗しました。スキル開発者にお問い合わせください。");
+            Client.getEnableTrashes({test:'aaa'},0).then((response)=>{}).catch((error)=>{
+                assert.equal(error,'情報の取得に失敗しました。スキル開発者にお問い合わせください。');
                 done();
             });
         });
         it('未登録のuuid',function(done){
-            Client.getEnableTrashes("1439d8b1-b41e-45f9-9afc-ecdfdaea1d83",0).then((response)=>{}).catch((error)=>{
-                assert.equal(error,"登録情報が見つかりません。アカウントリンクを行ってから再度お試しください。");
+            Client.getEnableTrashes('1439d8b1-b41e-45f9-9afc-ecdfdaea1d83',0).then((response)=>{}).catch((error)=>{
+                assert.equal(error,'登録情報が見つかりません。アカウントリンクを行ってから再度お試しください。');
                 done();
             });
         });
@@ -325,110 +340,110 @@ describe('Client',function(){
         let backup_data = '';
         let testdata = [
             {
-                "type": "burn",
-                "trash_val": "",
-                "schedules": [
+                'type': 'burn',
+                'trash_val': '',
+                'schedules': [
                     {
-                        "type": "weekday",
-                        "value": "3"
+                        'type': 'weekday',
+                        'value': '3'
                     },
                     {
-                        "type": "weekday",
-                        "value": "6"
+                        'type': 'weekday',
+                        'value': '6'
                     },
                     {
-                        "type": "none",
-                        "value": ""
+                        'type': 'none',
+                        'value': ''
                     }
                 ]
             },
             {
-                "type": "plastic",
-                "trash_val": "",
-                "schedules": [
+                'type': 'plastic',
+                'trash_val': '',
+                'schedules': [
                     {
-                        "type": "weekday",
-                        "value": "1"
+                        'type': 'weekday',
+                        'value': '1'
                     },
                     {
-                        "type": "none",
-                        "value": ""
+                        'type': 'none',
+                        'value': ''
                     },
                     {
-                        "type": "none",
-                        "value": ""
+                        'type': 'none',
+                        'value': ''
                     }
                 ]
             },
             {
-                "type": "paper",
-                "trash_val": "",
-                "schedules": [
+                'type': 'paper',
+                'trash_val': '',
+                'schedules': [
                     {
-                        "type": "biweek",
-                        "value": "0-2"
+                        'type': 'biweek',
+                        'value': '0-2'
                     },
                     {
-                        "type": "biweek",
-                        "value": "1-2"
+                        'type': 'biweek',
+                        'value': '1-2'
                     },
                     {
-                        "type": "none",
-                        "value": ""
+                        'type': 'none',
+                        'value': ''
                     }
                 ]
             },
             {
-                "type": "bottole",
-                "trash_val": "",
-                "schedules": [
+                'type': 'bottole',
+                'trash_val': '',
+                'schedules': [
                     {
-                        "type": "weekday",
-                        "value": "4"
+                        'type': 'weekday',
+                        'value': '4'
                     },
                     {
-                        "type": "none",
-                        "value": ""
+                        'type': 'none',
+                        'value': ''
                     },
                     {
-                        "type": "none",
-                        "value": ""
+                        'type': 'none',
+                        'value': ''
                     }
                 ]
             },
             {
-                "type": "petbottle",
-                "trash_val": "",
-                "schedules": [
+                'type': 'petbottle',
+                'trash_val': '',
+                'schedules': [
                     {
-                        "type": "weekday",
-                        "value": "4"
+                        'type': 'weekday',
+                        'value': '4'
                     },
                     {
-                        "type": "none",
-                        "value": ""
+                        'type': 'none',
+                        'value': ''
                     },
                     {
-                        "type": "none",
-                        "value": ""
+                        'type': 'none',
+                        'value': ''
                     }
                 ]
             },
             {
-                "type": "other",
-                "trash_val": "廃品",
-                "schedules": [
+                'type': 'other',
+                'trash_val': '廃品',
+                'schedules': [
                     {
-                        "type": "weekday",
-                        "value": "3"
+                        'type': 'weekday',
+                        'value': '3'
                     },
                     {
-                        "type": "none",
-                        "value": ""
+                        'type': 'none',
+                        'value': ''
                     },
                     {
-                        "type": "none",
-                        "value": ""
+                        'type': 'none',
+                        'value': ''
                     }
                 ]
             }
@@ -448,9 +463,9 @@ describe('Client',function(){
             );
 
             Promise.all([GetBackUp]).then(()=>{
-                backup_data(JSON.stringify(teststate));
-            })
-        })
+                backup_data(JSON.stringify(testdata));
+            });
+        });
         it('日曜日',function(done){
             Client.getEnableTrashesByWeekday(rightAccessToken,0).then((response)=>{
                 assert.equal(response.length,0);
@@ -459,25 +474,25 @@ describe('Client',function(){
         });
         it('水曜日',function(done){
             Client.getEnableTrashesByWeekday(rightAccessToken,3).then((response)=>{
-                assert.equal(response.length,2)
-                assert.equal('もえるゴミ',response[0])
-                assert.equal('廃品',response[1])
-                done()
+                assert.equal(response.length,2);
+                assert.equal('もえるゴミ',response[0]);
+                assert.equal('廃品',response[1]);
+                done();
             }).catch((error)=>{
-                console.log(error)
-                assert(false)
-                done()
-            })
-        })
+                console.log(error);
+                assert(false);
+                done();
+            });
+        });
         it('土曜日',function(done){
             Client.getEnableTrashesByWeekday(rightAccessToken,6).then((response)=>{
-                assert.equal(response.length,1)
-                done()
+                assert.equal(response.length,1);
+                done();
             }).catch((error)=>{
-                console.log(error)
-                assert(false)
-                done()
-            })
+                console.log(error);
+                assert(false);
+                done();
+            });
         });
         after(()=>{
             if(backup_data) {
@@ -485,4 +500,4 @@ describe('Client',function(){
             }
         });
     });
-})
+});

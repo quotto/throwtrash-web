@@ -1,15 +1,15 @@
 exports.create_id = ()=>{
-    var uuid = "", i, random;
+    let uuid = '', i, random;
     for (i = 0; i < 32; i++) {
         random = Math.random() * 16 | 0;
 
         if (i == 8 || i == 12 || i == 16 || i == 20) {
-            uuid += "-"
+            uuid += '-';
         }
         uuid += (i == 12 ? 4 : (i == 16 ? (random & 3 | 8) : random)).toString(16);
     }
     return uuid;
-}
+};
 
 /**
     params:offset 今週=0,来週=1
@@ -17,13 +17,13 @@ exports.create_id = ()=>{
 const calculateStartDate = (offset) => {
     const JSTOffset = 60 * 9 * 60 * 1000; // JST時間を求めるためのオフセット
     var localdt = new Date(); // 実行サーバのローカル時間
-    var jsttime = localdt.getTime() + (localdt.getTimezoneOffset() * 60 * 1000) + JSTOffset + (60 * 24 * 60 * 1000);
+    var jsttime = localdt.getTime() + (localdt.getTimezoneOffset() * 60 * 1000) + JSTOffset;
     // 開始日を日曜日にセットする
     var dt = new Date(jsttime);
     dt.setDate(dt.getDate() - dt.getDay() + (7 * offset));
 
-    return dt.toISOString().substr(0,10);
-}
+    return `${dt.getFullYear()}-${dt.getMonth()+1}-${dt.getDate()}`;
+};
 
 /**
     DB登録用にデータを整形する
@@ -34,7 +34,7 @@ exports.adjustData = (input_data) => {
     input_data.forEach((trash)=>{
         let regist_trash = {
             type: trash.type
-        }
+        };
         if(trash.type === 'other') {
             regist_trash.trash_val = trash.trash_val;
         }
@@ -58,4 +58,4 @@ exports.adjustData = (input_data) => {
         regist_data.push(regist_trash);
     });
     return regist_data;
-}
+};
