@@ -7,13 +7,14 @@ const APP_ID = 'amzn1.ask.skill.2ef932ba-f1a7-4638-ba85-90ad90a1f0c0';
 
 const NothingMessage = '出せるゴミはありません。';
 
-const AccountLinkMessage = 'スキルを利用するためにはアカウントリンクが必要です。';
+const AccountLinkMessage = 'スキルを利用するためにはアカウントリンクが必要です。' +
+                            'Alexaアプリのホーム画面に表示されたアカウントリンク用カードから、設定を行ってください。';
 
-const PointDayValue = {
-    '今日':{value:0,speech:'今日'},
-    '明日':{value:1,speech:'<sub alias="あした">明日</sub>'},
-    '明後日':{value:2,speech:'<sub alias="あさって">明後日</sub>'}
-};
+const PointDayValue = [
+    {value:0,speech:'今日'},
+    {value:1,speech:'<sub alias="あした">明日</sub>'},
+    {value:2,speech:'<sub alias="あさって">明後日</sub>'}
+];
 
 const WeekDayValue = {
     '日曜日':0,
@@ -79,7 +80,7 @@ const handlers = {
         });
     },
     'GetPointDayTrashes' : function() {
-        const slotValue =this.event.request.intent.slots.DaySlot.value;
+        const slotValue =this.event.request.intent.slots.DaySlot.resolutions.resolutionsPerAuthority[0].values[0].value.id;
         // アクセストークンの取得
         const accessToken = this.event.session.user.accessToken;
         if(accessToken == null) {
