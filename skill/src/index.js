@@ -13,25 +13,15 @@ const AccountLinkMessage = 'スキルを利用するためにはアカウント�
 const PointDayValue = [
     {value:0,speech:'今日'},
     {value:1,speech:'<sub alias="あした">明日</sub>'},
-    {value:2,speech:'<sub alias="あさって">明後日</sub>'}
+    {value:2,speech:'<sub alias="あさって">明後日</sub>'},
+    {value:3,weekday:0,speech:'日曜日'},
+    {value:4,weekday:1,speech:'月曜日'},
+    {value:5,weekday:2,speech:'火曜日'},
+    {value:6,weekday:3,speech:'水曜日'},
+    {value:6,weekday:4,speech:'木曜日'},
+    {value:8,weekday:5,speech:'金曜日'},
+    {value:9,weekday:6,speech:'土曜日'}
 ];
-
-const WeekDayValue = {
-    '日曜日':0,
-    '月曜日':1,
-    '火曜日':2,
-    '水曜日':3,
-    '木曜日':4,
-    '金曜日':5,
-    '土曜日':6,
-    '日曜':0,
-    '月曜':1,
-    '火曜':2,
-    '水曜':3,
-    '木曜':4,
-    '金曜':5,
-    '土曜':6
-};
 
 const handlers = {
     'LaunchRequest': function () {
@@ -57,46 +47,43 @@ const handlers = {
             this.emit(':tell',error);
         });
     },
-    'GetWeekDayTrashes' : function() {
-        const slotValue =this.event.request.intent.slots.WeekDaySlot.value;
-        // アクセストークンの取得
-        const accessToken = this.event.session.user.accessToken;
-        if(accessToken == null) {
-            // トークン未定義の場合はユーザーに許可を促す
-            this.emit(':tellWithLinkAccountCard',AccountLinkMessage);
-            return;
-        }
-        Client.getEnableTrashesByWeekday(accessToken,WeekDayValue[slotValue]).then((response)=>{
-            if(response.length > 0) {
-                // const textArray = response.map((key)=>{
-                //     return TrashType[key]
-                // })
-                this.emit(':tell',`次の${slotValue}に出せるゴミは、${response.join('、')}、です。`);
-            } else {
-                this.emit(':tell',`次の${slotValue}に${NothingMessage}`);
-            }
-        },(error)=>{
-            this.emit(':tell',error);
-        });
-    },
     'GetPointDayTrashes' : function() {
-        const slotValue =this.event.request.intent.slots.DaySlot.resolutions.resolutionsPerAuthority[0].values[0].value.id;
-        // アクセストークンの取得
         const accessToken = this.event.session.user.accessToken;
         if(accessToken == null) {
             // トークン未定義の場合はユーザーに許可を促す
             this.emit(':tellWithLinkAccountCard',AccountLinkMessage);
             return;
         }
-        Client.getEnableTrashes(accessToken,PointDayValue[slotValue].value).then((response)=>{
-            if(response.length > 0) {
-                this.emit(':tell',`${PointDayValue[slotValue].speech}出せるゴミは、${response.join('、')}、です。`);
+
+        if(this.event.request.intent.slots.DaySlot.resolutions.resolutionsPerAuthority[0].status.code === 'ER_SUCCESS_MATCH') {
+            const slotValue =this.event.request.intent.slots.DaySlot.resolutions.resolutionsPerAuthority[0].values[0].value.id;
+            if(slotValue >= 0 && slotValue <= 2) {
+                // アクセストークンの取得
+                Client.getEnableTrashes(accessToken,PointDayValue[slotValue].value).then((response)=>{
+                    if(response.length > 0) {
+                        this.emit(':tell',`${PointDayValue[slotValue].speech}出せるゴミは、${response.join('、')}、です。`);
+                    } else {
+                        this.emit(':tell',`${PointDayValue[slotValue].speech}${NothingMessage}`);
+                    }
+                },(error)=>{
+                    this.emit(':tell',error);
+                });
             } else {
-                this.emit(':tell',`${PointDayValue[slotValue].speech}${NothingMessage}`);
+
+                Client.getEnableTrashesByWeekday(accessToken,PointDayValue[slotValue].weekday).then((response)=>{
+                    if(response.length > 0) {
+                        this.emit(':tell',`次の${PointDayValue[slotValue].speech}に出せるゴミは、${response.join('、')}、です。`);
+                    } else {
+                        this.emit(':tell',`次の${PointDayValue[slotValue].speech}に${NothingMessage}`);
+                    }
+                },(error)=>{
+                    this.emit(':tell',error);
+                });
             }
-        },(error)=>{
-            this.emit(':tell',error);
-        });
+        } else {
+            const speechOut = 'いつの予定が知りたいですか？';
+            this.emit(':elicitSlot','DaySlot',speechOut,speechOut);
+        }
     },
     'AMAZON.HelpIntent': function () {
         const speechOutput = '「今日」「あした」「あさって」または「曜日」を指定してゴミ出し予定を確認できます。例えば、水曜日の予定は？と聞いてください。';
