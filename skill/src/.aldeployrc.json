@@ -1,0 +1,10 @@
+{
+    "rootdir": ".",
+    "zipname": "lambda.zip",
+    "deletezip": true,
+    "exclude": [
+        ".aldeployrc.json",
+        ".eslintrc.json",
+        "test/**"
+    ]
+}
