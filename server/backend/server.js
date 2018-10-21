@@ -1,4 +1,4 @@
-const https = require( 'https' );
+const http = require( 'http' );
 const fs = require('fs');
 const url = require('url');
 const path = require('path');
@@ -12,12 +12,6 @@ const Logger = require('./logger.js');
 const common_check = require('../common_check.js');
 
 var logger = new Logger('./server.log');
-
-//. 鍵ファイルと証明書ファイル
-var options = {
-    key: fs.readFileSync( './certs/server_key.pem' ),
-    cert: fs.readFileSync( './certs/server.crt' )
-};
 
 var app = express();
 app.use(bodyParser.urlencoded({
@@ -41,9 +35,8 @@ var mime = {
 };
 
 
-//. 鍵ファイルと証明書ファイルを指定して、https で待受け
-const port = process.argv[2] ? process.argv[2] : 443;
-const server = https.createServer( options, app ).listen(port, ()=>{
+const port = process.argv[2] ? process.argv[2] : 80;
+const server = http.createServer(app).listen(port, ()=>{
     logger.write( 'server is starting on ' + server.address().port + ' ...' );
 });
 
