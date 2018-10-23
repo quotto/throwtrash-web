@@ -124,17 +124,17 @@ app.post('/regist',(req,res,next)=>{
                         id: user_id,
                         data: regist_data
                     });
-                    return Promise.resolve('Regist Complelete');
-                }).then(doc=>{
-                    logger.write(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`,'INFO');
-                    const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
-                    console.log(redirect_url);
-                    res.status(200).end(redirect_url);
-                }).catch(err=>{
-                    logger.write(`DB Insert Error\n${err}`,'ERROR');
-                    res.status(500).end('registraion error');
-                    return;
-                });
+                return Promise.resolve('Regist Complelete');
+            }).then(doc=>{
+                logger.write(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`,'INFO');
+                const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
+                console.log(redirect_url);
+                res.status(200).end(redirect_url);
+            }).catch(err=>{
+                logger.write(`DB Insert Error\n${err}`,'ERROR');
+                res.status(500).end('registraion error');
+                return;
+            });
         } else {
             dynamoClient.put(params,(err,data)=>{
                 if(err) {
