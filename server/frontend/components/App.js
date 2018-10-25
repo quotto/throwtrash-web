@@ -10,7 +10,7 @@ class App extends React.Component {
         return (
             <div className={this.props.classes.component}>
                 <Grid container spacing={24}>
-                    <Grid item xs={12} style={{textAlign:'center'}}><h3>ゴミ出し with Alexa</h3></Grid>
+                    <Grid item xs={12} style={{textAlign:'center'}}><h3>ゴミ出し予定の登録</h3></Grid>
                     <Grid item xs={12} style={{textAlign:'center'}}>
                         <ul style={{display:'inline-block',textAlign:'left'}}>
                             <li>最大10種類のゴミ出し予定を登録できます。</li>

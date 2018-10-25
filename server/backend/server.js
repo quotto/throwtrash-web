@@ -75,7 +75,7 @@ app.get(/.+\..+/,(req,res,next)=>{
     });
 });
 
-app.get(/oauth\/request_token\/.*/,(req,res)=>{
+app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
     req.session.state = req.query.state;
     req.session.client_id = req.query.client_id;
     req.session.redirect_uri = req.query.redirect_uri;
@@ -90,6 +90,7 @@ app.get(/oauth\/request_token\/.*/,(req,res)=>{
         req.session.platform='amazon';
     }
     if(req.session.state && req.session.client_id && req.session.redirect_uri) {
+        console.log(`platform:${req.session.platform}`);
         res.redirect(`/v${version}/index.html`);
     } else {
         logger.write('Bad Request','ERROR');
