@@ -202,7 +202,7 @@ var App = function (_React$Component) {
                         _react2.default.createElement(
                             'h3',
                             null,
-                            '\u30B4\u30DF\u51FA\u3057 with Alexa'
+                            '\u30B4\u30DF\u51FA\u3057\u4E88\u5B9A\u306E\u767B\u9332'
                         )
                     ),
                     _react2.default.createElement(
