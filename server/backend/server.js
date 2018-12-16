@@ -10,10 +10,11 @@ const express = require('express');
 const Util = require('./utility.js');
 const Logger = require('./logger.js');
 const common_check = require('../common_check.js');
+const firebase_admin = require('firebase-admin');
 
-var logger = new Logger('./server.log');
+let logger = new Logger('./server.log');
 
-var app = express();
+let app = express();
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -21,17 +22,25 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(session({secret: process.env.TRASHES_SECRET}));
 
-var credential = new aws.Credentials(process.env.AWS_ACCESS_TOKEN,process.env.AWS_ACCESS_TOKEN_SECRET,null);
+let credential = new aws.Credentials(process.env.AWS_ACCESS_TOKEN,process.env.AWS_ACCESS_TOKEN_SECRET,null);
 const dynamoClient = new aws.DynamoDB.DocumentClient({
     region:process.env.AWS_DYNAMO_REGION,
     apiVersion: '2012-08-10',
     credentials: credential
 });
 
-var mime = {
+let serviceAccount = require('./serviceAccountKey.json');
+firebase_admin.initializeApp({
+  credential: firebase_admin.credential.cert(serviceAccount)
+});
+
+let firestore = firebase_admin.firestore();
+
+let mime = {
     '.html':'text/html',
     '.css':'text/css',
-    '.js':'application/javascript'
+    '.js':'application/javascript',
+    '.ico':'image/x-icon'
 };
 
 
@@ -66,17 +75,23 @@ app.get(/.+\..+/,(req,res,next)=>{
     });
 });
 
-app.get('/oauth/request_token',(req,res)=>{
+app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
     req.session.state = req.query.state;
     req.session.client_id = req.query.client_id;
     req.session.redirect_uri = req.query.redirect_uri;
-    const version=req.query.version;
+    let version = req.query.version;
+    //旧互換用の判定条件
+    if(!version) {
+        const platform_index = req.path.lastIndexOf('/');
+        req.session.platform = req.path.slice(platform_index + 1);
+        const version_index = req.path.lastIndexOf('/');
+        version = req.path.slice(version_index - 1,platform_index);
+    } else {
+        req.session.platform='amazon';
+    }
     if(req.session.state && req.session.client_id && req.session.redirect_uri) {
-        if(version) {
-            res.redirect(`/v${version}/index.html`);
-        } else {
-            res.redirect('/index.html');
-        }
+        console.log(`platform:${req.session.platform}`);
+        res.redirect(`/v${version}/index.html`);
     } else {
         logger.write('Bad Request','ERROR');
         res.status(400).end('bad request');
@@ -102,19 +117,40 @@ app.post('/regist',(req,res,next)=>{
             TableName: 'TrashSchedule',
             Item: item
         };
-        dynamoClient.put(params,(err,data)=>{
-            if(err) {
-                logger.write(`DB Insert Error\n${err}`,'ERROR');
-                res.status(500).end('registraion error');
-                return;
-            } else {
+        if(req.session.platform === 'google') {
+            console.log(`${user_id},${regist_data}`);
+            firestore.runTransaction(t=>{
+                t.set(firestore.collection('schedule').doc(user_id),
+                    {
+                        id: user_id,
+                        data: regist_data
+                    });
+                return Promise.resolve('Regist Complelete');
+            }).then(doc=>{
                 logger.write(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`,'INFO');
                 const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
                 console.log(redirect_url);
                 res.status(200).end(redirect_url);
+            }).catch(err=>{
+                logger.write(`DB Insert Error\n${err}`,'ERROR');
+                res.status(500).end('registraion error');
                 return;
-            }
-        });
+            });
+        } else {
+            dynamoClient.put(params,(err,data)=>{
+                if(err) {
+                    logger.write(`DB Insert Error\n${err}`,'ERROR');
+                    res.status(500).end('registraion error');
+                    return;
+                } else {
+                    logger.write(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`,'INFO');
+                    const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
+                    console.log(redirect_url);
+                    res.status(200).end(redirect_url);
+                    return;
+                }
+            });
+        }
     } else {
         logger.write('Bad Request','ERROR');
         res.status(400).end('bad request');
