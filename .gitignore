@@ -3,4 +3,5 @@ skill/src/node_modules
 skill/deploy/deploy.properties
 skill/deploy/skill.zip
 server/backend/certs
+server/backend/serviceAccountKey.json
 **/*.log

@@ -19,6 +19,7 @@
     "cookie-parser": "^1.4.3",
     "express": "^4.16.2",
     "express-session": "^1.15.6",
+    "firebase-admin": "^6.0.0",
     "lodash": "^4.17.5",
     "oauth": "^0.9.15",
     "react": "^16.5.2",
