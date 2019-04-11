@@ -1,0 +1,92 @@
+{
+    "translation": {
+        "App": {
+            "title": "今日のゴミ出し",
+            "description":{
+                "trash": "最大10種類のゴミ出し予定を登録できます。",
+                "schedule": "1種類のゴミに3つまでスケジュールを登録することができます。",
+            }
+        },
+        "ScheduleList":{
+            "error":{
+                "registrationfailed":{
+                    "text":"登録に失敗しました。",
+                    "title":"お知らせ"
+                }
+            },
+            "button":{
+                "addtrash":"ゴミの種類を追加",
+                "regist": "登録"
+            }
+        },
+        "TrashSchedule":{
+            "button":{
+                "delete": "削除"
+            },
+            "input":{
+                "other":{
+                    "label": "任意のゴミを入力",
+                    "placeholder": "任意のゴミを入力"
+                },
+                "month": {
+                    "label": "日にち",
+                    "placeholder": "1～31の数字を入力",
+                    "suffix": "日"
+                }
+            },
+            "select":{
+                "trashtype":{
+                    "option": {
+                        "burn" : "もえるゴミ",
+                        "unburn": "もえないゴミ",
+                        "plastic": "プラスチック",
+                        "bottole": "ビン・カン",
+                        "bin": "ビン",
+                        "can": "カン",
+                        "petbottle": "ペットボトル",
+                        "paper": "古紙",
+                        "resource": "資源ごみ",
+                        "coarse": "粗大ごみ",
+                        "other": "その他（自分で入力）"
+                    },
+                    "label": "ゴミの種類"
+                },
+                "scheduletype":{
+                    "option": {
+                        "none": "",
+                        "weekday": "毎週",
+                        "biweek": "第○ ×曜日",
+                        "month": "毎月",
+                        "evweek": "隔週"
+                    },
+                    "label": "スケジュール"
+                },
+                "weekday": {
+                    "option": {
+                        "0": "日曜日",
+                        "1": "月曜日",
+                        "2": "火曜日",
+                        "3": "水曜日",
+                        "4": "木曜日",
+                        "5": "金曜日",
+                        "6": "土曜日"
+                    },
+                    "number":{
+                        "1":"第1","2":"第2","3":"第3","4":"第4","5":"第5"
+                    },
+                    "label": "曜日"
+                },
+                "evweek": {
+                    "helper": "直近の収集日は？（日曜始まり）",
+                    "thisweek": "今週",
+                    "nextweek": "来週"
+                }
+            },
+            "style": {
+                "StyleToggleButton": {
+                    "fontsize": "100%"
+                }
+            }
+        }
+    }
+}
