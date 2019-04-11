@@ -2,19 +2,22 @@ import React from 'react';
 import {Grid} from '@material-ui/core';
 import SubmitForm from './Form';
 import {AppStyle} from './style.js';
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/core/styles';
+import {withTranslation} from 'react-i18next';
 
 class App extends React.Component {
 
     render() {
+        console.log(this.props);
+        console.log(this.props.i18n.getResourceBundle('ja','translation'));
         return (
             <div className={this.props.classes.component}>
                 <Grid container spacing={24}>
-                    <Grid item xs={12} style={{textAlign:'center'}}><h3>ゴミ出し予定の登録</h3></Grid>
+                    <Grid item xs={12} style={{textAlign:'center'}}><h3>{this.props.t('translation:App.title')}</h3></Grid>
                     <Grid item xs={12} style={{textAlign:'center'}}>
                         <ul style={{display:'inline-block',textAlign:'left'}}>
-                            <li>最大10種類のゴミ出し予定を登録できます。</li>
-                            <li>1種類のゴミに3つまでスケジュールを登録することができます。</li>
+                            <li>{this.props.t('App.description.trash')}</li>
+                            <li>{this.props.t('App.description.schedule')}</li>
                         </ul>
                     </Grid>
                 </Grid>
@@ -28,4 +31,4 @@ class App extends React.Component {
     }
 }
 
-export default withStyles(AppStyle)(App);
+export default withStyles(AppStyle)(withTranslation()(App));
