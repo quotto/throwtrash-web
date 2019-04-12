@@ -2,34 +2,34 @@
 'use strict';
 
 var required = function required(value) {
-    return value ? undefined : '値を入力してください';
+    return value ? undefined : 'missingvalue'; //'値を入力してください';
 };
 
 var number = function number(value) {
-    return value && isNaN(Number(value)) ? '数字を入力してください' : undefined;
+    return value && isNaN(Number(value)) ? 'wrongnumber' : undefined; //'数字を入力してください'
 };
 
 var minValue = function minValue(value) {
     var min = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
 
-    return value && value < min ? min + '\u4EE5\u4E0A\u306E\u6570\u5B57\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044' : undefined;
+    return value && value < min ? 'wrongminnumber' : undefined; //`${min}以上の数字を入力してください`
 };
 
 var maxValue = function maxValue(value) {
     var max = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 31;
 
-    return value && value > max ? max + '\u4EE5\u4E0B\u306E\u6570\u5B57\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044' : undefined;
+    return value && value > max ? 'wrongmaxnumber' : undefined; //`${max}以下の数字を入力してください`
 };
 
 var maxLen = function maxLen(value) {
     var max = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 10;
 
-    return value.length > 10 ? max + '\u6587\u5B57\u4EE5\u5185\u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044' : undefined;
+    return value.length > max ? 'wronglengthstring' : undefined; //`${max}文字以内で入力してください`
 };
 
 var trashtype_regex = function trashtype_regex(value) {
     var re = /^[A-z0-9Ａ-ｚ０-９ぁ-んァ-ヶー一-龠]+$/;
-    return re.exec(value) ? undefined : '英字、ひらがな、カタカナ、漢字、数字で入力してください。';
+    return re.exec(value) ? undefined : 'wrongcharacter'; //'英字、ひらがな、カタカナ、漢字、数字で入力してください。';
 };
 
 var input_month_check = function input_month_check(month_val) {
@@ -50,9 +50,9 @@ var input_trash_type_check = function input_trash_type_check(trash) {
 
 var schedule_exist = function schedule_exist(schedules) {
     var result = schedules.some(function (element) {
-        return element.type != "none";
+        return element.type != 'none';
     });
-    return result ? undefined : '一つ以上のスケジュールを設定してください';
+    return result ? undefined : 'missingschedule'; //'一つ以上のスケジュールを設定してください';
 };
 
 var exist_error = function exist_error(trashes) {
@@ -192,8 +192,6 @@ var App = function (_React$Component) {
     _createClass(App, [{
         key: 'render',
         value: function render() {
-            console.log(this.props);
-            console.log(this.props.i18n.getResourceBundle('ja', 'translation'));
             return _react2.default.createElement(
                 'div',
                 { className: this.props.classes.component },
@@ -375,7 +373,7 @@ var ScheduleList = function (_React$Component) {
                     _react2.default.createElement(
                         _core.Button,
                         {
-                            variant: 'raised',
+                            variant: 'contained',
                             color: 'secondary',
                             disabled: this.props.trashes.length === MAX_SCHEDULE,
                             onClick: function onClick() {
@@ -392,7 +390,7 @@ var ScheduleList = function (_React$Component) {
                     _react2.default.createElement(
                         _core.Button,
                         {
-                            variant: 'raised',
+                            variant: 'contained',
                             color: 'primary',
                             disabled: this.props.submit_error || this.props.submitting,
                             onClick: function onClick() {
@@ -459,7 +457,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var ReactDomServer = require('react-dom/server');
 
 
-var defaultTheme = (0, _styles.createMuiTheme)();
+var defaultTheme = (0, _styles.createMuiTheme)({
+    typography: {
+        useNextVariants: true
+    }
+});
 var StyleToggleButton = (0, _styles.withStyles)({
     selected: {
         color: 'white',
@@ -478,7 +480,7 @@ var TrashType = ['burn', 'unburn', 'plastic', 'bin', 'can', 'petbottle', 'paper'
 
 var ScheduleType = ['none', 'weekday', 'biweek', 'month', 'evweek'];
 
-var WeekdayType = ['0', '1', '2', '3', '4', '5', '6'];
+var WeekdayType = ['sun', 'mon', 'tus', 'wed', 'thu', 'fri', 'sat'];
 
 var TrashSchedule = function (_React$Component) {
     _inherits(TrashSchedule, _React$Component);
@@ -490,6 +492,11 @@ var TrashSchedule = function (_React$Component) {
     }
 
     _createClass(TrashSchedule, [{
+        key: 'getErrorMessage',
+        value: function getErrorMessage(message_id) {
+            return message_id ? this.props.t('error.' + message_id) : undefined;
+        }
+    }, {
         key: 'createTrashSchedule',
         value: function createTrashSchedule(trash_index, schedule_index) {
             return _react2.default.createElement(
@@ -509,7 +516,7 @@ var TrashSchedule = function (_React$Component) {
             ScheduleType.forEach(function (key) {
                 scheduleOptionTag.push(_react2.default.createElement(
                     _core.MenuItem,
-                    { value: key },
+                    { key: key, value: key },
                     _this2.props.t('TrashSchedule.select.scheduletype.option.' + key)
                 ));
             });
@@ -520,7 +527,11 @@ var TrashSchedule = function (_React$Component) {
                     _core.InputLabel,
                     { htmlFor: 'schedule-' + trash_index + '-' + schedule_index, style: { top: '-5' } },
                     _react2.default.createElement(_core.Chip, {
-                        avatar: _react2.default.createElement(_CalendarToday2.default, { fontSize: 'small', style: { marginLeft: '8px', background: 'none', width: '20px' } }),
+                        avatar: _react2.default.createElement(
+                            _core.Avatar,
+                            { style: { background: 'none' } },
+                            _react2.default.createElement(_CalendarToday2.default, { fontSize: 'small', style: { marginLeft: '8px', width: '20px' } })
+                        ),
                         label: this.props.t('TrashSchedule.select.scheduletype.label') + (schedule_index + 1),
                         color: 'primary',
                         style: { height: '25px' }
@@ -555,7 +566,7 @@ var TrashSchedule = function (_React$Component) {
                     WeekdayType.forEach(function (key) {
                         weekdayOption.push(_react2.default.createElement(
                             _core.MenuItem,
-                            { value: key },
+                            { key: key, value: key },
                             _this3.props.t('TrashSchedule.select.weekday.option.' + key)
                         ));
                     });
@@ -583,7 +594,7 @@ var TrashSchedule = function (_React$Component) {
                         _react2.default.createElement(
                             _core.FormHelperText,
                             { error: target_schedule.error },
-                            target_schedule.error
+                            this.getErrorMessage(target_schedule.error)
                         )
                     );
                     break;
@@ -593,7 +604,7 @@ var TrashSchedule = function (_React$Component) {
                         for (var num = 1; num <= 5; num++) {
                             biweekOption.push(_react2.default.createElement(
                                 _core.MenuItem,
-                                { value: key + '-' + num },
+                                { key: key + '-' + num, value: key + '-' + num },
                                 _this3.props.t('TrashSchedule.select.weekday.number.' + num) + _this3.props.t('TrashSchedule.select.weekday.option.' + key)
                             ));
                         }
@@ -622,7 +633,7 @@ var TrashSchedule = function (_React$Component) {
                         _react2.default.createElement(
                             _core.FormHelperText,
                             { error: target_schedule.error },
-                            target_schedule.error
+                            this.getErrorMessage(target_schedule.error)
                         )
                     );
                     break;
@@ -655,7 +666,7 @@ var TrashSchedule = function (_React$Component) {
                         _react2.default.createElement(
                             _core.FormHelperText,
                             { error: target_schedule.error },
-                            target_schedule.error
+                            this.getErrorMessage(target_schedule.error)
                         )
                     );
                     break;
@@ -664,7 +675,7 @@ var TrashSchedule = function (_React$Component) {
                     WeekdayType.forEach(function (key) {
                         evweekOption.push(_react2.default.createElement(
                             _core.MenuItem,
-                            { value: key },
+                            { key: key, value: key },
                             _this3.props.t('TrashSchedule.select.weekday.option.' + key)
                         ));
                     });
@@ -747,12 +758,12 @@ var TrashSchedule = function (_React$Component) {
             for (var i = 0; i < 3; i++) {
                 scheduleTags.push(_react2.default.createElement(
                     _core.Hidden,
-                    null,
+                    { key: 'Hidden' + i },
                     _react2.default.createElement(_core.Grid, { item: true, sm: 5 })
                 ));
                 scheduleTags.push(_react2.default.createElement(
                     _core.Grid,
-                    { item: true, sm: 7, xs: 12 },
+                    { item: true, sm: 7, xs: 12, key: 'Grid' + i },
                     this.createTrashSchedule(trash_index, i)
                 ));
             }
@@ -770,7 +781,7 @@ var TrashSchedule = function (_React$Component) {
                 TrashType.forEach(function (key) {
                     trashOptionTag.push(_react2.default.createElement(
                         _core.MenuItem,
-                        { value: key },
+                        { key: key, value: key },
                         _this4.props.t('TrashSchedule.select.trashtype.option.' + key)
                     ));
                 });
@@ -785,7 +796,11 @@ var TrashSchedule = function (_React$Component) {
                             _core.InputLabel,
                             { htmlFor: 'trash' + i, style: { top: '-5' } },
                             _react2.default.createElement(_core.Chip, {
-                                avatar: _react2.default.createElement(_Delete2.default, { fontSize: 'small', style: { marginLeft: '8px', background: 'none', width: '20px' } }),
+                                avatar: _react2.default.createElement(
+                                    _core.Avatar,
+                                    { style: { background: 'none' } },
+                                    _react2.default.createElement(_Delete2.default, { fontSize: 'small', style: { marginLeft: '8px', width: '20px' } })
+                                ),
                                 label: _this4.props.t('TrashSchedule.select.trashtype.label') + (i + 1),
                                 color: 'secondary',
                                 style: { height: '25px' }
@@ -807,7 +822,7 @@ var TrashSchedule = function (_React$Component) {
                         _react2.default.createElement(
                             _core.FormHelperText,
                             { error: _this4.props.trashes[i].trash_type_error },
-                            _this4.props.trashes[i].trash_type_error
+                            _this4.getErrorMessage(_this4.props.trashes[i].trash_type_error)
                         )
                     ),
                     _this4.props.trashes[i].type === 'other' && _react2.default.createElement(
@@ -833,20 +848,20 @@ var TrashSchedule = function (_React$Component) {
                         _react2.default.createElement(
                             _core.FormHelperText,
                             { error: _this4.props.trashes[i].input_trash_type_error },
-                            _this4.props.trashes[i].input_trash_type_error
+                            _this4.getErrorMessage(_this4.props.trashes[i].input_trash_type_error)
                         )
                     )
                 );
 
                 trashTag.push(_react2.default.createElement(
                     _core.Grid,
-                    { container: true, justify: 'center', spacing: 24, style: { marginBottom: '10px' } },
+                    { container: true, justify: 'center', spacing: 24, style: { marginBottom: '10px' }, key: 'trash' + i },
                     _react2.default.createElement(
                         _core.Hidden,
                         { xsDown: true },
                         _react2.default.createElement(
                             _core.Grid,
-                            { sm: 5, style: { display: 'inline-flex', flexDirection: 'row-reverse', alignItems: 'center' } },
+                            { item: true, sm: 5, style: { display: 'inline-flex', flexDirection: 'row-reverse', alignItems: 'center' } },
                             _react2.default.createElement(
                                 _core.Button,
                                 { color: 'secondary', onClick: function onClick() {
@@ -1134,6 +1149,15 @@ var LangProvider = function (_React$Component) {
 },{"./components/App":3,"./lang/i18n.js":11,"./reducers":13,"react":589,"react-dom":529,"react-redux":555,"react-router-dom":565,"redux":602}],10:[function(require,module,exports){
 module.exports={
     "translation": {
+        "error": {
+            "missingvalue": "empty value",
+            "wrongnumber": "only numbers",
+            "wrongminnumber": "1 or more numbers",
+            "wrongmaxnumber": "31 or under munbers",
+            "wronglengthstring": "with in 10 characters",
+            "wrongcharacter": "only alphabetic or numeric characters",
+            "missingschedule": "need one or more schedules"
+        },
         "App": {
             "title": "Trash Schedule",
             "description":{
@@ -1182,7 +1206,7 @@ module.exports={
                         "coarse": "Oversized Trash",
                         "other": "Others(free text)"
                     },
-                    "label": "Type of Trash"
+                    "label": "Trash"
                 },
                 "scheduletype":{
                     "option": {
@@ -1196,13 +1220,13 @@ module.exports={
                 },
                 "weekday": {
                     "option": {
-                        "0": "Sunday",
-                        "1": "Monday",
-                        "2": "Tuseday",
-                        "3": "Wednesday",
-                        "4": "Thursday",
-                        "5": "Friday",
-                        "6": "Saturday"
+                        "sun": "Sunday",
+                        "mon": "Monday",
+                        "tus": "Tuseday",
+                        "wed": "Wednesday",
+                        "thu": "Thursday",
+                        "fri": "Friday",
+                        "sat": "Saturday"
                     },
                     "number":{
                         "1":"1st ","2":"2nd ","3":"3rd ","4":"4th ","5":"5th "
@@ -1248,7 +1272,7 @@ var _i18next2 = _interopRequireDefault(_i18next);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 _i18next2.default.use(_reactI18next.initReactI18next).init({
-    debug: true,
+    debug: false,
     resources: {
         en: _en2.default,
         ja: _ja2.default
@@ -1266,6 +1290,15 @@ exports.default = _i18next2.default;
 },{"./en.json":10,"./ja.json":12,"i18next":461,"react-i18next":536}],12:[function(require,module,exports){
 module.exports={
     "translation": {
+        "error": {
+            "missingvalue": "値を入力してください",
+            "wrongnumber": "数字を入力してください",
+            "wrongminnumber": "1以上の数字を入力してください",
+            "wrongmaxnumber": "31以下の数字を入力してください",
+            "wronglengthstring": "10文字以内で入力してください",
+            "wrongcharacter": "英字、ひらがな、カタカナ、漢字、数字で入力してください",
+            "missingschedule": "一つ以上のスケジュールを設定してください"
+        },
         "App": {
             "title": "今日のゴミ出し",
             "description":{
