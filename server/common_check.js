@@ -1,50 +1,50 @@
 const required = (value) => {
-    return value ? undefined : '値を入力してください';
-}
+    return value ? undefined : 'missingvalue';//'値を入力してください';
+};
 
 const number = value => {
-    return value && isNaN(Number(value)) ? '数字を入力してください' : undefined;
-}
+    return value && isNaN(Number(value)) ? 'wrongnumber': undefined;//'数字を入力してください'
+};
 
 const minValue = (value,min=1) => {
-  return value && value < min ? `${min}以上の数字を入力してください` : undefined;
-}
+    return value && value < min ? 'wrongminnumber' : undefined;//`${min}以上の数字を入力してください`
+};
 
 const maxValue = (value,max=31) => {
-    return value && value > max ? `${max}以下の数字を入力してください` : undefined;
-}
+    return value && value > max ? 'wrongmaxnumber' : undefined;//`${max}以下の数字を入力してください`
+};
 
 const maxLen = (value,max=10) => {
-    return value.length > 10 ? `${max}文字以内で入力してください` : undefined;
-}
+    return value.length > max ?  'wronglengthstring' : undefined;//`${max}文字以内で入力してください`
+};
 
 const trashtype_regex = (value) =>{
     const re = /^[A-z0-9Ａ-ｚ０-９ぁ-んァ-ヶー一-龠]+$/;
-    return re.exec(value) ? undefined : '英字、ひらがな、カタカナ、漢字、数字で入力してください。';
-}
+    return re.exec(value) ? undefined : 'wrongcharacter';//'英字、ひらがな、カタカナ、漢字、数字で入力してください。';
+};
 
 const input_month_check = (month_val) => {
     let error = undefined;
     [required,number,minValue,maxValue].some((validate)=>{
         error =  validate(month_val);
         return error;
-    })
+    });
     return error;
-}
+};
 
 const input_trash_type_check = (trash) => {
     if(trash.type === 'other') {
         return required(trash.trash_val) || trashtype_regex(trash.trash_val) || maxLen(trash.trash_val);
     }
     return undefined;
-}
+};
 
 const schedule_exist = (schedules) => {
     let result = schedules.some((element)=>{
-        return (element.type!="none");
-    })
-    return result ? undefined : '一つ以上のスケジュールを設定してください';
-}
+        return (element.type!='none');
+    });
+    return result ? undefined : 'missingschedule';//'一つ以上のスケジュールを設定してください';
+};
 
 const exist_error = (trashes) => {
     return (trashes.length === 0) || trashes.some((trash) => {
@@ -52,10 +52,10 @@ const exist_error = (trashes) => {
             if(schedule.type === 'month') {
                 return input_month_check(schedule.value);
             }
-            return schedule.error
+            return schedule.error;
         }) || schedule_exist(trash.schedules) || input_trash_type_check(trash);
     });
-}
+};
 
 module.exports = {
     required: required,
@@ -67,4 +67,4 @@ module.exports = {
     input_trash_type_check: input_trash_type_check,
     trashtype_regex: trashtype_regex,
     exist_error: exist_error
-}
+};

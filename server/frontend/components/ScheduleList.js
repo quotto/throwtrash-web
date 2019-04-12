@@ -31,7 +31,7 @@ class ScheduleList extends React.Component {
                 <Grid item xs={2}></Grid>
                 <Grid item xs={8} style={{textAlign:'center'}}>
                     <Button
-                        variant="raised"
+                        variant="contained"
                         color="secondary"
                         disabled={this.props.trashes.length===MAX_SCHEDULE}
                         onClick={()=>this.props.onClickAdd()}>
@@ -42,7 +42,7 @@ class ScheduleList extends React.Component {
                 <Grid item xs={4}></Grid>
                 <Grid item xs={4} style={{textAlign:'center'}}>
                     <Button
-                        variant="raised"
+                        variant="contained"
                         color="primary"
                         disabled={this.props.submit_error || this.props.submitting}
                         onClick={()=>this.props.onSubmit(true)}>

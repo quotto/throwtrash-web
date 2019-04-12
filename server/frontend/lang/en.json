@@ -1,10 +1,19 @@
 {
     "translation": {
+        "error": {
+            "missingvalue": "empty value",
+            "wrongnumber": "only numbers",
+            "wrongminnumber": "1 or more numbers",
+            "wrongmaxnumber": "31 or under munbers",
+            "wronglengthstring": "with in 10 characters",
+            "wrongcharacter": "only alphabetic or numeric characters",
+            "missingschedule": "need one or more schedules"
+        },
         "App": {
             "title": "Trash Schedule",
             "description":{
                 "trash": "You can up to register 10 type of trash.",
-                "schedule": "You can up to register 3 schedules on one trash.",
+                "schedule": "You can up to register 3 schedules on one trash."
             }
         },
         "ScheduleList":{
@@ -48,7 +57,7 @@
                         "coarse": "Oversized Trash",
                         "other": "Others(free text)"
                     },
-                    "label": "Type of Trash"
+                    "label": "Trash"
                 },
                 "scheduletype":{
                     "option": {
@@ -62,13 +71,13 @@
                 },
                 "weekday": {
                     "option": {
-                        "0": "Sunday",
-                        "1": "Monday",
-                        "2": "Tuseday",
-                        "3": "Wednesday",
-                        "4": "Thursday",
-                        "5": "Friday",
-                        "6": "Saturday"
+                        "sun": "Sunday",
+                        "mon": "Monday",
+                        "tus": "Tuseday",
+                        "wed": "Wednesday",
+                        "thu": "Thursday",
+                        "fri": "Friday",
+                        "sat": "Saturday"
                     },
                     "number":{
                         "1":"1st ","2":"2nd ","3":"3rd ","4":"4th ","5":"5th "

@@ -16,7 +16,8 @@ import {
     FormLabel,
     Grid,
     Hidden,
-    Chip
+    Chip,
+    Avatar
 } from '@material-ui/core';
 import {isWidthDown} from '@material-ui/core/withWidth';
 import {ToggleButton,ToggleButtonGroup} from '@material-ui/lab';
@@ -25,7 +26,11 @@ import {AppStyle} from './style';
 import CalendarToday  from '@material-ui/icons/CalendarToday';
 import Delete  from '@material-ui/icons/Delete';
 
-const defaultTheme = createMuiTheme();
+const defaultTheme = createMuiTheme({
+    typography: {
+        useNextVariants: true
+    }
+});
 const StyleToggleButton = withStyles({
     selected: {
         color: 'white',
@@ -46,9 +51,13 @@ const TrashType = [
 
 const ScheduleType = ['none','weekday','biweek','month','evweek'];
 
-const WeekdayType =  ['0','1','2','3','4','5','6'];
+const WeekdayType =  ['sun','mon','tus','wed','thu','fri','sat'];
 
 class TrashSchedule extends React.Component {
+    getErrorMessage(message_id) {
+        return message_id ? this.props.t(`error.${message_id}`) : undefined;
+    }
+
     createTrashSchedule(trash_index,schedule_index) {
         return(
             <div className={this.props.classes.TrashScheduleDiv}>
@@ -63,7 +72,7 @@ class TrashSchedule extends React.Component {
         let scheduleOptionTag = [];
         ScheduleType.forEach((key)=>{
             scheduleOptionTag.push(
-                <MenuItem value={key}>
+                <MenuItem key={key} value={key}>
                     {this.props.t('TrashSchedule.select.scheduletype.option.'+key)}
                 </MenuItem>
             );
@@ -72,7 +81,11 @@ class TrashSchedule extends React.Component {
             <FormControl className={this.props.classes.ScheduleTypeFormControl}>
                 <InputLabel htmlFor={`schedule-${trash_index}-${schedule_index}`} style={{top: '-5'}}>
                     <Chip
-                        avatar={<CalendarToday fontSize="small" style={{marginLeft: '8px',background:'none',width: '20px'}} />}
+                        avatar={
+                            <Avatar style={{background: 'none'}}>
+                                <CalendarToday fontSize="small" style={{marginLeft: '8px',width: '20px'}} />
+                            </Avatar>
+                        }
                         label={this.props.t('TrashSchedule.select.scheduletype.label')+(schedule_index+1)}
                         color='primary'
                         style={{height: '25px'}}
@@ -100,7 +113,7 @@ class TrashSchedule extends React.Component {
             let weekdayOption=[];
             WeekdayType.forEach((key)=> {
                 weekdayOption.push(
-                    <MenuItem value={key}>
+                    <MenuItem key={key} value={key}>
                         {this.props.t('TrashSchedule.select.weekday.option.'+key)}
                     </MenuItem>
                 );
@@ -119,7 +132,9 @@ class TrashSchedule extends React.Component {
                     >
                         {weekdayOption}
                     </Select>
-                    <FormHelperText error={target_schedule.error}>{target_schedule.error}</FormHelperText>
+                    <FormHelperText error={target_schedule.error}>
+                        {this.getErrorMessage(target_schedule.error)}
+                    </FormHelperText>
                 </FormControl>
             break;
         case 'biweek':
@@ -127,7 +142,7 @@ class TrashSchedule extends React.Component {
             WeekdayType.forEach((key)=> {
                 for(var num=1; num<=5; num++) {
                     biweekOption.push(
-                        <MenuItem value={key+'-'+num}>
+                        <MenuItem key={key+'-'+num} value={key+'-'+num}>
                             {this.props.t('TrashSchedule.select.weekday.number.'+num)+this.props.t('TrashSchedule.select.weekday.option.'+key)}
                         </MenuItem>
                     );
@@ -148,7 +163,7 @@ class TrashSchedule extends React.Component {
                         {biweekOption}
                     </Select>
                     <FormHelperText error={target_schedule.error}>
-                        {target_schedule.error}
+                        {this.getErrorMessage(target_schedule.error)}
                     </FormHelperText>
                 </FormControl>
             break;
@@ -170,7 +185,7 @@ class TrashSchedule extends React.Component {
                         inputProps={{style:{textAlign:'center',width:'100%'}}}
                     />
                     <FormHelperText error={target_schedule.error}>
-                        {target_schedule.error}
+                        {this.getErrorMessage(target_schedule.error)}
                     </FormHelperText>
                 </FormControl>
             break;
@@ -178,7 +193,7 @@ class TrashSchedule extends React.Component {
             let evweekOption = [];
             WeekdayType.forEach((key)=> {
                 evweekOption.push(
-                    <MenuItem value={key}>
+                    <MenuItem key={key} value={key}>
                         {this.props.t('TrashSchedule.select.weekday.option.'+key)}
                     </MenuItem>
                 );
@@ -240,10 +255,10 @@ class TrashSchedule extends React.Component {
         const scheduleTags = [];
         for(let i=0; i<3; i++){
             scheduleTags.push(
-                <Hidden><Grid item sm={5} /></Hidden>
+                <Hidden key={`Hidden${i}`}><Grid item sm={5} /></Hidden>
             );
             scheduleTags.push(
-                <Grid item sm={7} xs={12}>
+                <Grid item sm={7} xs={12} key={`Grid${i}`}>
                     {this.createTrashSchedule(trash_index,i)}
                 </Grid>
             );
@@ -256,7 +271,10 @@ class TrashSchedule extends React.Component {
         for(let i=0; i < this.props.trashes.length; i++) {
             let trashOptionTag = [];
             TrashType.forEach((key)=>{
-                trashOptionTag.push(<MenuItem value={key}>{this.props.t('TrashSchedule.select.trashtype.option.'+key)}</MenuItem>);
+                trashOptionTag.push(
+                    <MenuItem key={key} value={key}>
+                        {this.props.t('TrashSchedule.select.trashtype.option.'+key)}
+                    </MenuItem>);
             });
 
             const trashTypeTag =
@@ -264,7 +282,11 @@ class TrashSchedule extends React.Component {
                     <FormControl className={this.props.classes.TrashTypeFormControl}>
                         <InputLabel htmlFor={`trash${i}`} style={{top: '-5'}}>
                             <Chip
-                                avatar={<Delete fontSize='small' style={{marginLeft: '8px',background:'none',width: '20px'}} />}
+                                avatar={
+                                    <Avatar style={{background: 'none'}}>
+                                        <Delete fontSize='small' style={{marginLeft: '8px',width: '20px'}} />
+                                    </Avatar>
+                                }
                                 label={this.props.t('TrashSchedule.select.trashtype.label')+(i+1)}
                                 color='secondary'
                                 style={{height: '25px'}}
@@ -279,7 +301,9 @@ class TrashSchedule extends React.Component {
                         >
                             {trashOptionTag}
                         </Select>
-                        <FormHelperText error={this.props.trashes[i].trash_type_error}>{this.props.trashes[i].trash_type_error}</FormHelperText>
+                        <FormHelperText error={this.props.trashes[i].trash_type_error}>
+                            {this.getErrorMessage(this.props.trashes[i].trash_type_error)}
+                        </FormHelperText>
                     </FormControl>
                     {this.props.trashes[i].type==='other' && (
                         <FormControl className={this.props.classes.OtherTrashInputFormControl}>
@@ -294,16 +318,18 @@ class TrashSchedule extends React.Component {
                                 onChange={(e)=>{this.props.onInputTrashType(i,e.target.value);}}
                                 style={{textAlign:'center'}}
                             />
-                            <FormHelperText error={this.props.trashes[i].input_trash_type_error}>{this.props.trashes[i].input_trash_type_error}</FormHelperText>
+                            <FormHelperText error={this.props.trashes[i].input_trash_type_error}>
+                                {this.getErrorMessage(this.props.trashes[i].input_trash_type_error)}
+                            </FormHelperText>
                         </FormControl>
                     )}
                 </div>
 
 
             trashTag.push(
-                <Grid container justify='center' spacing={24} style={{marginBottom:'10px'}}>
+                <Grid container justify='center' spacing={24} style={{marginBottom:'10px'}} key={`trash${i}`}>
                     <Hidden xsDown>
-                        <Grid sm={5} style={{display: 'inline-flex',flexDirection: 'row-reverse',alignItems: 'center'}}>
+                        <Grid item sm={5} style={{display: 'inline-flex',flexDirection: 'row-reverse',alignItems: 'center'}}>
                             <Button color='secondary' onClick={()=>this.props.onClick(i)}>{this.props.t('TrashSchedule.button.delete')}</Button>
                         </Grid>
                     </Hidden>

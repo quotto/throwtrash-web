@@ -1,10 +1,19 @@
 {
     "translation": {
+        "error": {
+            "missingvalue": "値を入力してください",
+            "wrongnumber": "数字を入力してください",
+            "wrongminnumber": "1以上の数字を入力してください",
+            "wrongmaxnumber": "31以下の数字を入力してください",
+            "wronglengthstring": "10文字以内で入力してください",
+            "wrongcharacter": "英字、ひらがな、カタカナ、漢字、数字で入力してください",
+            "missingschedule": "一つ以上のスケジュールを設定してください"
+        },
         "App": {
             "title": "今日のゴミ出し",
             "description":{
                 "trash": "最大10種類のゴミ出し予定を登録できます。",
-                "schedule": "1種類のゴミに3つまでスケジュールを登録することができます。",
+                "schedule": "1種類のゴミに3つまでスケジュールを登録することができます。"
             }
         },
         "ScheduleList":{

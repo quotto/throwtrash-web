@@ -8,8 +8,6 @@ import {withTranslation} from 'react-i18next';
 class App extends React.Component {
 
     render() {
-        console.log(this.props);
-        console.log(this.props.i18n.getResourceBundle('ja','translation'));
         return (
             <div className={this.props.classes.component}>
                 <Grid container spacing={24}>
