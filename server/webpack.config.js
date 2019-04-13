@@ -1,8 +1,16 @@
+const args = require('args');
+const app_root = require('app-root-path');
+
+args.option('p')
+    .option('d')
+    .option('output-path','','dist');
+const arg_option = args.parse(process.argv);
+
 module.exports = {
-    mode: 'development',
     entry: './frontend/index.js',
     output: {
-        filename: 'pack.js'
+        path: `${app_root.path}/${arg_option.outputPath}`,
+        filename: 'bundle.js'
     },
     module: {
         rules: [
