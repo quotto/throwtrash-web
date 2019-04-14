@@ -51,7 +51,7 @@ const TrashType = [
 
 const ScheduleType = ['none','weekday','biweek','month','evweek'];
 
-const WeekdayType =  ['sun','mon','tus','wed','thu','fri','sat'];
+const WeekdayType =  ['0','1','2','3','4','5','6'];
 
 class TrashSchedule extends React.Component {
     getErrorMessage(message_id) {

@@ -111,7 +111,7 @@ app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
         console.log(`platform:${req.session.platform}`);
         // const lang = req.query.lang ? req.query.lang : 'ja';
         const lang = req.acceptsLanguages('en','ja');
-        res.redirect(`/index/v${version}/${lang}/}`);
+        res.redirect(`/index/v${version}/${lang}`);
     } else {
         logger.write('Bad Request','ERROR');
         res.status(400).end('bad request');
