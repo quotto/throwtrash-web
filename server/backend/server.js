@@ -109,7 +109,6 @@ app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
     }
     if(req.session.state && req.session.client_id && req.session.redirect_uri) {
         console.log(`platform:${req.session.platform}`);
-        // const lang = req.query.lang ? req.query.lang : 'ja';
         const lang = req.acceptsLanguages('en','ja');
         res.redirect(`/index/v${version}/${lang}`);
     } else {

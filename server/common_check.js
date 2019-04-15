@@ -19,7 +19,7 @@ const maxLen = (value,max=10) => {
 };
 
 const trashtype_regex = (value) =>{
-    const re = /^[A-z0-9Ａ-ｚ０-９ぁ-んァ-ヶー一-龠]+$/;
+    const re = /^[A-z0-9Ａ-ｚ０-９ぁ-んァ-ヶー一-龠\s]+$/;
     return re.exec(value) ? undefined : 'wrongcharacter';//'英字、ひらがな、カタカナ、漢字、数字で入力してください。';
 };
 
@@ -32,9 +32,9 @@ const input_month_check = (month_val) => {
     return error;
 };
 
-const input_trash_type_check = (trash) => {
+const input_trash_type_check = (trash,maxlength) => {
     if(trash.type === 'other') {
-        return required(trash.trash_val) || trashtype_regex(trash.trash_val) || maxLen(trash.trash_val);
+        return required(trash.trash_val) || trashtype_regex(trash.trash_val) || maxLen(trash.trash_val,maxlength);
     }
     return undefined;
 };
