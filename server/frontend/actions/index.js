@@ -39,11 +39,12 @@ export const changeInput = (i,j,value) => {
     };
 };
 
-export const inputTrashType = (i,value) => {
+export const inputTrashType = (i,value,maxlength) => {
     return {
         type: ActionType.INPUT_TRASH_TYPE,
         index: i,
-        value: value
+        value: value,
+        maxlength: maxlength
     };
 };
 

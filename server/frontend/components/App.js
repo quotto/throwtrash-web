@@ -1,6 +1,6 @@
 import React from 'react';
 import {Grid} from '@material-ui/core';
-import SubmitForm from './Form';
+import ScheduleListContainer from '../containers/ScheduleListContainer';
 import {AppStyle} from './style.js';
 import {withStyles} from '@material-ui/core/styles';
 import {withTranslation} from 'react-i18next';
@@ -21,7 +21,9 @@ class App extends React.Component {
                 </Grid>
                 <Grid container spacing={24}>
                     <Grid item xs={12}>
-                        <SubmitForm />
+                        <form name="registform">
+                            <ScheduleListContainer />
+                        </form>
                     </Grid>
                 </Grid>
             </div>

@@ -29,8 +29,8 @@ const mapDispatchToProps = (dispatch) => {
         onChangeInput: (i,j,value) => {
             dispatch(changeInput(i,j,value));
         },
-        onInputTrashType: (i,value) => {
-            dispatch(inputTrashType(i,value));
+        onInputTrashType: (i,value,maxlength) => {
+            dispatch(inputTrashType(i,value,maxlength));
         },
         onClickAdd: () => {
             dispatch(addTrash());

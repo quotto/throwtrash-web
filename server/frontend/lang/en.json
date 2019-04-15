@@ -5,7 +5,7 @@
             "wrongnumber": "only numbers",
             "wrongminnumber": "1 or more numbers",
             "wrongmaxnumber": "31 or under munbers",
-            "wronglengthstring": "with in 10 characters",
+            "wronglengthstring": "with in %s characters",
             "wrongcharacter": "only alphabetic or numeric characters",
             "missingschedule": "need one or more schedules"
         },
@@ -35,7 +35,8 @@
             "input":{
                 "other":{
                     "label": "Input any trash",
-                    "placeholder": "input any trash"
+                    "placeholder": "enter any trash name",
+                    "maxlength": 20
                 },
                 "month": {
                     "label": "Date",

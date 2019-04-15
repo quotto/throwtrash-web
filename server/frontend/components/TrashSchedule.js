@@ -19,7 +19,6 @@ import {
     Chip,
     Avatar
 } from '@material-ui/core';
-import {isWidthDown} from '@material-ui/core/withWidth';
 import {ToggleButton,ToggleButtonGroup} from '@material-ui/lab';
 import {withStyles,createMuiTheme} from '@material-ui/core/styles';
 import {AppStyle} from './style';
@@ -54,8 +53,14 @@ const ScheduleType = ['none','weekday','biweek','month','evweek'];
 const WeekdayType =  ['0','1','2','3','4','5','6'];
 
 class TrashSchedule extends React.Component {
-    getErrorMessage(message_id) {
-        return message_id ? this.props.t(`error.${message_id}`) : undefined;
+    getErrorMessage(message_id,params=[]) {
+        let message =  message_id ? this.props.t(`error.${message_id}`) : undefined;
+        if(message) {
+            for(let i=0; i<params.length; i++){
+                message = message.replace('%s',params[i]);
+            }
+        }
+        return message;
     }
 
     createTrashSchedule(trash_index,schedule_index) {
@@ -313,13 +318,20 @@ class TrashSchedule extends React.Component {
                                 name={`othertrashtype${i}`}
                                 placeholder={this.props.t('TrashSchedule.input.other.placeholder')}
                                 required={true}
-                                inputProps={{maxLength:'10'}}
+                                inputProps={{maxLength:this.props.t('TrashSchedule.input.other.maxlength')}}
                                 value={this.props.trashes[i].trash_val}
-                                onChange={(e)=>{this.props.onInputTrashType(i,e.target.value);}}
-                                style={{textAlign:'center'}}
+                                onChange={(e)=>{
+                                    this.props.onInputTrashType(i,e.target.value,this.props.t('TrashSchedule.input.other.maxlength'));
+                                }}
+                                inputProps={{
+                                    style:{textAlign:'center'}
+                                }}
                             />
                             <FormHelperText error={this.props.trashes[i].input_trash_type_error}>
-                                {this.getErrorMessage(this.props.trashes[i].input_trash_type_error)}
+                                {this.getErrorMessage(
+                                    this.props.trashes[i].input_trash_type_error,
+                                    [this.props.t('TrashSchedule.input.other.maxlength')])
+                                }
                             </FormHelperText>
                         </FormControl>
                     )}
