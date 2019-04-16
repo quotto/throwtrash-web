@@ -12,8 +12,8 @@
         "App": {
             "title": "Trash Schedule",
             "description":{
-                "trash": "You can up to register 10 type of trash.",
-                "schedule": "You can up to register 3 schedules on one trash."
+                "trash": "You can register up to 10 type of trash.",
+                "schedule": "You can register up to 3 schedules on one trash."
             }
         },
         "ScheduleList":{
