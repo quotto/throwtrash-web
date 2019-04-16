@@ -71,7 +71,7 @@ export const updateState = (state=initialState,action)=> {
     }
     case ActionType.INPUT_TRASH_TYPE:{
         Object.assign(new_state.trashes[action.index],{trash_val: action.value});
-        Object.assign(new_state.trashes[action.index],{input_trash_type_error: common_check.input_trash_type_check(new_state.trashes[action.index])});
+        Object.assign(new_state.trashes[action.index],{input_trash_type_error: common_check.input_trash_type_check(new_state.trashes[action.index],action.maxlength)});
         new_state.error = common_check.exist_error(new_state.trashes);
         return new_state;
     }

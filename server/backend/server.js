@@ -11,6 +11,7 @@ const Util = require('./utility.js');
 const Logger = require('./logger.js');
 const common_check = require('../common_check.js');
 const firebase_admin = require('firebase-admin');
+const MetaInfo = require('./public/meta.json');
 
 let logger = new Logger('./server.log');
 
@@ -21,6 +22,8 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(session({secret: process.env.TRASHES_SECRET}));
+app.set('views','./public');
+app.set('view engine','ejs');
 
 let credential = new aws.Credentials(process.env.AWS_ACCESS_TOKEN,process.env.AWS_ACCESS_TOKEN_SECRET,null);
 const dynamoClient = new aws.DynamoDB.DocumentClient({
@@ -31,7 +34,7 @@ const dynamoClient = new aws.DynamoDB.DocumentClient({
 
 let serviceAccount = require('./serviceAccountKey.json');
 firebase_admin.initializeApp({
-  credential: firebase_admin.credential.cert(serviceAccount)
+    credential: firebase_admin.credential.cert(serviceAccount)
 });
 
 let firestore = firebase_admin.firestore();
@@ -75,23 +78,39 @@ app.get(/.+\..+/,(req,res,next)=>{
     });
 });
 
+app.get('/index/:version/:lang',(req,res,next)=>{
+    const lang = req.params.lang;
+    if(MetaInfo[lang]) {
+        res.render(`${req.params.version}/index`,{lang: lang,title: MetaInfo[lang].title});
+    } else {
+        logger.write('Wrong lang','ERROR');
+        res.status(400).end('bad request');
+        return;
+    }
+});
+
 app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
     req.session.state = req.query.state;
     req.session.client_id = req.query.client_id;
     req.session.redirect_uri = req.query.redirect_uri;
+    req.session.platform = req.query.platform;
     let version = req.query.version;
+
     //旧互換用の判定条件
     if(!version) {
+        // google assistant
         const platform_index = req.path.lastIndexOf('/');
         req.session.platform = req.path.slice(platform_index + 1);
         const version_index = req.path.lastIndexOf('/');
         version = req.path.slice(version_index - 1,platform_index);
     } else {
+        // alexa 旧バージョン用
         req.session.platform='amazon';
     }
     if(req.session.state && req.session.client_id && req.session.redirect_uri) {
         console.log(`platform:${req.session.platform}`);
-        res.redirect(`/v${version}/index.html`);
+        const lang = req.acceptsLanguages('en','ja');
+        version < 5 ? res.redirect(`/v${version}/index.html`) : res.redirect(`/index/v${version}/${lang}`);
     } else {
         logger.write('Bad Request','ERROR');
         res.status(400).end('bad request');

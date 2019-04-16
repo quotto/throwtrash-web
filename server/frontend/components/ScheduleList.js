@@ -1,9 +1,10 @@
 import React from 'react';
 import TrashSchedule from './TrashSchedule';
 import {Button,Grid} from '@material-ui/core';
-import { withStyles } from '@material-ui/core/styles';
-import { AppStyle } from './style';
+import {withStyles} from '@material-ui/core/styles';
+import {AppStyle} from './style';
 import axios from 'axios';
+import {withTranslation} from 'react-i18next';
 
 const MAX_SCHEDULE = 10;
 class ScheduleList extends React.Component {
@@ -13,7 +14,7 @@ class ScheduleList extends React.Component {
                 .then((response)=> {
                     window.location=response.data;
                 }).catch((error) =>{
-                    alert('登録に失敗しました。','お知らせ');
+                    alert(this.props.t('ScheduleList.error.registrationfailed.text'),this.props.t('ScheduleList.error.registrationfailed.title'));
                     this.props.onSubmit(false);
                 });
         }
@@ -30,22 +31,22 @@ class ScheduleList extends React.Component {
                 <Grid item xs={2}></Grid>
                 <Grid item xs={8} style={{textAlign:'center'}}>
                     <Button
-                        variant="raised"
+                        variant="contained"
                         color="secondary"
                         disabled={this.props.trashes.length===MAX_SCHEDULE}
                         onClick={()=>this.props.onClickAdd()}>
-                        ゴミの種類を追加
+                        {this.props.t('ScheduleList.button.addtrash')}
                     </Button>
                 </Grid>
                 <Grid item xs={2}></Grid>
                 <Grid item xs={4}></Grid>
                 <Grid item xs={4} style={{textAlign:'center'}}>
                     <Button
-                        variant="raised"
+                        variant="contained"
                         color="primary"
                         disabled={this.props.submit_error || this.props.submitting}
                         onClick={()=>this.props.onSubmit(true)}>
-                            登録
+                        {this.props.t('ScheduleList.button.regist')}
                     </Button>
                 </Grid>
                 <Grid item xs={4}></Grid>
@@ -54,4 +55,4 @@ class ScheduleList extends React.Component {
     }
 }
 
-export default withStyles(AppStyle)(ScheduleList);
+export default withStyles(AppStyle)(withTranslation()(ScheduleList));

@@ -70,7 +70,7 @@ describe('updateState',()=>{
             assert.deepEqual(except,state);
         });
         it('required error',()=>{
-            let except = '値を入力してください';
+            let except = 'missingvalue';
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].schedules[1].type = 'month';
             let state = updateState(teststate,{type:ActionType.CHANGE_INPUT,index:[0,1],value:''});
@@ -78,7 +78,7 @@ describe('updateState',()=>{
             assert.equal(true,state.error);
         });
         it('number error',()=>{
-            let except = '数字を入力してください';
+            let except = 'wrongnumber';
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].schedules[1].type = 'month';
             let state = updateState(teststate,{type:ActionType.CHANGE_INPUT,index:[0,1],value:'a'});
@@ -86,7 +86,7 @@ describe('updateState',()=>{
             assert.equal(true,state.error);
         });
         it('min error',()=>{
-            let expect = '1以上の数字を入力してください';
+            let expect = 'wrongminnumber';
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].schedules[1].type = 'month';
             let state = updateState(teststate,{type:ActionType.CHANGE_INPUT,index:[0,1],value:'0'});
@@ -94,7 +94,7 @@ describe('updateState',()=>{
             assert.equal(true,state.error);
         });
         it('max error',()=>{
-            let expect = '31以下の数字を入力してください';
+            let expect = 'wrongmaxnumber';
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].schedules[1].type = 'month';
             let state = updateState(teststate,{type:ActionType.CHANGE_INPUT,index:[0,1],value:'32'});
@@ -110,7 +110,7 @@ describe('updateState',()=>{
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value});
+            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
             assert.deepEqual(state.trashes[0],expect.trashes[0]);
         });
         it('right input alphabet,number',()=>{
@@ -120,7 +120,7 @@ describe('updateState',()=>{
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value});
+            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
             assert.deepEqual(state.trashes[0],expect.trashes[0]);
         });
         it('right input kana',()=>{
@@ -130,49 +130,65 @@ describe('updateState',()=>{
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value});
+            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
+            assert.deepEqual(state.trashes[0],expect.trashes[0]);
+        });
+        it('right input whitespace',()=>{
+            const input_value = 'My Trash';
+            let expect = _.cloneDeep(initialState);
+            Object.assign(expect.trashes[0],{type: 'other',trash_val: input_value});
+
+            let teststate = _.cloneDeep(initialState);
+            teststate.trashes[0].type = 'other';
+            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
             assert.deepEqual(state.trashes[0],expect.trashes[0]);
         });
         it('requirement error',()=>{
             let expect = _.cloneDeep(initialState);
-            Object.assign(expect.trashes[0],{type: 'other',trash_val: '',input_trash_type_error: '値を入力してください'});
+            Object.assign(expect.trashes[0],{type: 'other',trash_val: '',input_trash_type_error: 'missingvalue'});
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: ''});
+            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: '',maxlength:10});
             assert.deepEqual(state.trashes[0],expect.trashes[0]);
         });
         it('elegular error script',()=>{
             const input_value = '<script/>';
             let expect = _.cloneDeep(initialState);
-            Object.assign(expect.trashes[0],{type: 'other',trash_val: input_value,input_trash_type_error: '英字、ひらがな、カタカナ、漢字、数字で入力してください。'});
+            Object.assign(expect.trashes[0],{type: 'other',trash_val: input_value,input_trash_type_error: 'wrongcharacter'});
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0, value: input_value});
+            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0, value: input_value,maxlength:10});
             assert.deepEqual(state.trashes[0],expect.trashes[0]);
         });
         it('elegular error SQL injection',()=>{
             const input_value = "or x='x';";
             let expect = _.cloneDeep(initialState);
-            Object.assign(expect.trashes[0],{type: 'other',trash_val: input_value,input_trash_type_error: '英字、ひらがな、カタカナ、漢字、数字で入力してください。'});
+            Object.assign(expect.trashes[0],{type: 'other',trash_val: input_value,input_trash_type_error: 'wrongcharacter'});
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0, value: input_value});
+            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0, value: input_value,maxlength:10});
             assert.deepEqual(state.trashes[0],expect.trashes[0]);
         });
         it('max length',()=>{
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index:0,value:'これは１０文字の入力'});
+            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index:0,value:'これは１０文字の入力',maxlength:10});
+            assert.equal(state.trashes[0].input_trash_type_error,undefined);
+        });
+        it('max lengthの最大値変更',()=>{
+            let teststate = _.cloneDeep(initialState);
+            teststate.trashes[0].type = 'other';
+            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index:0,value:'１２文字の入力でも大丈夫',maxlength:20});
             assert.equal(state.trashes[0].input_trash_type_error,undefined);
         });
         it('length over',()=>{
-            let expect = '10文字以内で入力してください'
+            let expect = 'wronglengthstring'
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index:0,value:'これは１１文字の入力だ'});
+            let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index:0,value:'これは１１文字の入力だ',maxlength:10});
             assert.equal(state.trashes[0].input_trash_type_error,expect);
         });
     });
