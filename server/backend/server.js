@@ -5,8 +5,8 @@ const path = require('path');
 const aws = require('aws-sdk');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const cookieParser = require('cookie-parser');
 const express = require('express');
+const rp = require('request-promise');
 const Util = require('./utility.js');
 const Logger = require('./logger.js');
 const common_check = require('../common_check.js');
@@ -14,14 +14,15 @@ const firebase_admin = require('firebase-admin');
 const MetaInfo = require('./public/meta.json');
 
 let logger = new Logger('./server.log');
+const lineOauth_endpoint = 'https://todays-trash.herokuapp.com/oauth/request_token';
+const trashApi_endpoint = 'https://o8a8597lm0.execute-api.ap-northeast-1.amazonaws.com/test';
 
 let app = express();
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
-app.use(cookieParser());
-app.use(session({secret: process.env.TRASHES_SECRET}));
+app.use(session({secret: process.env.TRASHES_SECRET, cookie:{maxAge: 15*60*1000}})); // セッションの期限は15分間 
 app.set('views','./public');
 app.set('view engine','ejs');
 
@@ -126,36 +127,96 @@ app.post('/regist',(req,res,next)=>{
             return;
         }
 
-        const user_id = Util.create_id();
+        // 検証した登録データをセッションに格納
         const regist_data = Util.adjustData(req.body);
-        var item = {
-            id: user_id,
-            description: JSON.stringify(regist_data,null,2)
-        };
-        var params = {
-            TableName: 'TrashSchedule',
-            Item: item
-        };
+        req.session.regist_data = regist_data;
+        // リダイレクト元の検証用にランダム値をセッションに格納
+        let redirect_state  = '';
+        for(let i=0; i<16; i++) {
+            redirect_state += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random()*35)]
+        }
+        req.session.redirect_state = redirect_state;
+
+        // TODO:フロントエンド実装したらフラグの取り方修正
+        const line_flg = true;
+        if(line_flg) {
+            res.status(200).end(`${lineOauth_endpoint}?platform=${req.session.platform}&redirect_state=${redirect_state}`);
+        } else {
+            res.status(200).end(`/submit?redirect_state=${redirect_state}`);
+        }
+        return;
+        
+    } else {
+        logger.write('Bad Request', 'ERROR');
+        res.status(400).end('bad request');
+        return;
+    }
+});
+
+app.get('/submit', async(req,res)=>{
+    const query = req.query;
+    if(req.session.state && req.session.client_id && req.session.redirect_uri && query.redirect_state === req.session.redirect_state) {
+        let user_id = Util.create_id();
+        const lineId = query.lineId;
+        if(lineId) {
+            const option = {
+                uri: `${trashApi_endpoint}/data`,
+                method: 'GET',
+                qs: {
+                    platform: req.session.platform,
+                    lineId: lineId
+                },
+                headers: {
+                    'x-api-key': process.env.TRASH_API_TOKEN
+                }
+            };
+            const response = await rp(option);
+            console.log(response);
+            const body = JSON.parse(response);
+            // 登録済みデータがある場合はidを再利用してUPDATE
+            if(body.length > 0) {
+                user_id = body[0].id;
+            }
+        }
+
+        const regist_data = req.session.regist_data;
         if(req.session.platform === 'google') {
             console.log(`${user_id},${regist_data}`);
             firestore.runTransaction(t=>{
-                t.set(firestore.collection('schedule').doc(user_id),
-                    {
-                        id: user_id,
-                        data: regist_data
-                    });
+                const params = {
+                    id: user_id,
+                    data: regist_data
+                };
+                if(lineId) {
+                    params.lineId = lineId;
+                    params.remind = true;
+                }
+                t.set(firestore.collection('schedule').doc(user_id), params);
                 return Promise.resolve('Regist Complelete');
-            }).then(doc=>{
+            }).then(()=>{
                 logger.write(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`,'INFO');
                 const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
                 console.log(redirect_url);
-                res.status(200).end(redirect_url);
+                res.redirect(redirect_url);
             }).catch(err=>{
                 logger.write(`DB Insert Error\n${err}`,'ERROR');
                 res.status(500).end('registraion error');
                 return;
             });
         } else {
+            const item = {
+                id: user_id,
+                description: JSON.stringify(regist_data, null, 2)
+            };
+            if (lineId) {
+                item.lineId = lineId;
+                item.remind = true;
+            }
+            const params = {
+                TableName: 'TrashSchedule',
+                Item: item
+            };
+            console.log(params);
             dynamoClient.put(params,(err,data)=>{
                 if(err) {
                     logger.write(`DB Insert Error\n${err}`,'ERROR');
@@ -165,7 +226,7 @@ app.post('/regist',(req,res,next)=>{
                     logger.write(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`,'INFO');
                     const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
                     console.log(redirect_url);
-                    res.status(200).end(redirect_url);
+                    res.redirect(redirect_url);
                     return;
                 }
             });
