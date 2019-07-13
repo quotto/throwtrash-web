@@ -17,6 +17,55 @@ let logger = new Logger('./server.log');
 const lineOauth_endpoint = 'https://todays-trash.herokuapp.com/oauth/request_token';
 const trashApi_endpoint = 'https://o8a8597lm0.execute-api.ap-northeast-1.amazonaws.com/test';
 
+const createNewId = async(platform)=>{
+    let user_id = null;
+    // 初回登録は最大5回まで重複のないIDの採番を試みる
+    let retry = 0;
+    while(!user_id || retry < 5) {
+        user_id = Util.create_id();
+        const option = {
+            uri: `${trashApi_endpoint}/data`,
+            method: 'GET',
+            qs: {
+                platform: platform,
+                id: user_id
+            },
+            headers: {
+                'x-api-key': process.env.TRASH_API_TOKEN
+            }
+        };
+        const response = await rp(option);
+        if(JSON.parse(response).length == 0) {
+            break;  
+        }
+        retry++;
+    }
+    return user_id;
+};
+
+const getIdFromLineId = async(platform, lineId)=>{
+    let user_id = null;
+    const option = {
+        uri: `${trashApi_endpoint}/data`,
+        method: 'GET',
+        qs: {
+            platform: platform,
+            lineId: lineId
+        },
+        headers: {
+            'x-api-key': process.env.TRASH_API_TOKEN
+        }
+    };
+    const response = await rp(option);
+    console.log(response);
+    const body = JSON.parse(response);
+    // 登録済みデータがある場合はidを再利用してUPDATE
+    if (body.length > 0) {
+        user_id = body[0].id;
+    }
+    return user_id;
+};
+
 let app = express();
 app.use(bodyParser.urlencoded({
     extended: true
@@ -48,7 +97,7 @@ let mime = {
 };
 
 
-const port = process.argv[2] ? process.argv[2] : 80;
+const port = 80;
 const server = http.createServer(app).listen(port, ()=>{
     logger.write( 'server is starting on ' + server.address().port + ' ...' );
 });
@@ -156,26 +205,21 @@ app.post('/regist',(req,res,next)=>{
 app.get('/submit', async(req,res)=>{
     const query = req.query;
     if(req.session.state && req.session.client_id && req.session.redirect_uri && query.redirect_state === req.session.redirect_state) {
-        let user_id = Util.create_id();
+        let user_id = null;
         const lineId = query.lineId;
         if(lineId) {
-            const option = {
-                uri: `${trashApi_endpoint}/data`,
-                method: 'GET',
-                qs: {
-                    platform: req.session.platform,
-                    lineId: lineId
-                },
-                headers: {
-                    'x-api-key': process.env.TRASH_API_TOKEN
-                }
-            };
-            const response = await rp(option);
-            console.log(response);
-            const body = JSON.parse(response);
-            // 登録済みデータがある場合はidを再利用してUPDATE
-            if(body.length > 0) {
-                user_id = body[0].id;
+            try {
+                user_id = getIdFromLineId(req.session.platform, lineId);
+            } catch(err) {
+                console.log(err);
+            }
+        }
+
+        if(!user_id) {
+            user_id = await createNewId();
+            if(!user_id) {
+                console.log('Failed to create Id');
+                //TODO エラーリダイレクト
             }
         }
 
@@ -203,36 +247,37 @@ app.get('/submit', async(req,res)=>{
                 res.status(500).end('registraion error');
                 return;
             });
-        } else {
-            const item = {
-                id: user_id,
-                description: JSON.stringify(regist_data, null, 2)
-            };
-            if (lineId) {
-                item.lineId = lineId;
-                item.remind = true;
-            }
-            const params = {
-                TableName: 'TrashSchedule',
-                Item: item
-            };
-            console.log(params);
-            dynamoClient.put(params,(err,data)=>{
-                if(err) {
-                    logger.write(`DB Insert Error\n${err}`,'ERROR');
-                    res.status(500).end('registraion error');
-                    return;
-                } else {
-                    logger.write(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`,'INFO');
-                    const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
-                    console.log(redirect_url);
-                    res.redirect(redirect_url);
-                    return;
-                }
-            });
+        } 
+
+
+        const item = {
+            id: user_id,
+            description: JSON.stringify(regist_data, null, 2)
+        };
+        if (lineId) {
+            item.lineId = lineId;
+            item.remind = true;
         }
+        const params = {
+            TableName: 'TrashSchedule',
+            Item: item
+        };
+        console.log(params);
+        dynamoClient.put(params,(err,data)=>{
+            if(err) {
+                logger.write(`DB Insert Error\n${err}`,'ERROR');
+                res.status(500).end('registraion error');
+                return;
+            } else {
+                logger.write(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`,'INFO');
+                const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
+                console.log(redirect_url);
+                res.redirect(redirect_url);
+                return;
+            }
+        });
     } else {
-        logger.write('Bad Request','ERROR');
+        logger.write('Bad Request', 'ERROR');
         res.status(400).end('bad request');
         return;
     }
