@@ -8,12 +8,34 @@ const session = require('express-session');
 const express = require('express');
 const rp = require('request-promise');
 const Util = require('./utility.js');
-const Logger = require('./logger.js');
 const common_check = require('../common_check.js');
 const firebase_admin = require('firebase-admin');
 const MetaInfo = require('./public/meta.json');
 
-let logger = new Logger('./server.log');
+const args = require('args');
+args.option('level', 'logger level', 'info');
+args.option('port', 'listening port', 8888);
+const argv = args.parse(process.argv);
+
+const log4js = require('log4js');
+log4js.configure({
+    appenders: {
+        file:{
+            type: 'file',
+            filename: 'server.log',
+            encoding: 'utf-8',
+            flags: 'a+'
+        },
+        out: {
+            type: 'stdout'
+        }
+    },
+    categories: {
+        default: {appenders: ['file', 'out'], level: argv.level}
+    }
+});
+const logger = log4js.getLogger();
+
 const lineOauth_endpoint = 'https://todays-trash.herokuapp.com/oauth/request_token';
 const trashApi_endpoint = 'https://o8a8597lm0.execute-api.ap-northeast-1.amazonaws.com/test';
 
@@ -34,8 +56,10 @@ const createNewId = async(platform)=>{
                 'x-api-key': process.env.TRASH_API_TOKEN
             }
         };
+        logger.debug('create new id request:', option);
         const response = await rp(option);
         if(JSON.parse(response).length == 0) {
+            logger.debug('create new id:', user_id);
             break;  
         }
         retry++;
@@ -56,12 +80,13 @@ const getIdFromLineId = async(platform, lineId)=>{
             'x-api-key': process.env.TRASH_API_TOKEN
         }
     };
+    logger.debug('get id from lineId request', option);
     const response = await rp(option);
-    console.log(response);
     const body = JSON.parse(response);
     // 登録済みデータがある場合はidを再利用してUPDATE
     if (body.length > 0) {
         user_id = body[0].id;
+        logger.debug('get id from lineId:', user_id);
     }
     return user_id;
 };
@@ -97,14 +122,13 @@ let mime = {
 };
 
 
-const port = 80;
-const server = http.createServer(app).listen(port, ()=>{
-    logger.write( 'server is starting on ' + server.address().port + ' ...' );
+const server = http.createServer(app).listen(argv.port, ()=>{
+    logger.info( 'server is starting on ' + server.address().port + ' ...' );
 });
 
 app.get(/.+\..+/,(req,res,next)=>{
     let requestPath = url.parse(req.url).pathname;
-    logger.write(`->${req.method} ${requestPath}`,'REQ');
+    logger.info(`${req.method} ${requestPath}`);
 
     let sendResource = path.join('./public',requestPath);
     let sendFile = fs.createReadStream(sendResource,{encoding:'utf-8'});
@@ -120,11 +144,11 @@ app.get(/.+\..+/,(req,res,next)=>{
     sendFile.on('close',()=> {
         res.send(responseData);
         res.status(200).end();
-        logger.write(`<- OK:${req.method} ${sendResource}`,'RES');
+        logger.info(`OK:${req.method} ${sendResource}`);
     });
 
     sendFile.on('error',(err)=>{
-        logger.write(`<- Error:${req.method} ${requestPath}`,'ERROR');
+        logger.error(`Error:${req.method} ${requestPath}`);
     });
 });
 
@@ -133,7 +157,7 @@ app.get('/index/:version/:lang',(req,res,next)=>{
     if(MetaInfo[lang]) {
         res.render(`${req.params.version}/index`,{lang: lang,title: MetaInfo[lang].title});
     } else {
-        logger.write('Wrong lang','ERROR');
+        logger.warn('Wrong lang','ERROR');
         res.status(400).end('bad request');
         return;
     }
@@ -158,11 +182,11 @@ app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
         req.session.platform='amazon';
     }
     if(req.session.state && req.session.client_id && req.session.redirect_uri) {
-        console.log(`platform:${req.session.platform}`);
+        logger.info(`oauth request - platform:${req.session.platform}`);
         const lang = req.acceptsLanguages('en','ja');
         version < 5 ? res.redirect(`/v${version}/index.html`) : res.redirect(`/index/v${version}/${lang}`);
     } else {
-        logger.write('Bad Request','ERROR');
+        logger.error('Bad Request');
         res.status(400).end('bad request');
         return;
     }
@@ -170,15 +194,18 @@ app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
 
 app.post('/regist',(req,res,next)=>{
     if(req.session.state && req.session.client_id && req.session.redirect_uri) {
-        if(common_check.exist_error(req.body)) {
-            logger.write(`Bad Data\n${req.body}`,'ERROR');
+        logger.debug('Regist request:',req.body);
+        const recv_data = JSON.parse(req.body.data);
+        if(common_check.exist_error(recv_data)) {
+            logger.error(`Bad Data\n${recv_data}`);
             res.status(400).end('bad request');
             return;
         }
 
         // 検証した登録データをセッションに格納
-        const regist_data = Util.adjustData(req.body);
+        const regist_data = Util.adjustData(recv_data);
         req.session.regist_data = regist_data;
+
         // リダイレクト元の検証用にランダム値をセッションに格納
         let redirect_state  = '';
         for(let i=0; i<16; i++) {
@@ -186,9 +213,7 @@ app.post('/regist',(req,res,next)=>{
         }
         req.session.redirect_state = redirect_state;
 
-        // TODO:フロントエンド実装したらフラグの取り方修正
-        const line_flg = true;
-        if(line_flg) {
+        if(req.body.line) {
             res.status(200).end(`${lineOauth_endpoint}?platform=${req.session.platform}&redirect_state=${redirect_state}`);
         } else {
             res.status(200).end(`/submit?redirect_state=${redirect_state}`);
@@ -196,7 +221,7 @@ app.post('/regist',(req,res,next)=>{
         return;
         
     } else {
-        logger.write('Bad Request', 'ERROR');
+        logger.error('Bad Request');
         res.status(400).end('bad request');
         return;
     }
@@ -209,23 +234,23 @@ app.get('/submit', async(req,res)=>{
         const lineId = query.lineId;
         if(lineId) {
             try {
-                user_id = getIdFromLineId(req.session.platform, lineId);
+                user_id = await getIdFromLineId(req.session.platform, lineId);
             } catch(err) {
-                console.log(err);
+                logger.error(err);
             }
         }
 
         if(!user_id) {
             user_id = await createNewId();
             if(!user_id) {
-                console.log('Failed to create Id');
+                logger.error('Failed to create Id');
                 //TODO エラーリダイレクト
             }
         }
 
         const regist_data = req.session.regist_data;
         if(req.session.platform === 'google') {
-            console.log(`${user_id},${regist_data}`);
+            logger.debug(`regist firestore: ${user_id},${regist_data}`);
             firestore.runTransaction(t=>{
                 const params = {
                     id: user_id,
@@ -238,12 +263,12 @@ app.get('/submit', async(req,res)=>{
                 t.set(firestore.collection('schedule').doc(user_id), params);
                 return Promise.resolve('Regist Complelete');
             }).then(()=>{
-                logger.write(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`,'INFO');
+                logger.info(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`);
                 const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
-                console.log(redirect_url);
+                logger.debug(redirect_url);
                 res.redirect(redirect_url);
             }).catch(err=>{
-                logger.write(`DB Insert Error\n${err}`,'ERROR');
+                logger.drror(`DB Insert Error\n${err}`);
                 res.status(500).end('registraion error');
                 return;
             });
@@ -262,22 +287,22 @@ app.get('/submit', async(req,res)=>{
             TableName: 'TrashSchedule',
             Item: item
         };
-        console.log(params);
+        logger.debug('regist parameter:',params);
         dynamoClient.put(params,(err,data)=>{
             if(err) {
-                logger.write(`DB Insert Error\n${err}`,'ERROR');
+                logger.error(`DB Insert Error\n${err}`);
                 res.status(500).end('registraion error');
                 return;
             } else {
-                logger.write(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`,'INFO');
+                logger.info(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`);
                 const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
-                console.log(redirect_url);
+                logger.debug(redirect_url);
                 res.redirect(redirect_url);
                 return;
             }
         });
     } else {
-        logger.write('Bad Request', 'ERROR');
+        logger.error('Bad Request');
         res.status(400).end('bad request');
         return;
     }
