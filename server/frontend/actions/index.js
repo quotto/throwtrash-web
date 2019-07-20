@@ -5,7 +5,8 @@ export const ActionType = {
     CHANGE_INPUT: 'CHANGE_INPUT',
     INPUT_TRASH_TYPE: 'INPUT_TRASH_TYPE',
     DEL_TRASH: 'DEL_TRASH',
-    SET_SUBMITTING: 'SET_SUBMITTING'
+    SET_SUBMITTING: 'SET_SUBMITTING',
+    CHECK_LINE: 'CHECK_LINE'
 };
 
 export const addTrash = () => {
@@ -59,5 +60,12 @@ export const setSubmitting = (status)=> {
     return {
         type: ActionType.SET_SUBMITTING,
         value: status
+    };
+};
+
+export const checkLine = (checked)=>{
+    return {
+        type: ActionType.CHECK_LINE,
+        checked: checked
     };
 };

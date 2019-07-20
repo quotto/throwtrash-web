@@ -30,6 +30,7 @@ const createInitialTrash = ()=> {
 
 export const initialState = {
     trashes: [createInitialTrash()],
+    line: false,
     error: true
 };
 
@@ -82,6 +83,9 @@ export const updateState = (state=initialState,action)=> {
     }
     case ActionType.SET_SUBMITTING:{
         return Object.assign({},state,{submitting:action.value});
+    }
+    case ActionType.CHECK_LINE: {
+        return Object.assign({}, state, {line:action.checked});
     }
     default:
         return state;

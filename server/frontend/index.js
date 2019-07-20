@@ -23,7 +23,7 @@ class LangProvider extends React.Component {
 render(
     <Provider store={store}>
         <BrowserRouter>
-            <Route path='/index/:version/:lang' component={LangProvider} />
+            <Route path='/index/:lang' component={LangProvider} />
         </BrowserRouter>
     </Provider>,
     document.getElementById('root')

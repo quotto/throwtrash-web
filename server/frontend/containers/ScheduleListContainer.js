@@ -7,14 +7,16 @@ import {
     changeTrashType,
     inputTrashType,
     changeInput,
-    setSubmitting
+    setSubmitting,
+    checkLine
 } from '../actions';
 
 const mapPropsState = (state) => {
     return {
         trashes: state.updateState.trashes,
         submit_error: state.updateState.error,
-        submitting: state.updateState.submitting
+        submitting: state.updateState.submitting,
+        line: state.updateState.line
     };
 };
 
@@ -40,6 +42,9 @@ const mapDispatchToProps = (dispatch) => {
         },
         onSubmit: (status)=>{
             dispatch(setSubmitting(status));
+        },
+        onChangeLine: (checked)=>{
+            dispatch(checkLine(checked));
         }
     };
 };

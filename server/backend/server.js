@@ -152,10 +152,10 @@ app.get(/.+\..+/,(req,res,next)=>{
     });
 });
 
-app.get('/index/:version/:lang',(req,res,next)=>{
+app.get('/index/:lang',(req,res,next)=>{
     const lang = req.params.lang;
     if(MetaInfo[lang]) {
-        res.render(`${req.params.version}/index`,{lang: lang,title: MetaInfo[lang].title});
+        res.render('index',{lang: lang,title: MetaInfo[lang].title});
     } else {
         logger.warn('Wrong lang','ERROR');
         res.status(400).end('bad request');
@@ -168,23 +168,11 @@ app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
     req.session.client_id = req.query.client_id;
     req.session.redirect_uri = req.query.redirect_uri;
     req.session.platform = req.query.platform;
-    let version = req.query.version;
 
-    //旧互換用の判定条件
-    if(!version) {
-        // google assistant
-        const platform_index = req.path.lastIndexOf('/');
-        req.session.platform = req.path.slice(platform_index + 1);
-        const version_index = req.path.lastIndexOf('/');
-        version = req.path.slice(version_index - 1,platform_index);
-    } else {
-        // alexa 旧バージョン用
-        req.session.platform='amazon';
-    }
     if(req.session.state && req.session.client_id && req.session.redirect_uri) {
         logger.info(`oauth request - platform:${req.session.platform}`);
         const lang = req.acceptsLanguages('en','ja');
-        version < 5 ? res.redirect(`/v${version}/index.html`) : res.redirect(`/index/v${version}/${lang}`);
+        res.redirect(`/index/${lang}`);
     } else {
         logger.error('Bad Request');
         res.status(400).end('bad request');
@@ -244,7 +232,7 @@ app.get('/submit', async(req,res)=>{
             user_id = await createNewId();
             if(!user_id) {
                 logger.error('Failed to create Id');
-                //TODO エラーリダイレクト
+                res.status(500).end('登録に失敗しました。');
             }
         }
 
@@ -268,8 +256,8 @@ app.get('/submit', async(req,res)=>{
                 logger.debug(redirect_url);
                 res.redirect(redirect_url);
             }).catch(err=>{
-                logger.drror(`DB Insert Error\n${err}`);
-                res.status(500).end('registraion error');
+                logger.error(`DB Insert Error\n${err}`);
+                res.status(500).end('登録に失敗しました。');
                 return;
             });
         } 
@@ -277,7 +265,8 @@ app.get('/submit', async(req,res)=>{
 
         const item = {
             id: user_id,
-            description: JSON.stringify(regist_data, null, 2)
+            description: JSON.stringify(regist_data, null, 2),
+            platform: req.session.platform
         };
         if (lineId) {
             item.lineId = lineId;

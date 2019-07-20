@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack -p ",
-    "dev": "webpack -d ",
+    "webpack": "webpack",
+    "start": "cd backend && node server.js",
     "test": "mocha ./server/backend/test",
     "test-front": "mocha --compilers js:babel-core/register ./frontend/test"
   },
@@ -27,6 +27,7 @@
     "i18next": "^13.1.5",
     "i18next-xhr-backend": "^2.0.1",
     "lodash": "^4.17.11",
+    "log4js": "^4.5.1",
     "oauth": "^0.9.15",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",

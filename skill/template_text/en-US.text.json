@@ -1,0 +1,81 @@
+{
+    "message":{
+        "error":{
+            "general":"Failed to get the information. Please contact skills developers.",
+            "idnotfound":"Registration information can not be found. Please try again after performing the account link."
+        },
+        "help":{
+            "account":"To use this skill,you need to do Account link. Please do account link from the card, which is displayed on the Alexa app.",
+            "help":"For example, please say 'Today', 'Tomorrow', 'the day after tommorow' or day of the week. Then  you can know the trash schedule. Please say like 'What's trash on Wednesday?'",
+            "bye":"Thank you for your using",
+            "nextprevious":"Please say like 'What's trash on Wednesday?'"
+        },
+        "notice":{
+            "continue":"Please say another day or trash,if you want to know more.",
+            "pointdayquestion":"Which date do you want to know the schedule for ?",
+            "registerdresponse":"I sent trash's schedule that are registered, You can see information  from the card on Alexa app or display devices.",
+            "registerdcardtitle":"Registerd Trash Schedule",
+            "fromtrashquestion":"It does not correspond to that type of trash. Please specify other trash."
+        },
+        "result":{
+            "launch": "Today is %s. ",
+            "launchnothing":"Nothing today. ",
+            "pointday": "%s1 is %s2.",
+            "pointnothing": "Nothing %s.",
+            "fromtrash": "Next %s1 is %s2.",
+            "fromtrashother": "Next %s.",
+            "fromtrashotherpart": "%s1 is %s2",
+            "fromtrashdate":"%w %m %d",
+            "fromtrashnothing":"%s is not registerd on trash schedule."
+        },
+        "separate": ",",
+        "check_multiple": true,
+        "endsep": "and"
+    },
+    "display": {
+        "scheduletitle": "3days trash schedule",
+        "registerdtitle": "Registerd trash schedule",
+        "nothing": "nothing"
+    },
+    "month": [
+        "January","February","March","April","May","June","July","August","September","October","November","December"
+    ],
+    "weekday":{
+        "0":"Sunday",
+        "1":"Monday",
+        "2":"Tuesday",
+        "3":"Wednesday",
+        "4":"Thursday",
+        "5":"Friday",
+        "6":"Saturday"
+    },
+    "pointday": {
+        "0":"today",
+        "1":"tommorow",
+        "2":"day after tommorow",
+        "3":"Sunday",
+        "4":"Monday",
+        "5":"Tuesday",
+        "6":"Wednesday",
+        "7":"Thursday",
+        "8":"friday",
+        "9":"Saturday"
+    },
+    "schedule":{
+        "weekday": "every %s",
+        "biweek": "%s1 %s2",
+        "month":"%s of every month",
+        "evweek":"every other %s"
+    },
+    "trashname": {
+        "burn" : "burnable trash",
+        "unburn": "unburnable trash",
+        "bin":"bottle",
+        "can": "can",
+        "plastic": "plastic",
+        "petbottle": "plastic bottle",
+        "paper": "paper",
+        "resource": "recyclble trash",
+        "coarse": "oversized trash"
+    }
+}
