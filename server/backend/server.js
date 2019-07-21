@@ -225,6 +225,7 @@ app.get('/submit', async(req,res)=>{
                 user_id = await getIdFromLineId(req.session.platform, lineId);
             } catch(err) {
                 logger.error(err);
+                res.status(500).end('登録に失敗しました。');
             }
         }
 

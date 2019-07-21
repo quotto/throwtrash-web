@@ -43,7 +43,7 @@ class ScheduleList extends React.Component {
                         label='LINEで通知を受け取る'
                     />
                     <Tooltip 
-                        title={<span>毎朝6時にその日に出せるゴミをLINEでお知らせします。利用するにはLINEの連携許可が必要です。<br/>詳しくは<a href="../manual.html#%E9%80%A3%E6%90%BA%E3%81%AE%E5%81%9C%E6%AD%A2">こちら</a></span>}
+                        title={<span>毎朝6時にその日に出せるゴミをLINEでお知らせします。利用するにはLINEの連携許可が必要です。<br/>詳しくは<a href="/manual.html#%E9%80%A3%E6%90%BA%E3%81%AE%E5%81%9C%E6%AD%A2">こちら</a></span>}
                         interactive
                         placement="top"
                     >
