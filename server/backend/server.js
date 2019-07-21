@@ -167,7 +167,7 @@ app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
     req.session.state = req.query.state;
     req.session.client_id = req.query.client_id;
     req.session.redirect_uri = req.query.redirect_uri;
-    req.session.platform = req.query.platform;
+    req.session.platform = req.query.platform || 'amazon';
 
     if(req.session.state && req.session.client_id && req.session.redirect_uri) {
         logger.info(`oauth request - platform:${req.session.platform}`);
