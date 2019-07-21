@@ -225,7 +225,8 @@ app.get('/submit', async(req,res)=>{
                 user_id = await getIdFromLineId(req.session.platform, lineId);
             } catch(err) {
                 logger.error(err);
-                res.status(500).end('登録に失敗しました。');
+                res.set('Content-Type', 'text/plain;charset=utf-8');
+                res.status(400).end('登録に失敗しました。');
             }
         }
 
@@ -233,7 +234,8 @@ app.get('/submit', async(req,res)=>{
             user_id = await createNewId();
             if(!user_id) {
                 logger.error('Failed to create Id');
-                res.status(500).end('登録に失敗しました。');
+                res.set('Content-Type', 'text/plain;charset=utf-8');
+                res.status(400).end('登録に失敗しました。');
             }
         }
 
@@ -258,7 +260,8 @@ app.get('/submit', async(req,res)=>{
                 res.redirect(redirect_url);
             }).catch(err=>{
                 logger.error(`DB Insert Error\n${err}`);
-                res.status(500).end('登録に失敗しました。');
+                res.set('Content-Type', 'text/plain;charset=utf-8');
+                res.status(400).end('登録に失敗しました。');
                 return;
             });
         } 
@@ -293,7 +296,8 @@ app.get('/submit', async(req,res)=>{
         });
     } else {
         logger.error('Bad Request');
-        res.status(400).end('bad request');
+        res.set('Content-Type', 'text/plain;charset=utf-8');
+        res.status(400).end('登録に失敗しました。');
         return;
     }
 });
