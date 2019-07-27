@@ -35,6 +35,17 @@ class ScheduleList extends React.Component {
                     onInputTrashType={this.props.onInputTrashType}
                 />
                 <Grid item xs={2}></Grid>
+                <Grid item xs={8} style={{textAlign:'center'}}>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        disabled={this.props.trashes.length===MAX_SCHEDULE}
+                        onClick={()=>this.props.onClickAdd()}>
+                        {this.props.t('ScheduleList.button.addtrash')}
+                    </Button>
+                </Grid>
+                <Grid item xs={2}></Grid>
+                <Grid item xs={2}></Grid>
                 <Grid item xs={8} style={{textAlign: 'center'}}>
                     <FormControlLabel
                         control={
@@ -51,17 +62,6 @@ class ScheduleList extends React.Component {
                             <Help fontSize='small' />
                         </IconButton>
                     </Tooltip>
-                </Grid>
-                <Grid item xs={2}></Grid>
-                <Grid item xs={2}></Grid>
-                <Grid item xs={8} style={{textAlign:'center'}}>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        disabled={this.props.trashes.length===MAX_SCHEDULE}
-                        onClick={()=>this.props.onClickAdd()}>
-                        {this.props.t('ScheduleList.button.addtrash')}
-                    </Button>
                 </Grid>
                 <Grid item xs={2}></Grid>
                 <Grid item xs={4}></Grid>

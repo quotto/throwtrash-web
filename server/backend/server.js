@@ -202,7 +202,7 @@ app.post('/regist',(req,res,next)=>{
         req.session.redirect_state = redirect_state;
 
         if(req.body.line) {
-            res.status(200).end(`${lineOauth_endpoint}?platform=${req.session.platform}&redirect_state=${redirect_state}`);
+            res.status(200).end(`${lineOauth_endpoint}?&redirect_state=${redirect_state}`);
         } else {
             res.status(200).end(`/submit?redirect_state=${redirect_state}`);
         }
