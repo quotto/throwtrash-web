@@ -45,8 +45,7 @@ class ScheduleList extends React.Component {
                     </Button>
                 </Grid>
                 <Grid item xs={2}></Grid>
-                <Grid item xs={2}></Grid>
-                <Grid item xs={8} style={{textAlign: 'center'}}>
+                <Grid item xs={12} style={{textAlign: 'center'}}>
                     <FormControlLabel
                         control={
                             <Checkbox onChange={() => this.props.onChangeLine(event.target.checked)}/>
@@ -63,7 +62,6 @@ class ScheduleList extends React.Component {
                         </IconButton>
                     </Tooltip>
                 </Grid>
-                <Grid item xs={2}></Grid>
                 <Grid item xs={4}></Grid>
                 <Grid item xs={4} style={{textAlign:'center'}}>
                     <Button
