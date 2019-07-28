@@ -212,7 +212,9 @@ body h1 {
 }
 
 body img {
-  border-style: none;
+  border-style: solid;
+  border-width: 0.5px;
+  border-color: #6a737d;
 }
 
 body code,
@@ -674,7 +676,9 @@ body table tr:nth-child(2n) {
 body img {
   background-color: #fff;
   box-sizing: content-box;
-  max-width: 100%;
+  max-width: 300px;
+  display: block;
+  margin-bottom: 5px;
 }
 
 body img[align=right] {

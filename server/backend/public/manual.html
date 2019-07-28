@@ -30,11 +30,8 @@
 <li><a href="#%E3%82%B4%E3%83%9F%E5%87%BA%E3%81%97%E3%82%B9%E3%82%B1%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%E3%81%AE%E7%99%BB%E9%8C%B2">ゴミ出しスケジュールの登録</a>
 <ul>
 <li><a href="#%E3%82%B4%E3%83%9F%E3%81%AE%E7%A8%AE%E9%A1%9E">ゴミの種類</a></li>
-<li><a href="#%E3%82%B9%E3%82%B1%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%E3%81%AE%E7%A8%AE%E9%A1%9E">スケジュールの種類</a>
-<ul>
+<li><a href="#%E3%82%B9%E3%82%B1%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%E3%81%AE%E7%A8%AE%E9%A1%9E">スケジュールの種類</a></li>
 <li><a href="#%E3%82%B9%E3%82%B1%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%E3%81%AE%E4%BF%AE%E6%AD%A3">スケジュールの修正</a></li>
-</ul>
-</li>
 </ul>
 </li>
 <li><a href="#LINE%E9%80%A3%E6%90%BA%E6%A9%9F%E8%83%BD">LINE連携機能</a>
@@ -75,21 +72,44 @@
 <p>一度登録したスケジュールを修正したい場合は<strong>AlexaスキルストアまたはGoogleアシスタントからアカウントリンクを解除し、再度連携して登録し直してください。</strong></p>
 <h2 id="LINE%E9%80%A3%E6%90%BA%E6%A9%9F%E8%83%BD">LINE連携機能</h2>
 <p>LINEから当サービスのアカウントを友だち登録することで、<strong>毎朝6時にその日に出せるゴミをLINEでお知らせします。</strong></p>
+<p><img src="/img/remind.png" alt="LINEによるリマインド" title="LINEによるリマインド"></p>
 <h3 id="%E7%99%BB%E9%8C%B2%E6%96%B9%E6%B3%95">登録方法</h3>
 <ol>
-<li>ゴミ出しスケジュール登録時に <strong>「LINEで通知を受け取る」</strong> にチェックを入れて登録を実行してください。</li>
-<li>LINEのログイン画面が表示された場合はログインしてください。</li>
-<li>ログインすると当サービスのアカウントの友達登録画面が表示されますので <strong>「追加」</strong> を選択してください。</li>
-<li>これで準備は完了です！毎朝6時にその日に出せるゴミをお知らせします。</li>
+<li>
+<p>ゴミ出しスケジュール登録時に <strong>「LINEで通知を受け取る」</strong> にチェックを入れて登録を実行してください。
+<img src="/img/line_check.png" alt="「LINEで通知を受け取る」にチェック" title="「LINEで通知を受け取る」にチェック"></p>
+</li>
+<li>
+<p>LINEのログイン画面が表示された場合はログインし、「今日のゴミ出し」アプリとの連携を許可してください。
+<img src="/img/line_login2.png" alt="LINEログイン" title="LINEログイン">
+<img src="/img/line_authorize.png" alt="連携許可" title="連携許可"></p>
+</li>
+<li>
+<p>ログインすると当サービスのアカウントの友だち追加画面が表示されますので <strong>「追加」</strong> （または「ブロック解除」）を選択してください。
+<img src="/img/line_add_friend.png" alt="友だち追加" title="友だち追加"></p>
+</li>
+<li>
+<p>アカウントリンクの完了画面が表示されれば準備は完了です！毎朝6時にその日に出せるゴミをお知らせします。
+<img src="/img/accountlink_complete.png" alt="アカウントリンク完了" title="アカウントリンク完了"></p>
+</li>
 </ol>
-<h3 id="%E9%80%A3%E6%90%BA%E3%81%AE%E5%81%9C%E6%AD%A2">連携の停止</h3>
+<h3 id="%E9%80%9A%E7%9F%A5%E3%81%AE%E8%A7%A3%E9%99%A4">通知の解除</h3>
 <p><strong>AlexaスキルまたはGoogleアシスタントを無効にしてもLINEの通知は停止されません。</strong></p>
-<p>通知を停止する場合はLINEから以下の手順を実施してください。</p>
+<p>通知を停止する場合はLINEアプリから以下の手順を実施してください。</p>
 <ol>
-<li>トーク画面から当サービスをブロックしてください。</li>
-<li>LINEの「設定」→「アカウント」→「連携アプリ」と進んで当サービスを選択て <strong>「連携解除」</strong> を行ってください。</li>
+<li>
+<p>LINEアプリのトーク画面から当サービスをブロックしてください。</p>
+</li>
+<li>
+<p>LINEの「設定」→「アカウント」→「連携アプリ」と進んで「今日のゴミ出し」を選択して <strong>「アプリ連動解除」</strong> を行ってください。
+<img src="/img/line_setting.png" alt="&quot;設定&quot;" title="設定">
+<img src="/img/line_account.png" alt="&quot;アカウント&quot;" title="アカウント">
+<img src="/img/line_applies.png" alt="&quot;連携アプリ&quot;" title="連携アプリ">
+<img src="/img/line_permission.png" alt="&quot;連動解除&quot;" title="連動解除">
+<img src="/img/line_disconnect.png" alt="&quot;連動解除&quot;" title="連動解除"></p>
+</li>
 </ol>
-<p>なおブロック解除すると再びゴミ出し予定をLINEより通知します。</p>
+<p>なお<strong>ブロック解除すると再びゴミ出し予定をLINEより通知します。</strong></p>
 
     </body>
     </html>
