@@ -39,7 +39,12 @@ const logger = log4js.getLogger();
 const lineOauth_endpoint = 'https://todays-trash.herokuapp.com/oauth/request_token';
 const trashApi_endpoint = 'https://o8a8597lm0.execute-api.ap-northeast-1.amazonaws.com/test';
 
-const createNewId = async(platform)=>{
+const errorRedirect = (res, code, message)=>{
+    res.set('Content-Type', 'text/plain;charset=utf-8');
+    res.status(code).end(message);
+};
+
+const createNewId = async()=>{
     let user_id = null;
     // 初回登録は最大5回まで重複のないIDの採番を試みる
     let retry = 0;
@@ -49,7 +54,6 @@ const createNewId = async(platform)=>{
             uri: `${trashApi_endpoint}/data`,
             method: 'GET',
             qs: {
-                platform: platform,
                 id: user_id
             },
             headers: {
@@ -58,7 +62,8 @@ const createNewId = async(platform)=>{
         };
         logger.debug('create new id request:', option);
         const response = await rp(option);
-        if(JSON.parse(response).length == 0) {
+        logger.debug(response);
+        if(response === '') {
             logger.debug('create new id:', user_id);
             break;  
         }
@@ -73,7 +78,6 @@ const getIdFromLineId = async(platform, lineId)=>{
         uri: `${trashApi_endpoint}/data`,
         method: 'GET',
         qs: {
-            platform: platform,
             lineId: lineId
         },
         headers: {
@@ -115,10 +119,11 @@ firebase_admin.initializeApp({
 let firestore = firebase_admin.firestore();
 
 let mime = {
-    '.html':'text/html',
-    '.css':'text/css',
-    '.js':'application/javascript',
-    '.ico':'image/x-icon'
+    '.html': ['text/html', 'utf-8'],
+    '.css': ['text/css', 'utf-8'],
+    '.js': ['application/javascript', 'utf-8'],
+    '.ico': ['image/x-icon', 'binary'],
+    '.png': ['image/png', 'binary']
 };
 
 
@@ -126,39 +131,15 @@ const server = http.createServer(app).listen(argv.port, ()=>{
     logger.info( 'server is starting on ' + server.address().port + ' ...' );
 });
 
-app.get(/.+\..+/,(req,res,next)=>{
-    let requestPath = url.parse(req.url).pathname;
-    logger.info(`${req.method} ${requestPath}`);
-
-    let sendResource = path.join('./public',requestPath);
-    let sendFile = fs.createReadStream(sendResource,{encoding:'utf-8'});
-    let responseData = '';
-    sendFile.on('readable',()=>{
-        res.set({'Content-Type':mime[path.extname(sendResource)]});
-    });
-
-    sendFile.on('data',(data)=>{
-        responseData += data;
-    });
-
-    sendFile.on('close',()=> {
-        res.send(responseData);
-        res.status(200).end();
-        logger.info(`OK:${req.method} ${sendResource}`);
-    });
-
-    sendFile.on('error',(err)=>{
-        logger.error(`Error:${req.method} ${requestPath}`);
-    });
-});
+app.use('/', express.static('public'));
 
 app.get('/index/:lang',(req,res,next)=>{
     const lang = req.params.lang;
     if(MetaInfo[lang]) {
         res.render('index',{lang: lang,title: MetaInfo[lang].title});
     } else {
-        logger.warn('Wrong lang','ERROR');
-        res.status(400).end('bad request');
+        logger.warn('Wrong lang');
+        errorRedirect(res,400,'お使いの言語には対応していません');
         return;
     }
 });
@@ -174,8 +155,8 @@ app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
         const lang = req.acceptsLanguages('en','ja');
         res.redirect(`/index/${lang}`);
     } else {
-        logger.error('Bad Request');
-        res.status(400).end('bad request');
+        logger.error('oauth reqeust session state is not match.');
+        errorRedirect(res, 400, '不正なリクエストです');
         return;
     }
 });
@@ -186,7 +167,7 @@ app.post('/regist',(req,res,next)=>{
         const recv_data = JSON.parse(req.body.data);
         if(common_check.exist_error(recv_data)) {
             logger.error(`Bad Data\n${recv_data}`);
-            res.status(400).end('bad request');
+            errorRedirect(res, 400, '不正なリクエストです');
             return;
         }
 
@@ -210,7 +191,7 @@ app.post('/regist',(req,res,next)=>{
         
     } else {
         logger.error('Bad Request');
-        res.status(400).end('bad request');
+        errorRedirect(res, 400, '不正なリクエストです');
         return;
     }
 });
@@ -225,8 +206,7 @@ app.get('/submit', async(req,res)=>{
                 user_id = await getIdFromLineId(req.session.platform, lineId);
             } catch(err) {
                 logger.error(err);
-                res.set('Content-Type', 'text/plain;charset=utf-8');
-                res.status(400).end('登録に失敗しました。');
+                errorRedirect(res, 400, '登録に失敗しました。');
             }
         }
 
@@ -234,39 +214,12 @@ app.get('/submit', async(req,res)=>{
             user_id = await createNewId();
             if(!user_id) {
                 logger.error('Failed to create Id');
-                res.set('Content-Type', 'text/plain;charset=utf-8');
-                res.status(400).end('登録に失敗しました。');
+                errorRedirect(res, 400, '登録に失敗しました。');
             }
         }
 
+        // データ登録
         const regist_data = req.session.regist_data;
-        if(req.session.platform === 'google') {
-            logger.debug(`regist firestore: ${user_id},${regist_data}`);
-            firestore.runTransaction(t=>{
-                const params = {
-                    id: user_id,
-                    data: regist_data
-                };
-                if(lineId) {
-                    params.lineId = lineId;
-                    params.remind = true;
-                }
-                t.set(firestore.collection('schedule').doc(user_id), params);
-                return Promise.resolve('Regist Complelete');
-            }).then(()=>{
-                logger.info(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`);
-                const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
-                logger.debug(redirect_url);
-                res.redirect(redirect_url);
-            }).catch(err=>{
-                logger.error(`DB Insert Error\n${err}`);
-                res.set('Content-Type', 'text/plain;charset=utf-8');
-                res.status(400).end('登録に失敗しました。');
-                return;
-            });
-        } 
-
-
         const item = {
             id: user_id,
             description: JSON.stringify(regist_data, null, 2),
@@ -284,20 +237,47 @@ app.get('/submit', async(req,res)=>{
         dynamoClient.put(params,(err,data)=>{
             if(err) {
                 logger.error(`DB Insert Error\n${err}`);
-                res.status(500).end('registraion error');
+                errorRedirect(res, 400, '登録に失敗しました。');
                 return;
             } else {
                 logger.info(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`);
-                const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
-                logger.debug(redirect_url);
-                res.redirect(redirect_url);
-                return;
+                // Googleアシスタントからの登録はfirestore登録後にリダイレクトする
+                if (req.session.platform === 'google') {
+                    logger.debug(`regist firestore: ${user_id},${regist_data}`);
+                    firestore.runTransaction(t => {
+                        const params = {
+                            id: user_id,
+                            data: regist_data
+                        };
+                        if (lineId) {
+                            params.lineId = lineId;
+                            params.remind = true;
+                        }
+                        t.set(firestore.collection('schedule').doc(user_id), params);
+                        return Promise.resolve('Regist Complelete');
+                    }).then(() => {
+                        logger.info(`Regist user(${user_id}\n${JSON.stringify(regist_data)})`);
+                        const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
+                        logger.debug(redirect_url);
+                        res.redirect(redirect_url);
+                    }).catch(err => {
+                        logger.error(`DB Insert Error\n${err}`);
+                        errorRedirect(res, 400, '登録に失敗しました。');
+                        return;
+                    });
+                }  else {
+                    const redirect_url = `${req.session.redirect_uri}#state=${req.session.state}&access_token=${user_id}&client_id=${req.session.client_id}&token_type=Bearer`;
+                    logger.debug(redirect_url);
+                    res.redirect(redirect_url);
+                    return;
+                }
             }
         });
+
+
     } else {
-        logger.error('Bad Request');
-        res.set('Content-Type', 'text/plain;charset=utf-8');
-        res.status(400).end('登録に失敗しました。');
+        logger.error('submit session state is not match.');
+        errorRedirect(res, 400, '不正なリクエストです');
         return;
     }
 });
