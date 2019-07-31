@@ -15,6 +15,7 @@ const MetaInfo = require('./public/meta.json');
 const args = require('args');
 args.option('level', 'logger level', 'info');
 args.option('port', 'listening port', 8888);
+args.option('trash_api_endpoint', 'Data Api URL');
 const argv = args.parse(process.argv);
 
 const log4js = require('log4js');
@@ -37,7 +38,7 @@ log4js.configure({
 const logger = log4js.getLogger();
 
 const lineOauth_endpoint = 'https://todays-trash.herokuapp.com/oauth/request_token';
-const trashApi_endpoint = 'https://o8a8597lm0.execute-api.ap-northeast-1.amazonaws.com/test';
+const trashApi_endpoint = argv.trash_api_endpoint || process.env.TRASH_API_ENDPOINT; 
 
 const errorRedirect = (res, code, message)=>{
     res.set('Content-Type', 'text/plain;charset=utf-8');
@@ -118,15 +119,6 @@ firebase_admin.initializeApp({
 
 let firestore = firebase_admin.firestore();
 
-let mime = {
-    '.html': ['text/html', 'utf-8'],
-    '.css': ['text/css', 'utf-8'],
-    '.js': ['application/javascript', 'utf-8'],
-    '.ico': ['image/x-icon', 'binary'],
-    '.png': ['image/png', 'binary']
-};
-
-
 const server = http.createServer(app).listen(argv.port, ()=>{
     logger.info( 'server is starting on ' + server.address().port + ' ...' );
 });
@@ -183,7 +175,7 @@ app.post('/regist',(req,res,next)=>{
         req.session.redirect_state = redirect_state;
 
         if(req.body.line) {
-            res.status(200).end(`${lineOauth_endpoint}?&redirect_state=${redirect_state}`);
+            res.status(200).end(`${lineOauth_endpoint}?&redirect_state=${redirect_state}&redirect_url=${process.env.LINE_OAUTH_CALLBACK}`);
         } else {
             res.status(200).end(`/submit?redirect_state=${redirect_state}`);
         }
