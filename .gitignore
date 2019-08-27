@@ -5,3 +5,4 @@ skill/deploy/skill.zip
 server/backend/certs
 server/backend/serviceAccountKey.json
 **/*.log
+skill/deploy/packaged-template.yml
