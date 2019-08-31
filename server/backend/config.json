@@ -1,0 +1,19 @@
+{
+    "db": {
+        "access_token": "xxxxxxxxxxxxxxxxxx",
+        "secret": "xxxxxxxxxxxxxxxxxxxxx",
+        "region": "xxxxxxxxxxxxxxx"
+    },
+    "base": {
+        "secret": "xxxxxxxxxxxxxxxxx",
+        "endpoint": "https://example.com"
+    },
+    "api": {
+        "token": "xxxxx",
+        "endpoint": "https://example.com"
+    },
+    "google": {
+        "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+}
