@@ -14,7 +14,6 @@ const CONFIG = require('./config.json');
 const args = require('args');
 args.option('level', 'logger level', 'info');
 args.option('port', 'listening port', 8888);
-args.option('trash_api_endpoint', 'Data Api URL');
 const argv = args.parse(process.argv);
 
 const log4js = require('log4js');
@@ -37,7 +36,6 @@ log4js.configure({
 const logger = log4js.getLogger();
 
 const lineOauth_endpoint = 'https://todays-trash.herokuapp.com/oauth/request_token';
-const trashApi_endpoint = argv.trash_api_endpoint || CONFIG.api.endpoint; 
 
 const errorRedirect = (res, code, message)=>{
     res.set('Content-Type', 'text/plain;charset=utf-8');
@@ -51,7 +49,7 @@ const createNewId = async()=>{
     while(!user_id || retry < 5) {
         user_id = Util.create_id();
         const option = {
-            uri: `${trashApi_endpoint}/data`,
+            uri: `${CONFIG.api.endpoint}/data`,
             method: 'GET',
             qs: {
                 id: user_id
@@ -75,7 +73,7 @@ const createNewId = async()=>{
 const getIdFromLineId = async(platform, lineId)=>{
     let user_id = null;
     const option = {
-        uri: `${trashApi_endpoint}/data`,
+        uri: `${CONFIG.api.endpoint}/data`,
         method: 'GET',
         qs: {
             lineId: lineId
