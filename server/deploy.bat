@@ -1,0 +1,1 @@
+aws s3 sync resource s3://%1/ --acl public-read
