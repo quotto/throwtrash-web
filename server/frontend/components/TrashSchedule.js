@@ -1,6 +1,4 @@
 import React from 'react';
-import reactToString from 'react-to-string';
-const ReactDomServer = require('react-dom/server');
 import {
     Select,
     MenuItem,

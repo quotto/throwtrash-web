@@ -6,7 +6,8 @@ import {withStyles} from '@material-ui/core/styles';
 import {withTranslation} from 'react-i18next';
 
 class App extends React.Component {
-
+    componentDidMount() {
+    }
     render() {
         return (
             <div className={this.props.classes.component}>
