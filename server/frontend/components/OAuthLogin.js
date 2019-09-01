@@ -35,7 +35,7 @@ class OAuthLogin extends React.Component {
                     <img src='https://images-na.ssl-images-amazon.com/images/G/01/lwa/btnLWA_gold_156x32.png' alt='sign in with Amazon' />
                 </a>
                 <a href='/oauth_signin'>
-                    <img src='https://d29p8bq9xwgr82.cloudfront.net/btn_google_signin_ja.png' alt='sign in with Google' />
+                    <img src='https://d29p8bq9xwgr82.cloudfront.net/img/btn_google_signin_ja.png' alt='sign in with Google' />
                 </a>
             </div>
         );

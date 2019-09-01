@@ -140,7 +140,11 @@ app.get('/index/:version/:lang',(req,res)=>{
         res.charset = 'utf-8';
         res.header('Content-Type', 'text/html;charset=utf-8');
         res.status(200);
-        res.render(`${req.params.version}/index`,{lang: lang,title: MetaInfo[lang].title});
+        res.render('index',{
+            lang: lang,
+            title: MetaInfo[lang].title,
+            version: req.params.version
+        });
     } else {
         logger.warn('Wrong lang');
         errorRedirect(res,400,'お使いの言語には対応していません');

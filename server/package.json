@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack -p ",
-    "dev": "webpack -d ",
+    "build": "webpack -p",
+    "dev": "webpack -d",
+    "deploy": "deploy.bat",
     "test": "mocha ./server/backend/test",
     "test-front": "mocha --compilers js:babel-core/register ./frontend/test"
   },
