@@ -41,7 +41,7 @@ class ScheduleList extends React.Component {
                 </Grid>
                 <Grid item xs={2}></Grid>
                 <Grid item xs={12} style={{textAlign: 'center'}}>
-                    <OAuthLogin/>
+                    <OAuthLogin {...this.props}/>
                 </Grid>
                 <Grid item xs={4}></Grid>
                 <Grid item xs={4} style={{textAlign:'center'}}>

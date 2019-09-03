@@ -30,7 +30,8 @@ const createInitialTrash = ()=> {
 
 export const initialState = {
     trashes: [createInitialTrash()],
-    error: true
+    error: true,
+    signedIn: false
 };
 
 export const updateState = (state=initialState,action)=> {
@@ -82,6 +83,14 @@ export const updateState = (state=initialState,action)=> {
     }
     case ActionType.SET_SUBMITTING:{
         return Object.assign({},state,{submitting:action.value});
+    }
+    case ActionType.SET_USER_INFO: {
+        Object.assign(new_state, {userInfo: action.value, signedIn: true});
+        return new_state;
+    }
+    case ActionType.SIGN_OUT: {
+        Object.assign(new_state, {userInfo: undefined, signedIn: false});
+        return new_state;
     }
     default:
         return state;

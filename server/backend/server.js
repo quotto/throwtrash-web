@@ -34,6 +34,7 @@ log4js.configure({
     }
 });
 const logger = log4js.getLogger();
+const SIGNIN_KEY = 'signing';
 
 const lineOauth_endpoint = 'https://todays-trash.herokuapp.com/oauth/request_token';
 
@@ -136,7 +137,7 @@ app.get('/index/:version/:lang',(req,res)=>{
     req.session.version = req.params.version;
     if(MetaInfo[lang]) {
         // ユーザー側にsigninフラグが存在した場合を考慮してセッション上にsigninIdが無ければcookieをクリアする
-        req.session.signinId ? res.cookie('signing', true) : res.clearCookie('signing');
+        req.session.signinId ? res.cookie(SIGNIN_KEY, true) : res.clearCookie(SIGNIN_KEY);
         res.charset = 'utf-8';
         res.header('Content-Type', 'text/html;charset=utf-8');
         res.status(200);
@@ -183,6 +184,7 @@ app.get('/oauth_signin', (req, res)=>{
         login_hint: 'mythrowaway.net@gmail.com',
         nonce: new Date().toISOString()
     };
+    console.log(option);
     const params_array = [];
     for(let [key, value] of Object.entries(option)) {
         params_array.push(`${key}=${value}`);
@@ -205,7 +207,7 @@ app.get('/signin', (req,res)=>{
                 logger.debug(JSON.stringify(response));
                 if (response.statusCode === 200 && req.session.version) {
                     const user_id = response.body.user_id;
-                    res.cookie('signing', true);
+                    res.cookie(SIGNIN_KEY, true);
                     req.session.signinId = user_id;
                     res.redirect(`/index/${req.session.version}/${req.acceptsLanguages('en', 'ja')}`);
                 } else {
@@ -234,7 +236,7 @@ app.get('/signin', (req,res)=>{
             return rp(options).then(response=>{
                 if(response.id_token) {
                     const decoded_token = jwt.decode(response.id_token);
-                    res.cookie('signing', true);
+                    res.cookie(SIGNIN_KEY, true);
                     req.session.signinId = decoded_token.sub;
                     res.redirect(`/index/${req.session.version}/${req.acceptsLanguages('en', 'ja')}`);
                 } else {
@@ -248,6 +250,27 @@ app.get('/signin', (req,res)=>{
     }
     logger.error('invalid request');
     errorRedirect(res, 400, '不正なリクエストです');
+});
+
+app.get('/signout', (req,res)=>{
+    if(req.session.signinId) {
+        logger.info('signout:'+req.session.signinId);
+        req.session.signinId = undefined;
+        res.clearCookie(SIGNIN_KEY);
+        res.json({message:'success signout'});
+        return;
+    }
+    logger.warn('not signed in user');
+    res.status(500);
+    res.send('error');
+});
+
+app.get('/user_info', (req,res)=>{
+    if(req.session.signinId) {
+        res.status(200).json({name: 'test'});
+        return;
+    }
+    res.status(401).json({message: 'Unauthorized'});
 });
 
 app.post('/regist',(req,res)=>{

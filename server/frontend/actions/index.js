@@ -5,7 +5,9 @@ export const ActionType = {
     CHANGE_INPUT: 'CHANGE_INPUT',
     INPUT_TRASH_TYPE: 'INPUT_TRASH_TYPE',
     DEL_TRASH: 'DEL_TRASH',
-    SET_SUBMITTING: 'SET_SUBMITTING'
+    SET_SUBMITTING: 'SET_SUBMITTING',
+    SET_USER_INFO: 'SET_USER_INFO',
+    SIGN_OUT: 'SIGN_OUT'
 };
 
 export const addTrash = () => {
@@ -59,5 +61,18 @@ export const setSubmitting = (status)=> {
     return {
         type: ActionType.SET_SUBMITTING,
         value: status
+    };
+};
+
+export const setUserInfo = (user_info)=>{
+    return {
+        type: ActionType.SET_USER_INFO,
+        value: user_info
+    };
+};
+
+export const signOut = ()=>{
+    return {
+        type: ActionType.SIGN_OUT
     };
 };
