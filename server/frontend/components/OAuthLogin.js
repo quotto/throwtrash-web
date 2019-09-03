@@ -1,10 +1,38 @@
 import React from 'react';
-import { Hidden } from '@material-ui/core';
+import axios from 'axios';
+import { Hidden, Button } from '@material-ui/core';
 
 class OAuthLogin extends React.Component {
+    constructor(props) {
+        super(props);
+        console.log('constructor');
+        axios.get('/user_info')
+            .then(response => {
+                console.log(response);
+                if (response.status === 200) {
+                    props.onSetUserInfo(response.data);
+                }
+            }).catch(err => {
+                console.log(err);
+            });
+    }
+
+    signOut(props) {
+        console.log('signout');
+        axios.get('/signout')
+            .then(response=>{
+                console.log(response);
+                props.onSignOut();
+            }).catch(err=>{
+                console.log(err);
+            });
+    }
+
     componentDidMount() {
+        console.log('did mount');
         if(document.getElementById('amazon-root')) {
             window.onAmazonLoginReady = function () {
+                // eslint-disable-next-line no-undef
                 amazon.Login.setClientId('amzn1.application-oa2-client.8b1fd843af554c6891d9e48fc3c75be7');
             };
             (function (d) {
@@ -15,6 +43,7 @@ class OAuthLogin extends React.Component {
             })(document);
             document.getElementById('LoginWithAmazon').onclick = function () {
                 var options = { scope: 'profile' };
+                // eslint-disable-next-line no-undef
                 amazon.Login.authorize(options,
                     'https://localhost.net/signin?service=amazon');
                 return false;
@@ -23,9 +52,11 @@ class OAuthLogin extends React.Component {
     }
 
     render(){
-        if (document.cookie.split(';').filter((item) => item.trim().startsWith('signing=')).length) {
+        console.log('render');
+        if(this.props.signedIn) {
+            console.log('signing');
             return (
-                <Hidden xsUp xsDown>Signing!</Hidden>
+                <Button onClick={()=>this.signOut(this.props)}>ログアウト</Button>
             );
         }
         return (
