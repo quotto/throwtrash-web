@@ -100,8 +100,8 @@ class Client {
                     }
                 } else if(schedule['type'] === 'biweek') {
                     var matches = schedule['value'].match(/(\d)-(\d)/);
-                    var weekday = matches[1];
-                    var turn = matches[2];
+                    var weekday = Number(matches[1]);
+                    var turn = Number(matches[2]);
 
                     // 現在何週目かを求める
                     var nowturn = 0;
@@ -111,7 +111,7 @@ class Client {
                         targetdate -= 7;
                     }
 
-                    if(Number(weekday) === dt.getDay() && Number(turn) === nowturn) {
+                    if(weekday === dt.getDay() && turn === nowturn) {
                         result.push(trash_data);
                         return true;
                     }
@@ -140,7 +140,6 @@ class Client {
                         const past_date = (current_dt - start_dt) / 1000 / 60 / 60 / 24;
 
                         // 差が0またはあまりが0であれば隔週に該当
-
                         trash_data.schedule = [];
                         if(past_date === 0 || (past_date / 7) % 2 === 0) {
                             result.push(trash_data);
@@ -236,16 +235,16 @@ class Client {
                 } else if(schedule.type === 'biweek') {
                     // 設定値
                     const matches = schedule['value'].match(/(\d)-(\d)/);
-                    const weekday = matches[1];
-                    const turn = matches[2];
+                    const weekday = Number(matches[1]);
+                    const turn = Number(matches[2]);
 
                     // 直近の同じ曜日の日にちを設定
-                    let diff_day = Number(weekday) - today_dt.getDay();
+                    let diff_day = weekday - today_dt.getDay();
                     diff_day < 0 ? next_dt.setDate(today_dt.getDate() + (7 + diff_day)) : next_dt.setDate(today_dt.getDate() + diff_day);
 
                     // 何週目かを求める
                     let nowturn = 0;
-                    let targetdate = today_dt.getDate();
+                    let targetdate = next_dt.getDate();
                     while(targetdate > 0) {
                         nowturn += 1;
                         targetdate -= 7;
@@ -257,6 +256,7 @@ class Client {
                         next_dt.setDate(next_dt.getDate()+7);
                         if(current_month != next_dt.getMonth()) {
                             nowturn = 1;
+                            current_month = next_dt.getMonth();
                         } else {
                             nowturn += 1;
                         }
