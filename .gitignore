@@ -6,3 +6,5 @@ server/backend/certs
 server/backend/serviceAccountKey.json
 **/*.log
 skill/deploy/packaged-template.yml
+server/config.json
+.vscode/launch.json
