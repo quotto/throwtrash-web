@@ -30,8 +30,7 @@ const createInitialTrash = ()=> {
 
 export const initialState = {
     trashes: [createInitialTrash()],
-    error: true,
-    signedIn: false
+    error: true
 };
 
 export const updateState = (state=initialState,action)=> {
@@ -84,21 +83,48 @@ export const updateState = (state=initialState,action)=> {
     case ActionType.SET_SUBMITTING:{
         return Object.assign({},state,{submitting:action.value});
     }
-    case ActionType.SET_USER_INFO: {
-        Object.assign(new_state, {userInfo: action.value, signedIn: true});
-        return new_state;
-    }
-    case ActionType.SIGN_OUT: {
-        Object.assign(new_state, {userInfo: undefined, signedIn: false});
-        return new_state;
-    }
     default:
         return state;
     }
 };
 
+const MenuState = (state={menuOpen: false, anchorEl: null},action)=>{
+    const new_state = Object.assign({}, state);
+    switch(action.type) {
+    case ActionType.MENU_CHANGE:
+        Object.assign(new_state,{menuOpen: action.open, anchorEl: action.anchorEl});
+        break;
+    default:
+        break;
+    }
+    return new_state;
+};
+
+const LoginState = (state={signedIn: false, userInfo: null, signinDialog: false},action)=>{
+    const new_state = Object.assign({}, state);
+    switch(action.type) {
+    case ActionType.SET_USER_INFO: {
+        Object.assign(new_state, { userInfo: action.value, signedIn: true });
+        break;
+    }
+    case ActionType.SIGN_OUT: {
+        Object.assign(new_state, { userInfo: undefined, signedIn: false });
+        break;
+    }
+    case ActionType.SIGNIN_DIALOG: {
+        Object.assign(new_state, {signinDialog: action.open});
+        break;
+    }
+    default:
+        break;
+    }
+    return new_state;
+};
+
 const TrashScheduleApp = combineReducers({
-    updateState
+    updateState,
+    LoginState,
+    MenuState
 });
 
 export default TrashScheduleApp;
