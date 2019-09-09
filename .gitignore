@@ -8,3 +8,4 @@ server/backend/serviceAccountKey.json
 skill/deploy/packaged-template.yml
 server/config.json
 .vscode/launch.json
+server/backend/config.json

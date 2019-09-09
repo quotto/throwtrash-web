@@ -7,7 +7,9 @@ export const ActionType = {
     DEL_TRASH: 'DEL_TRASH',
     SET_SUBMITTING: 'SET_SUBMITTING',
     SET_USER_INFO: 'SET_USER_INFO',
-    SIGN_OUT: 'SIGN_OUT'
+    SIGN_OUT: 'SIGN_OUT',
+    SIGNIN_DIALOG: 'SIGNIN_DIALOG',
+    MENU_CHANGE: 'MENU_CHANGE'
 };
 
 export const addTrash = () => {
@@ -74,5 +76,17 @@ export const setUserInfo = (user_info)=>{
 export const signOut = ()=>{
     return {
         type: ActionType.SIGN_OUT
+    };
+};
+
+export const signinDialog =(value)=>{
+    return {type: ActionType.SIGNIN_DIALOG,open: value};
+};
+
+export const changeMenu = (value,target)=>{
+    return {
+        type:ActionType.MENU_CHANGE,
+        open: value,
+        anchorEl: target
     };
 };

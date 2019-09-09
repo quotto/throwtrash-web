@@ -5,7 +5,6 @@ import {withStyles} from '@material-ui/core/styles';
 import {AppStyle} from './style';
 import axios from 'axios';
 import {withTranslation} from 'react-i18next';
-import OAuthLogin from './OAuthLogin';
 
 const MAX_SCHEDULE = 10;
 class ScheduleList extends React.Component {
@@ -40,9 +39,6 @@ class ScheduleList extends React.Component {
                     </Button>
                 </Grid>
                 <Grid item xs={2}></Grid>
-                <Grid item xs={12} style={{textAlign: 'center'}}>
-                    <OAuthLogin {...this.props}/>
-                </Grid>
                 <Grid item xs={4}></Grid>
                 <Grid item xs={4} style={{textAlign:'center'}}>
                     <Button
