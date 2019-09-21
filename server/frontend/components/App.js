@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {Grid} from '@material-ui/core';
 import ScheduleListContainer from '../containers/ScheduleListContainer';
 import TopAppBarContainer from '../containers/AppBarContainer';
@@ -31,4 +32,8 @@ class App extends React.Component {
     }
 }
 
+App.propTypes = {
+    classes: PropTypes.object,
+    t: PropTypes.func
+};
 export default withStyles(AppStyle)(withTranslation()(App));

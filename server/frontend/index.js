@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {render} from 'react-dom';
 import {Provider} from 'react-redux';
 import {createStore} from 'redux';
@@ -19,6 +20,10 @@ class LangProvider extends React.Component {
         );
     }
 }
+
+LangProvider.propTypes = {
+    match: PropTypes.object
+};
 
 render(
     <Provider store={store}>

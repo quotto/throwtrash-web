@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import PropTypes from 'prop-types';
 import { DialogTitle, withStyles, Button, Dialog, DialogContent, DialogContentText, DialogActions } from '@material-ui/core';
 import axios from 'axios';
 
@@ -42,7 +43,10 @@ class SignInDialog extends React.Component {
             .then(response => {
                 console.log(response);
                 if (response.status === 200) {
-                    props.onSetUserInfo(response.data);
+                    props.onSetUserInfo(
+                        {name: response.data.name}, 
+                        response.data.preset
+                    );
                 }
             }).catch(err => {
                 console.log(err);
@@ -121,5 +125,13 @@ class SignInDialog extends React.Component {
         }
     }
 }
+
+SignInDialog.propTypes = {
+    signinDialog: PropTypes.bool,
+    classes: PropTypes.object,
+    onSigninDialog: PropTypes.func,
+    signedIn: PropTypes.bool,
+    onSetUserInfo: PropTypes.func
+};
 
 export default withStyles(styles)(SignInDialog);
