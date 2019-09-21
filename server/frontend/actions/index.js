@@ -66,10 +66,11 @@ export const setSubmitting = (status)=> {
     };
 };
 
-export const setUserInfo = (user_info)=>{
+export const setUserInfo = (user_info, preset)=>{
     return {
         type: ActionType.SET_USER_INFO,
-        value: user_info
+        user_info: user_info,
+        preset: preset
     };
 };
 
