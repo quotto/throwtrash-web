@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import TrashSchedule from './TrashSchedule';
 import {Button,Grid} from '@material-ui/core';
 import {withStyles} from '@material-ui/core/styles';
@@ -10,10 +11,11 @@ const MAX_SCHEDULE = 10;
 class ScheduleList extends React.Component {
     render() {
         if(this.props.submitting) {
+            console.log(JSON.stringify(this.props.trashes));
             axios.post('/regist',JSON.stringify(this.props.trashes),{headers:{'Content-Type':'application/json'}})
                 .then((response)=> {
                     window.location=response.data;
-                }).catch((error) =>{
+                }).catch(() =>{
                     alert(this.props.t('ScheduleList.error.registrationfailed.text'),this.props.t('ScheduleList.error.registrationfailed.title'));
                     this.props.onSubmit(false);
                 });
@@ -54,5 +56,19 @@ class ScheduleList extends React.Component {
         );
     }
 }
+
+ScheduleList.propTypes = {
+    submitting: PropTypes.bool,
+    submit_error: PropTypes.string,
+    trashes: PropTypes.array,
+    onChangeSchedule: PropTypes.func,
+    onChangeTrash: PropTypes.func,
+    onChangeInput: PropTypes.func,
+    onClickDelete: PropTypes.func,
+    onInputTrashType: PropTypes.func,
+    onClickAdd: PropTypes.func,
+    onSubmit: PropTypes.func,
+    t: PropTypes.func
+};
 
 export default withStyles(AppStyle)(withTranslation()(ScheduleList));

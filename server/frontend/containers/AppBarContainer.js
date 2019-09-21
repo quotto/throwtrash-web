@@ -16,14 +16,15 @@ const mapPropsState = (state)=> {
         menu: {
             open: state.MenuState.menuOpen,
             anchorEl: state.MenuState.anchorEl
-        }
+        },
+        openContact: state.MenuState.openContact
     };
 };
 
 const mapDispatchToProps = (dispatch)=>{
     return {
-        onSetUserInfo: (user_info)=>{
-            dispatch(setUserInfo(user_info));
+        onSetUserInfo: (user_info,preset)=>{
+            dispatch(setUserInfo(user_info,preset));
         },
         onSignOut: ()=>{
             dispatch(signOut());
