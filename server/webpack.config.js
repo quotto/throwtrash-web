@@ -1,8 +1,8 @@
 const app_root = require('app-root-path');
 
-module.exports = (env)=>{
+module.exports = (env, argv)=>{
     const filename = env.version ? `v${env.version}.js` : 'bundle.js';
-    const path = this.mode ==='production' ? `${app_root.path}/resource/bundle` : `${app_root.path}/backend/public`;
+    const path = argv.mode ==='production' ? `${app_root.path}/resource/bundle` : `${app_root.path}/backend/public`;
     return {
         entry: './frontend/index.js',
         output: {

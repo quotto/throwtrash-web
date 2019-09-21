@@ -9,3 +9,4 @@ skill/deploy/packaged-template.yml
 server/config.json
 .vscode/launch.json
 server/backend/config.json
+server/backend/public/v*.js
