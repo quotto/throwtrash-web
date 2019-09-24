@@ -170,7 +170,7 @@ app.get('/index/:version/:lang',(req,res)=>{
     const lang = req.params.lang;
     if(MetaInfo[lang]) {
         const bundle_path = argv.mode === 'production' ? 
-            `https://d29p8bq9xwgr82.cloudfront.net/bundle/v${req.params.version}.js` : `/v${req.params.version}.js`;
+            `https://d29p8bq9xwgr82.cloudfront.net/bundle/${req.params.version}.js` : `/${req.params.version}.js`;
         res.charset = 'utf-8';
         res.header('Content-Type', 'text/html;charset=utf-8');
         res.status(200);
@@ -195,7 +195,7 @@ app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
     if(req.session.state && req.session.client_id && req.session.redirect_uri && req.session.version) {
         logger.info(`oauth request - platform:${req.session.platform}`);
         const lang = req.acceptsLanguages('en','ja');
-        res.redirect(`/index/${req.session.version}/${lang}`);
+        res.redirect(`/index/v${req.session.version}/${lang}`);
         return;
     } else {
         logger.error('oauth reqeust session state is not match.');
@@ -236,9 +236,12 @@ app.get('/signin', (req,res)=>{
         if((req.query.state === req.session.googleState) && code) {
             get_profile_task = requestGoogleProfile(code);
         }
-    } else {
+    } 
+    
+    if(get_profile_task === null) {
         logger.error('invalid request');
         errorRedirect(res, 400, '不正なリクエストです');
+        return;
     }
 
     get_profile_task.then(user_info=>{
@@ -255,7 +258,7 @@ app.get('/signin', (req,res)=>{
         } else {
             req.session.userInfo.preset = [];
         }
-        res.redirect(`/index/${req.session.version}/${req.acceptsLanguages(['en','ja'])}`);
+        res.redirect(`/index/v${req.session.version}/${req.acceptsLanguages(['en','ja'])}`);
     }).catch(err=>{
         logger.errpr(err);
         errorRedirect(res, 500, 'エラーが発生しました');
@@ -338,7 +341,10 @@ app.get('/submit', async(req,res)=>{
                 return;
             } else {
                 logger.info(`Regist user(${JSON.stringify(item)})`);
-                // Googleアシスタントからの登録はfirestore登録後にリダイレクトする
+                // 登録が成功したらセッションのユーザー情報はクリアする
+                req.session.userInfo = undefined;
+
+                // Googleアシスタントの登録はfirestore登録後にリダイレクトする
                 if (req.session.platform === 'google') {
                     logger.debug(`regist firestore: ${item.id},${regist_data}`);
                     firestore.runTransaction(t => {
