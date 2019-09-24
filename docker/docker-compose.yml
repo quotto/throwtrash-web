@@ -1,0 +1,16 @@
+nginx:
+    image: trash-nginx
+    links:
+        - node:node
+    ports:
+        - 443:443
+node:
+    image: node
+    volumes: 
+        - ~/ThrowTrashesWithAlexa/server:/src
+    expose: 
+        - 2000
+    environment: 
+        - NODE_OPTION=--port 2000 
+    dns: 8.8.8.8
+

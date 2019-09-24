@@ -10,3 +10,5 @@ server/config.json
 .vscode/launch.json
 server/backend/config.json
 server/backend/public/v*.js
+docker/web/cert.key
+docker/web/cert.pem
