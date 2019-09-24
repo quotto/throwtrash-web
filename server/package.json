@@ -6,6 +6,7 @@
   "scripts": {
     "build": "webpack",
     "deploy": "deploy.bat",
+    "start": "cd backend && node server.js",
     "test": "mocha ./server/backend/test",
     "test-front": "mocha --compilers js:@babel/register ./frontend/test"
   },
