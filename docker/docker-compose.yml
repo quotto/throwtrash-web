@@ -1,16 +1,20 @@
-nginx:
-    image: trash-nginx
-    links:
-        - node:node
-    ports:
-        - 443:443
+https-portal:
+  image: steveltn/https-portal:1.7.3
+  ports:
+    - '443:443'
+  links:
+    - node
+  restart: always
+  environment:
+    DOMAINS: 'link.mythrowaway.net -> http://node:2000'
+  dns: 8.8.8.8
 node:
-    image: node
-    volumes: 
-        - ~/ThrowTrashesWithAlexa/server:/src
-    expose: 
-        - 2000
-    environment: 
-        - NODE_OPTION=--port 2000 
-    dns: 8.8.8.8
+  image: node
+  volumes: 
+      - ~/Documents/node.js/MyThrowAway/ThrowTrashesWithAlexa/server:/src
+  expose: 
+      - 2000
+  environment: 
+      - NODE_OPTION=--port 2000 
+  dns: 8.8.8.8
 
