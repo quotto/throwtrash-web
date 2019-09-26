@@ -72,9 +72,10 @@ class SignInDialog extends React.Component {
 
     loginWithAmazon() {
         var options = { scope: 'profile' };
+
         // eslint-disable-next-line no-undef
         amazon.Login.authorize(options,
-            'https://localhost.net/signin?service=amazon');
+            `${document.location.origin}/signin?service=amazon`);
         return false;
     }
 
