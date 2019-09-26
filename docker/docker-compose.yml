@@ -6,10 +6,13 @@ https-portal:
     - node
   restart: always
   environment:
+    STAGE: 'production'
     DOMAINS: 'link.mythrowaway.net -> http://node:2000'
+  volumes:
+    - ./web/cert:/var/lib/https-portal
   dns: 8.8.8.8
 node:
-  image: node
+  build: ./app
   volumes: 
       - ~/Documents/node.js/MyThrowAway/ThrowTrashesWithAlexa/server:/src
   expose: 
