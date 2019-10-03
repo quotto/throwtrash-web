@@ -1,23 +1,38 @@
-https-portal:
-  image: steveltn/https-portal:1.7.3
-  ports:
-    - '443:443'
-  links:
-    - node
-  restart: always
-  environment:
-    STAGE: 'production'
-    DOMAINS: 'link.mythrowaway.net -> http://node:2000'
-  volumes:
-    - ./web/cert:/var/lib/https-portal
-  dns: 8.8.8.8
-node:
-  build: ./app
-  volumes: 
-      - ~/Documents/node.js/MyThrowAway/ThrowTrashesWithAlexa/server:/src
-  expose: 
-      - 2000
-  environment: 
-      - NODE_OPTION=--port 2000 
-  dns: 8.8.8.8
-
+version: '2'
+services:
+  jenkins:
+    build:
+        context: ./jenkins
+        args:
+           - DOCKER_GROUP_ID=${DOCKER_GROUP_ID}
+    ports:
+        - 8080:8080
+    volumes:
+        - /var/jenkins:/var/jenkins_home
+        - ../:/src
+        - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+  https-portal:
+    image: steveltn/https-portal:1.7.3
+    ports:
+      - '80:80'
+      - '443:443'
+    links:
+      - node
+    restart: always
+    environment:
+      STAGE: 'production'
+      DOMAINS: 'link.mythrowaway.net -> http://node:2000'
+    volumes:
+      - ./web/cert:/var/lib/https-portal
+    dns: 8.8.8.8
+  node:
+    build: 
+      context: ./app
+    volumes: 
+        - ../server:/src
+    expose: 
+        - 2000
+    environment: 
+        - NODE_OPTION=--port 2000 
+    dns: 8.8.8.8
