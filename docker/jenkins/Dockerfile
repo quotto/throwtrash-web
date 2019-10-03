@@ -5,8 +5,6 @@ RUN mkdir /home/jenkins && chown jenkins:jenkins /home/jenkins && usermod -d /ho
 COPY id_rsa /home/jenkins/.ssh/id_rsa
 RUN chmod 700 /home/jenkins/.ssh && chmod 600 /home/jenkins/.ssh/id_rsa \
     && chown -R jenkins:jenkins /home/jenkins/.ssh
-# install jenkins plugin
-COPY ./plugins.txt /usr/share/jenkins/ref
 
 RUN apt-get update -y
 RUN apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
