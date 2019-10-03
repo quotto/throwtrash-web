@@ -1,6 +1,5 @@
 import React from 'react';
-import reactToString from 'react-to-string';
-const ReactDomServer = require('react-dom/server');
+import PropTypes from 'prop-types';
 import {
     Select,
     MenuItem,
@@ -8,12 +7,8 @@ import {
     InputLabel,
     InputAdornment,
     Button,
-    Radio,
-    RadioGroup,
     FormHelperText,
     FormControl,
-    FormControlLabel,
-    FormLabel,
     Grid,
     Hidden,
     Chip,
@@ -100,7 +95,7 @@ class TrashSchedule extends React.Component {
                     id={`schedule-${trash_index}-${schedule_index}`}
                     name={`schedule-${trash_index}-${schedule_index}`}
                     value={target_schedule.type}
-                    onChange={(e,children)=>this.props.onChangeSchedule(trash_index,schedule_index,e.target.value)}
+                    onChange={(e)=>this.props.onChangeSchedule(trash_index,schedule_index,e.target.value)}
                     style={{textAlign:'center'}}
                 >
                     {scheduleOptionTag}
@@ -112,9 +107,8 @@ class TrashSchedule extends React.Component {
 
     createScheduleOption(trash_index,schedule_index) {
         let target_schedule = this.props.trashes[trash_index].schedules[schedule_index];
-        let inputTag;
-        switch(target_schedule.type) {
-        case 'weekday':
+        let inputTag = <div />;
+        if(target_schedule.type === 'weekday') {
             let weekdayOption=[];
             WeekdayType.forEach((key)=> {
                 weekdayOption.push(
@@ -140,9 +134,8 @@ class TrashSchedule extends React.Component {
                     <FormHelperText error={target_schedule.error}>
                         {this.getErrorMessage(target_schedule.error)}
                     </FormHelperText>
-                </FormControl>
-            break;
-        case 'biweek':
+                </FormControl>;
+        } else if(target_schedule.type === 'biweek') {
             let biweekOption = [];
             WeekdayType.forEach((key)=> {
                 for(var num=1; num<=5; num++) {
@@ -170,9 +163,8 @@ class TrashSchedule extends React.Component {
                     <FormHelperText error={target_schedule.error}>
                         {this.getErrorMessage(target_schedule.error)}
                     </FormHelperText>
-                </FormControl>
-            break;
-        case 'month':
+                </FormControl>;
+        } else if(target_schedule.type === 'month') {
             inputTag =
                 <FormControl className={this.props.classes.OptionMonthFormControl}>
                     <InputLabel htmlFor={`scinput-${trash_index}-${schedule_index}`}>
@@ -192,9 +184,8 @@ class TrashSchedule extends React.Component {
                     <FormHelperText error={target_schedule.error}>
                         {this.getErrorMessage(target_schedule.error)}
                     </FormHelperText>
-                </FormControl>
-            break;
-        case 'evweek':
+                </FormControl>;
+        } else if(target_schedule.type === 'evweek') {
             let evweekOption = [];
             WeekdayType.forEach((key)=> {
                 evweekOption.push(
@@ -233,23 +224,19 @@ class TrashSchedule extends React.Component {
                         >
                             <StyleToggleButton
                                 value='thisweek'
-                                style={{'font-size':this.props.t('TrashSchedule.style.StyleToggleButton.fontsize')}}
+                                style={{fontSize:this.props.t('TrashSchedule.style.StyleToggleButton.fontsize')}}
                             >
                                 {this.props.t('TrashSchedule.select.evweek.thisweek')}
                             </StyleToggleButton>
                             <StyleToggleButton
                                 value='nextweek'
-                                style={{'font-size':this.props.t('TrashSchedule.style.StyleToggleButton.fontsize')}}
+                                style={{fontSize: this.props.t('TrashSchedule.style.StyleToggleButton.fontsize')}}
                             >
                                 {this.props.t('TrashSchedule.select.evweek.nextweek')}
                             </StyleToggleButton>
                         </ToggleButtonGroup>
                     </div>
-                </div>
-            break;
-        default:
-            inputTag = <div />
-            break;
+                </div>;
         }
 
         return (
@@ -260,18 +247,24 @@ class TrashSchedule extends React.Component {
         const scheduleTags = [];
         for(let i=0; i<3; i++){
             scheduleTags.push(
-                <Hidden key={`Hidden${i}`}><Grid item sm={5} /></Hidden>
+                <Hidden key={`Hidden${i}`} xsDown><Grid item sm={5} /></Hidden>
             );
             scheduleTags.push(
-                <Grid item sm={7} xs={12} key={`Grid${i}`}>
+                <Hidden smUp><Grid item xs={1} /></Hidden>
+            );
+            scheduleTags.push(
+                <Grid item sm={7} xs={10} key={`Grid${i}`}>
                     {this.createTrashSchedule(trash_index,i)}
                 </Grid>
+            );
+            scheduleTags.push(
+                <Hidden smUp><Grid item xs={1} /></Hidden>
             );
         }
         return scheduleTags;
     }
 
-    render(props) {
+    render() {
         let trashTag = [];
         for(let i=0; i < this.props.trashes.length; i++) {
             let trashOptionTag = [];
@@ -318,13 +311,13 @@ class TrashSchedule extends React.Component {
                                 name={`othertrashtype${i}`}
                                 placeholder={this.props.t('TrashSchedule.input.other.placeholder')}
                                 required={true}
-                                inputProps={{maxLength:this.props.t('TrashSchedule.input.other.maxlength')}}
+                                inputProps={{
+                                    maxLength:this.props.t('TrashSchedule.input.other.maxlength'),
+                                    style:{textAlign:'center'}
+                                }}
                                 value={this.props.trashes[i].trash_val}
                                 onChange={(e)=>{
                                     this.props.onInputTrashType(i,e.target.value,this.props.t('TrashSchedule.input.other.maxlength'));
-                                }}
-                                inputProps={{
-                                    style:{textAlign:'center'}
                                 }}
                             />
                             <FormHelperText error={this.props.trashes[i].input_trash_type_error}>
@@ -335,7 +328,7 @@ class TrashSchedule extends React.Component {
                             </FormHelperText>
                         </FormControl>
                     )}
-                </div>
+                </div>;
 
 
             trashTag.push(
@@ -345,9 +338,15 @@ class TrashSchedule extends React.Component {
                             <Button color='secondary' onClick={()=>this.props.onClick(i)}>{this.props.t('TrashSchedule.button.delete')}</Button>
                         </Grid>
                     </Hidden>
-                    <Grid item sm={7} xs={12}>
+                    <Hidden smUp>
+                        <Grid item xs={1} />
+                    </Hidden>
+                    <Grid item sm={7} xs={10}>
                         {trashTypeTag}
                     </Grid>
+                    <Hidden smUp>
+                        <Grid item xs={1} />
+                    </Hidden>
                     {this.createScheduleTags(i)}
                     <Hidden smUp>
                         <Grid item sm={12} xs={12} style={{textAlign: 'center'}}>
@@ -363,5 +362,21 @@ class TrashSchedule extends React.Component {
         );
     }
 }
+
+TrashSchedule.propTypes = {
+    submitting: PropTypes.bool,
+    submit_error: PropTypes.string,
+    trashes: PropTypes.array,
+    onChangeSchedule: PropTypes.func,
+    onChangeTrash: PropTypes.func,
+    onChangeInput: PropTypes.func,
+    onClickDelete: PropTypes.func,
+    onInputTrashType: PropTypes.func,
+    onClickAdd: PropTypes.func,
+    onClick: PropTypes.func,
+    onSubmit: PropTypes.func,
+    t: PropTypes.func,
+    classes: PropTypes.object
+};
 
 export default withStyles(AppStyle)(withTranslation()(TrashSchedule));

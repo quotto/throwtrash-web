@@ -5,7 +5,11 @@ export const ActionType = {
     CHANGE_INPUT: 'CHANGE_INPUT',
     INPUT_TRASH_TYPE: 'INPUT_TRASH_TYPE',
     DEL_TRASH: 'DEL_TRASH',
-    SET_SUBMITTING: 'SET_SUBMITTING'
+    SET_SUBMITTING: 'SET_SUBMITTING',
+    SET_USER_INFO: 'SET_USER_INFO',
+    SIGN_OUT: 'SIGN_OUT',
+    SIGNIN_DIALOG: 'SIGNIN_DIALOG',
+    MENU_CHANGE: 'MENU_CHANGE'
 };
 
 export const addTrash = () => {
@@ -59,5 +63,31 @@ export const setSubmitting = (status)=> {
     return {
         type: ActionType.SET_SUBMITTING,
         value: status
+    };
+};
+
+export const setUserInfo = (user_info, preset)=>{
+    return {
+        type: ActionType.SET_USER_INFO,
+        user_info: user_info,
+        preset: preset
+    };
+};
+
+export const signOut = ()=>{
+    return {
+        type: ActionType.SIGN_OUT
+    };
+};
+
+export const signinDialog =(value)=>{
+    return {type: ActionType.SIGNIN_DIALOG,open: value};
+};
+
+export const changeMenu = (value,target)=>{
+    return {
+        type:ActionType.MENU_CHANGE,
+        open: value,
+        anchorEl: target
     };
 };
