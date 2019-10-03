@@ -11,7 +11,6 @@ const MAX_SCHEDULE = 10;
 class ScheduleList extends React.Component {
     render() {
         if(this.props.submitting) {
-            console.log(JSON.stringify(this.props.trashes));
             axios.post('/regist',JSON.stringify(this.props.trashes),{headers:{'Content-Type':'application/json'}})
                 .then((response)=> {
                     window.location=response.data;

@@ -38,25 +38,19 @@ const styles = (theme)=>({
 class SignInDialog extends React.Component {
     constructor(props) {
         super(props);
-        console.log('constructor');
         axios.get('/user_info')
             .then(response => {
-                console.log(response);
                 if (response.status === 200) {
                     props.onSetUserInfo(
                         {name: response.data.name}, 
                         response.data.preset
                     );
                 }
-            }).catch(err => {
-                console.log(err);
             });
     }
 
     componentDidMount() {
-        console.log('did mount');
         if(document.getElementById('amazon-root')) {
-            console.log('initialize amazon login');
             window.onAmazonLoginReady = function () {
                 // eslint-disable-next-line no-undef
                 amazon.Login.setClientId('amzn1.application-oa2-client.8b1fd843af554c6891d9e48fc3c75be7');
@@ -80,7 +74,6 @@ class SignInDialog extends React.Component {
     }
 
     render() {
-        console.log('render');
         const {classes} = this.props;
         if(!this.props.signedIn) {
             return (
