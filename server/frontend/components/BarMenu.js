@@ -11,18 +11,13 @@ class BarMenu extends React.Component {
     }
 
     signOut() {
-        console.log('signout');
         Axios.get('/signout')
-            .then(response=>{
-                console.log(response);
+            .then(()=>{
                 this.props.onSignOut();
-            }).catch(err=>{
-                console.log(err);
             });
     }
 
     openWindow(url) {
-        console.log(this);
         window.open(url);
         this.props.onChangeMenu(false, null);
     }

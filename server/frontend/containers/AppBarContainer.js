@@ -8,7 +8,6 @@ import {
 } from '../actions';
 
 const mapPropsState = (state)=> {
-    console.log(state);
     return {
         signedIn: state.LoginState.signedIn,
         userInfo: state.LoginState.userInfo,
