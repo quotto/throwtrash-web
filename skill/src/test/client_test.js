@@ -14,17 +14,11 @@ locale_list.forEach(locale=>{
 
 
 describe('Client,en-US',function(){
-    let client;
-    before(()=>{
-        client = new Client('America/New_York', new TextCreator('en-US'));
-    });
-    describe('checkEnableTrashes',()=>{
-        let stub;
-        before(()=>{
-            stub = sinon.stub(client,'calculateLocalTime');
-            stub.withArgs(0).returns(new Date('2018/03/01'));
-        });
-        it('',function(){
+    it('checkEnableTrashes',()=>{
+        const client = new Client('America/New_York', new TextCreator('en-US'));
+        const stub = sinon.stub(client,'calculateLocalTime');
+        stub.withArgs(0).returns(new Date('2018/03/01'));
+        try {
             const testdata = [ { 'type': 'burn','trash_val': '', 'schedules': [ { 'type': 'weekday', 'value': '3' }, { 'type': 'weekday', 'value': '6' }, { 'type': 'none', 'value': '' } ] }, { 'type': 'plastic', 'trash_val': '','schedules': [ { 'type': 'weekday', 'value': '1' }, { 'type': 'none', 'value': '' }, { 'type': 'none', 'value': '' } ] }, { 'type': 'paper','trash_val': '', 'schedules': [ { 'type': 'none', 'value': '' }, { 'type': 'biweek', 'value': '1-2' }, { 'type': 'none', 'value': '' } ]}, { 'type': 'plastic', 'trash_val': '','schedules': [ { 'type': 'weekday', 'value': '4' }, { 'type': 'none', 'value': '' }, { 'type': 'none', 'value': '' } ] }, { 'type': 'petbottle', 'trash_val': '','schedules': [ { 'type': 'weekday', 'value': '4' }, { 'type': 'month', 'value': '11' }, { 'type': 'none', 'value': '' } ] } ];
 
             try{
@@ -35,10 +29,9 @@ describe('Client,en-US',function(){
             } finally{
                 stub.restore();
             }
-        });
-        after(()=>{
+        } finally {
             stub.restore();
-        });
+        }
     });
 });
 
@@ -126,15 +119,14 @@ describe('Client,ja-JP',function(){
         });
     });
 
-    describe('get_enable_trashes',function(){
-        const testdata = [ { 'type': 'burn','trash_val': '', 'schedules': [ { 'type': 'weekday', 'value': '3' }, { 'type': 'weekday', 'value': '6' }, { 'type': 'none', 'value': '' } ] }, { 'type': 'plastic', 'trash_val': '','schedules': [ { 'type': 'weekday', 'value': '1' }, { 'type': 'none', 'value': '' }, { 'type': 'none', 'value': '' } ] }, { 'type': 'paper','trash_val': '', 'schedules': [ { 'type': 'none', 'value': '' }, { 'type': 'biweek', 'value': '1-2' }, { 'type': 'none', 'value': '' } ]}, { 'type': 'bottole', 'trash_val': '','schedules': [ { 'type': 'weekday', 'value': '4' }, { 'type': 'none', 'value': '' }, { 'type': 'none', 'value': '' } ] }, { 'type': 'petbottle', 'trash_val': '','schedules': [ { 'type': 'weekday', 'value': '4' }, { 'type': 'month', 'value': '11' }, { 'type': 'none', 'value': '' } ] } ];
+    describe('checkEnableTrashes',function(){
         const client = new Client('Asia/Tokyo', new TextCreator('ja-JP'));
         it('weekday',function(){
             const stub = sinon.stub(client,'calculateLocalTime');
             stub.withArgs(0).returns(new Date('2018/03/01'));
 
             try{
-                let result = client.checkEnableTrashes(testdata,0);
+                let result = client.checkEnableTrashes(testData.checkEnableTrashes,0);
                 assert.equal(result.length,2);
                 assert.equal('ビン、カン',result[0].name);
                 assert.equal('ペットボトル',result[1].name);
@@ -148,7 +140,7 @@ describe('Client,ja-JP',function(){
             stub.withArgs(0).returns(new Date('2018/03/12'));
 
             try{
-                let result = client.checkEnableTrashes(testdata,0);
+                let result = client.checkEnableTrashes(testData.checkEnableTrashes,0);
                 assert.equal(2,result.length);
                 assert.equal('プラスチック',result[0].name);
                 assert.equal('古紙',result[1].name);
@@ -161,7 +153,7 @@ describe('Client,ja-JP',function(){
             stub.withArgs(0).returns(new Date('2018/03/11'));
 
             try{
-                let result = client.checkEnableTrashes(testdata,0);
+                let result = client.checkEnableTrashes(testData.checkEnableTrashes,0);
                 assert.equal(1,result.length);
                 assert.equal('ペットボトル',result[0].name);
             }finally{
@@ -172,91 +164,17 @@ describe('Client,ja-JP',function(){
             const stub = sinon.stub(client,'calculateLocalTime');
             stub.withArgs(0).returns(new Date('2018-09-26'));
 
-            const testdata =
-                    [
-                        {
-                            // 曜日が一致し該当週のため対象
-                            type: 'burn',
-                            schedules: [
-                                {
-                                    type: 'evweek',
-                                    value: {
-                                        weekday: '3',
-                                        start: '2018-09-09'
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            // 該当集だが曜日が一致しないので対象外
-                            type: 'other',
-                            trash_val: '新運',
-                            schedules: [
-                                {
-                                    type: 'evweek',
-                                    value: {
-                                        weekday: '1',
-                                        start: '2018-09-09'
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            // 登録週=今週かつ曜日が一致のため対象
-                            type: 'plastic',
-                            schedules: [
-                                {
-                                    type: 'evweek',
-                                    value: {
-                                        weekday: '3',
-                                        start: '2018-09-23'
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            // 翌週が該当週のため対象外
-                            type: 'can',
-                            schedules: [
-                                {
-                                    type: 'evweek',
-                                    value: {
-                                        weekday: '3',
-                                        start: '2018-09-30'
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            // 前週が該当のため対象外
-                            type: 'paper',
-                            schedules: [
-                                {
-                                    type: 'evweek',
-                                    value: {
-                                        weekday: '3',
-                                        start: '2018-09-16'
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            // 4週間前のため一致
-                            type: 'bin',
-                            schedules: [
-                                {
-                                    type: 'evweek',
-                                    value: {
-                                        weekday: '3',
-                                        start: '2018-08-26'
-                                    }
-                                }
-                            ]
-                        }
-                    ];
-
+            /**
+             * テストデータの想定(testdata.jsonのevweek)
+             * 1.曜日が一致し該当週のため対象
+             * 2.該当集だが曜日が一致しないので対象外
+             * 3.登録週=今週かつ曜日が一致のため対象
+             * 4.翌週が該当週のため対象外
+             * 5.前週が該当のため対象外
+             * 6.4週間前のため一致
+             */
             try{
-                const result = client.checkEnableTrashes(testdata,0);
+                const result = client.checkEnableTrashes(testData.evweek,0);
                 assert.equal(result.length,3);
                 assert.equal(result[0].name,'もえるゴミ');
                 assert.equal(result[1].name,'プラスチック');
@@ -271,124 +189,29 @@ describe('Client,ja-JP',function(){
             stub.withArgs(0).returns(new Date('2018/03/04'));
 
             try{
-                let result = client.checkEnableTrashes(testdata,0);
+                let result = client.checkEnableTrashes(testData.checkEnableTrashes,0);
                 assert.equal(0,result.length);
             } finally {
                 stub.restore();
             }
         });
     });
-    describe('get_enable_trashes 重複排除機能',function(){
+    describe('checkEnableTrashes duplicate 重複排除機能',function(){
         it('重複の排除',function(){
-            let testdata = [
-                {
-                    'type': 'burn',
-                    'trash_val': '',
-                    'schedules': [
-                        {
-                            'type': 'weekday',
-                            'value': '0'
-                        },
-                        {
-                            'type': 'weekday',
-                            'value': '6'
-                        },
-                        {
-                            'type': 'none',
-                            'value': ''
-                        }
-                    ]
-                },
-                {
-                    'type': 'burn',
-                    'trash_val': '',
-                    'schedules': [
-                        {
-                            'type': 'weekday',
-                            'value': '0'
-                        },
-                        {
-                            'type': 'weekday',
-                            'value': '6'
-                        },
-                        {
-                            'type': 'none',
-                            'value': ''
-                        }
-                    ]
-                }
-            ];
             const client = new Client('Asia/Tokyo', new TextCreator('ja-JP'));
             const stub = sinon.stub(client,'calculateLocalTime');
             stub.withArgs(0).returns(new Date('2018-09-29 00:00'));
 
-            const response = client.checkEnableTrashes(testdata,0);
+            const response = client.checkEnableTrashes(testData.duplicate,0);
             assert.equal(response.length,1);
 
             stub.restore();
         });
         it('otherの場合はtrash_valが同じ場合のみ重複排除',function(){
-            let testdata = [
-                {
-                    'type': 'other',
-                    'trash_val': '廃品',
-                    'schedules': [
-                        {
-                            'type': 'weekday',
-                            'value': '0'
-                        },
-                        {
-                            'type': 'weekday',
-                            'value': '6'
-                        },
-                        {
-                            'type': 'none',
-                            'value': ''
-                        }
-                    ]
-                },
-                {
-                    'type': 'other',
-                    'trash_val': '発泡スチロール',
-                    'schedules': [
-                        {
-                            'type': 'weekday',
-                            'value': '0'
-                        },
-                        {
-                            'type': 'weekday',
-                            'value': '6'
-                        },
-                        {
-                            'type': 'none',
-                            'value': ''
-                        }
-                    ]
-                },
-                {
-                    'type': 'other',
-                    'trash_val': '廃品',
-                    'schedules': [
-                        {
-                            'type': 'weekday',
-                            'value': '0'
-                        },
-                        {
-                            'type': 'weekday',
-                            'value': '6'
-                        },
-                        {
-                            'type': 'none',
-                            'value': ''
-                        }
-                    ]
-                }
-            ];
-
             const stub = sinon.stub(client,'calculateLocalTime');
             stub.withArgs(0).returns(new Date('2018-08-26 00:00'));
 
-            let response = client.checkEnableTrashes(testdata,0);
+            let response = client.checkEnableTrashes(testData.duplicate_other,0);
             assert.equal(response.length,2);
             assert.equal(response[0].name,'廃品');
             assert.equal(response[1].name,'発泡スチロール');
@@ -498,39 +321,81 @@ describe('Client,ja-JP',function(){
                 stub.restore();
             });
         });
-        describe('biweek',()=>{
-            let stub;
-            let client;
-            before(()=>{
-                client = new Client('Asia/Tokyo', new TextCreator('ja-JP'));
-                stub = sinon.stub(client,'calculateLocalTime');
+        describe('biweek',()=>{ 
+            it('第n曜日が一致する日にちでの計算',()=>{
+                let stub; 
+                const client = new Client('Asia/Tokyo', new TextCreator('ja-JP'));
+                try {
+                    stub = sinon.stub(client, 'calculateLocalTime');
+                    stub.withArgs(0).returns(new Date('2019/03/13'));
+                    const trashes = [
+                        {
+                            type: 'burn',
+                            schedules: [
+                                { type: 'biweek', value: '3-2' }, //当日
+                                { type: 'biweek', value: '3-3' }, //1週間後
+                                { type: 'biweek', value: '4-2' }, //同じ週の後ろの曜日
+                                { type: 'biweek', value: '4-3' }, //1週間後の後ろの曜日
+                                { type: 'biweek', value: '2-3' }, //1週間後の前の曜日
+                                { type: 'biweek', value: '1-1' }  //翌月
+                            ]
+                        }
+                    ];
+                    const result = client.getDayFromTrashType(trashes, 'burn');
+                    assert.equal(result.burn.list[0].getDate(), 13);
+                    assert.equal(result.burn.list[1].getDate(), 20);
+                    assert.equal(result.burn.list[2].getDate(), 14);
+                    assert.equal(result.burn.list[3].getDate(), 21);
+                    assert.equal(result.burn.list[4].getDate(), 19);
+                    assert.equal(`${result.burn.list[5].getMonth() + 1}-${result.burn.list[5].getDate()}`, '4-1');
+                    assert.equal(result.burn.recent.getDate(), 13);
+                } finally {
+                    stub.restore();
+                }
+            });
+            it('同じ週に第n曜日が一致しない後ろの曜日での計算',()=>{
+                const client = new Client('Asia/Tokyo', new TextCreator('ja-JP'));
+                const stub = sinon.stub(client, 'calculateLocalTime');
+                stub.withArgs(0).returns(new Date('2019/03/13'));
+                try {
+                    const trashes = [
+                        {
+                            type: 'burn',
+                            schedules: [
+                                { type: 'biweek', value: '5-3' }, //同じ週で回数が多い曜日
+                                { type: 'biweek', value: '5-4' }, //1週間後で回数が多い曜日
+                                { type: 'biweek', value: '5-2' }  //回数が既に終わっている曜日
+                            ]
+                        }
+                    ];
+                    const result = client.getDayFromTrashType(trashes, 'burn');
+                    assert.equal(result.burn.list[0].getDate(), 15);
+                    assert.equal(result.burn.list[1].getDate(), 22);
+                    assert.equal(`${result.burn.list[2].getMonth() + 1}-${result.burn.list[2].getDate()}`, '4-12');
+                    assert.equal(result.burn.recent.getDate(), 15);
+                } finally {
+                    stub.restore();
+                }
+            });
+            it('同じ週に第n曜日が一致しない前の曜日での計算',()=>{
+                const client = new Client('Asia/Tokyo', new TextCreator('ja-JP'));
+                const stub = sinon.stub(client, 'calculateLocalTime');
                 stub.withArgs(0).returns(new Date('2019/03/15'));
-            });
-            it('当日/翌週の同じ曜日/今週の違う曜日/翌週の違う曜日/再来週の違う曜日/翌月に繰越',()=>{
-                const trashes = [
-                    {
-                        type: 'burn',
-                        schedules: [
-                            {type: 'biweek',value:'5-3'},
-                            {type: 'biweek',value:'5-4'},
-                            {type: 'biweek',value:'6-3'},
-                            {type: 'biweek',value:'2-3'},
-                            {type: 'biweek',value:'6-5'},
-                            {type: 'biweek',value:'1-1'}
-                        ]
-                    }
-                ];
-                const result = client.getDayFromTrashType(trashes,'burn');
-                assert.equal(result.burn.list[0].getDate(),'15') ;
-                assert.equal(result.burn.list[1].getDate(),'22') ;
-                assert.equal(result.burn.list[2].getDate(),'16') ;
-                assert.equal(result.burn.list[3].getDate(),'19') ;
-                assert.equal(result.burn.list[4].getDate(),'30') ;
-                assert.equal(`${result.burn.list[5].getMonth()+1}-${result.burn.list[5].getDate()}`,'4-1') ;
-                assert.equal(result.burn.recent.getDate(),'15');
-            });
-            after(()=>{
-                stub.restore();
+                try {
+                    const trashes = [
+                        {
+                            type: 'burn',
+                            schedules: [
+                                { type: 'biweek', value: '4-3' }, //1週間後で回数が少ない曜日
+                            ]
+                        }
+                    ];
+                    const result = client.getDayFromTrashType(trashes, 'burn');
+                    assert.equal(result.burn.list[0].getDate(), 21);
+                    assert.equal(result.burn.recent.getDate(), 21);
+                } finally {
+                    stub.restore();
+                }
             });
         });
         describe('evweek',()=>{

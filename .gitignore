@@ -11,5 +11,4 @@ server/config.json
 server/backend/config.json
 server/backend/public/v*.js
 docker/web/cert/**
-
 docker/jenkins/id_rsa
