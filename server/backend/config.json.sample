@@ -1,0 +1,19 @@
+{
+    "db": {
+        "access_token": "xxxxxxxxxx",
+        "secret": "yyyyyyyyyyyyyyyyyyyyyyyyyyy",
+        "region": "xxxxxxxxxx"
+    },
+    "base": {
+        "secret": "xxxxxxxxxxxxxxxxxxxxxx",
+        "endpoint": "https://www.example.com"
+    },
+    "api": {
+        "token": "xxxxx",
+        "endpoint": "https://api.example.com"
+    },
+    "google": {
+        "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+        "client_secret": "yyyyyyyyyyyyyyyy"
+    }
+}

@@ -83,13 +83,68 @@ export const updateState = (state=initialState,action)=> {
     case ActionType.SET_SUBMITTING:{
         return Object.assign({},state,{submitting:action.value});
     }
+    case ActionType.SET_USER_INFO: {
+        if(action.preset.length > 0) {
+            action.preset.forEach(trash => {
+                const schedule_len = trash.schedules.length;
+                for (let i = schedule_len; i < 3; i++) {
+                    trash.schedules.push(initialSchedule());
+                }
+            });
+            new_state.trashes = _.cloneDeep(action.preset);
+            new_state.error = common_check.exist_error(new_state.trashes);
+        }
+        return new_state;
+    }
     default:
         return state;
     }
 };
 
+const MenuState = (state={menuOpen: false, anchorEl: null, openContact:false},action)=>{
+    const new_state = _.cloneDeep(state);
+    switch(action.type) {
+    case ActionType.MENU_CHANGE:
+        new_state.menuOpen = action.open;
+        new_state.anchorEl = action.anchorEl;
+        break;
+    case ActionType.SIGN_OUT:
+        new_state.menuOpen = false;
+        new_state.anchorEl = null;
+        break;
+    default:
+        break;
+    }
+    return new_state;
+};
+
+const LoginState = (state={signedIn: false, userInfo: null, signinDialog: false},action)=>{
+    const new_state = _.cloneDeep(state);
+    switch(action.type) {
+    case ActionType.SET_USER_INFO: {
+        new_state.userInfo=action.user_info;
+        new_state. signedIn=true;
+        break;
+    }
+    case ActionType.SIGN_OUT: {
+        new_state.userInfo = undefined;
+        new_state.signedIn = false;
+        break;
+    }
+    case ActionType.SIGNIN_DIALOG: {
+        new_state.signinDialog = action.open;
+        break;
+    }
+    default:
+        break;
+    }
+    return new_state;
+};
+
 const TrashScheduleApp = combineReducers({
-    updateState
+    updateState,
+    LoginState,
+    MenuState
 });
 
 export default TrashScheduleApp;

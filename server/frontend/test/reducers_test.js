@@ -1,4 +1,4 @@
-import {updateState,initialState} from '../reducers/index.js';
+import {updateState,initialState,initialSchedule} from '../reducers/index.js';
 import {ActionType} from '../actions/index.js';
 const assert = require('assert');
 const _ = require('lodash');
@@ -218,6 +218,25 @@ describe('updateState',()=>{
         it('submit false',()=>{
             let state = updateState(initialState,{type:ActionType.SET_SUBMITTING,value:false});
             assert.equal(false,state.submitting);
+        });
+    });
+    describe('set preset', ()=>{
+        it('has preset', ()=>{
+            const preset = [
+                {type:'burn',schedules:[{type:'weekday',value:'0'}]}];
+            const initial_schedule = {
+                type: 'none',
+                value: '',
+                error: undefined
+            };
+            let state = updateState(initialState, {type:ActionType.SET_USER_INFO, preset: preset});
+            assert.equal(state.trashes[0].schedules.length,3);
+            assert.equal(state.trashes[0].type,'burn');
+            assert.equal(state.trashes[0].schedules[0].type,'weekday');
+            assert.equal(state.trashes[0].schedules[0].value,'0');
+            assert.equal(state.error,false);
+            assert.deepEqual(state.trashes[0].schedules[0],preset[0].schedules[0]);
+            assert.deepEqual(state.trashes[0].schedules[1],initial_schedule);
         });
     });
 });
