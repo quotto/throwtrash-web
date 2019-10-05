@@ -70,10 +70,6 @@ export const AppStyle=theme=>({
             'text-align':'center'
         }
     },
-    component: {
-        width: '90%',
-        margin: '0 auto'
-    },
     TrashTypeGrid: {
         'text-align':'left',
         [theme.breakpoints.down('xs')] : {

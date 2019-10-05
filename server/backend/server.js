@@ -169,15 +169,16 @@ app.use('/', express.static('./public'));
 app.get('/index/:version/:lang',(req,res)=>{
     const lang = req.params.lang;
     if(MetaInfo[lang]) {
-        const bundle_path = argv.mode === 'production' ? 
-            `https://d29p8bq9xwgr82.cloudfront.net/bundle/${req.params.version}.js` : `/${req.params.version}.js`;
+        const resource_path = argv.mode === 'production' ? 
+            'https://d29p8bq9xwgr82.cloudfront.net' : '/resource';
         res.charset = 'utf-8';
         res.header('Content-Type', 'text/html;charset=utf-8');
         res.status(200);
         res.render('index',{
             lang: lang,
             title: MetaInfo[lang].title,
-            bundle_path: bundle_path
+            resource_path: resource_path,
+            version: req.params.version
         });
     } else {
         logger.warn('Wrong lang');
