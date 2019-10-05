@@ -20,7 +20,7 @@ class ScheduleList extends React.Component {
                 });
         }
         return (
-            <Grid container spacing={24}>
+            <Grid container justify='center' item xs={12} spacing={24}>
                 <TrashSchedule
                     trashes={this.props.trashes}
                     onChangeSchedule={this.props.onChangeSchedule}
@@ -67,7 +67,8 @@ ScheduleList.propTypes = {
     onInputTrashType: PropTypes.func,
     onClickAdd: PropTypes.func,
     onSubmit: PropTypes.func,
-    t: PropTypes.func
+    t: PropTypes.func,
+    classes: PropTypes.object
 };
 
 export default withStyles(AppStyle)(withTranslation()(ScheduleList));
