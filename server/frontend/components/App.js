@@ -10,24 +10,18 @@ import {withTranslation} from 'react-i18next';
 class App extends React.Component {
     render() {
         return (
-            <div className={this.props.classes.component}>
-                <Grid container spacing={24}>
-                    <Grid item xs={12}><TopAppBarContainer/></Grid>
-                    <Grid item xs={12} style={{textAlign:'center'}}>
-                        <ul style={{display:'inline-block',textAlign:'left'}}>
-                            <li>{this.props.t('App.description.trash')}</li>
-                            <li>{this.props.t('App.description.schedule')}</li>
-                        </ul>
-                    </Grid>
+            <Grid container>
+                <TopAppBarContainer/>
+                <Grid item xs={12} style={{textAlign:'center',paddingBottom: '12px'}}>
+                    <ul style={{display:'inline-block',textAlign:'left'}}>
+                        <li>{this.props.t('App.description.trash')}</li>
+                        <li>{this.props.t('App.description.schedule')}</li>
+                    </ul>
                 </Grid>
-                <Grid container spacing={24}>
-                    <Grid item xs={12}>
-                        <form name="registform">
-                            <ScheduleListContainer />
-                        </form>
-                    </Grid>
+                <Grid container justify='center' item xs={12}>
+                    <ScheduleListContainer />
                 </Grid>
-            </div>
+            </Grid>
         );
     }
 }
