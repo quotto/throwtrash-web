@@ -7,6 +7,7 @@ import App from './components/App';
 import TrashScheduleApp from './reducers';
 import {BrowserRouter,Route} from 'react-router-dom';
 import i18next from './lang/i18n.js';
+import './index.css';
 
 let store = createStore(TrashScheduleApp);
 
