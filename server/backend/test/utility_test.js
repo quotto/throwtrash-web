@@ -67,7 +67,7 @@ describe('adjustData',()=>{
         stub.withArgs().returns(1569801600000); //2019/09/30 00:00:00
     });
     it('adjustData', ()=>{
-        const adjust_data = Util.adjustData(testdata, 'Asia/Tokyo');
+        const adjust_data = Util.adjustData(testdata, -540); // 日本時間想定
         assert.equal(
             JSON.stringify(adjust_data),
             JSON.stringify([{

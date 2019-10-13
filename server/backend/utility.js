@@ -1,5 +1,8 @@
-const moment = require('moment-timezone');
 
+/**
+ * ユーザーIDをランダムに生成する
+ * @return {string} ユーザーID
+ */
 exports.create_id = ()=>{
     let uuid = '', i, random;
     for (i = 0; i < 32; i++) {
@@ -14,22 +17,24 @@ exports.create_id = ()=>{
 };
 
 /**
-    params:offset 今週=0,来週=1
-**/
-const calculateStartDate = (offset, tz) => {
+ * 隔週スケジュールの開始日（今週の日曜日 または 来週の日曜日）を求める 
+ * @param {int} weektype : 0:今週,1:来週
+ * @param {int} offset : ユーザー地域のタイムゾーンオフセット
+ */
+const calculateStartDate = (weektype, offset) => {
     const utcdt = new Date();
-    const localeoffset = moment.tz.zone(tz).utcOffset(utcdt.getTime());
-    const localdt = new Date(utcdt.getTime() + (-1 * localeoffset * 60 * 1000));
-    localdt.setUTCDate(localdt.getUTCDate() - localdt.getUTCDay() + (7 * offset));
+    const localdt = new Date(utcdt.getTime() + (-1 * offset * 60 * 1000));
+    localdt.setUTCDate(localdt.getUTCDate() - localdt.getUTCDay() + (7 * weektype));
 
     return `${localdt.getUTCFullYear()}-${localdt.getUTCMonth()+1}-${localdt.getUTCDate()}`;
 };
 
 /**
-    DB登録用にデータを整形する
-    params: input_data Webフォームから入力されたゴミ出しスケジュールのJSONデータ
-**/
-exports.adjustData = (input_data, tz) => {
+ * ユーザーより送信されたゴミ出しスケジュールを最適化する
+ * @param {object} : JSON形式のゴミ出しスケジュール
+ * @param {int} offset : ユーザー地域のタイムゾーンオフセット
+ */
+exports.adjustData = (input_data, offset) => {
     let regist_data = [];
     input_data.forEach((trash)=>{
         let regist_trash = {
@@ -47,8 +52,8 @@ exports.adjustData = (input_data, tz) => {
             };
             if(regist_schedule.type && regist_schedule.type != 'none' && regist_schedule.value) {
                 if(regist_schedule.type === 'evweek') {
-                    const offset = regist_schedule.value.start==='thisweek' ? 0 : 1;
-                    const start_date = calculateStartDate(offset, tz);
+                    const weektype = regist_schedule.value.start==='thisweek' ? 0 : 1;
+                    const start_date = calculateStartDate(weektype, offset);
                     regist_schedule.value.start = start_date;
                 }
                 trash_schedules.push(regist_schedule);
