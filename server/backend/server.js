@@ -288,7 +288,7 @@ app.get('/user_info', (req,res)=>{
 
 app.post('/regist',(req,res)=>{
     logger.debug('Regist request:',JSON.stringify(req.body));
-    const recv_data = req.body;
+    const recv_data = req.body.data;
     if(common_check.exist_error(recv_data)) {
         logger.error(`Bad Data\n${recv_data}`);
         errorRedirect(res, 400, '不正なリクエストです');
@@ -296,7 +296,7 @@ app.post('/regist',(req,res)=>{
     }
 
     // 検証した登録データをセッションに格納
-    const regist_data = Util.adjustData(recv_data);
+    const regist_data = Util.adjustData(recv_data, req.body.offset);
     req.session.regist_data = regist_data;
 
     // リダイレクト元の検証用にランダム値をセッションに格納

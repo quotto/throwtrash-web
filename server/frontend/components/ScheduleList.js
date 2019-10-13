@@ -2,8 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import TrashSchedule from './TrashSchedule';
 import {Button,Grid} from '@material-ui/core';
-import {withStyles} from '@material-ui/core/styles';
-import {AppStyle} from './style';
 import axios from 'axios';
 import {withTranslation} from 'react-i18next';
 
@@ -11,13 +9,16 @@ const MAX_SCHEDULE = 10;
 class ScheduleList extends React.Component {
     render() {
         if(this.props.submitting) {
-            axios.post('/regist',JSON.stringify(this.props.trashes),{headers:{'Content-Type':'application/json'}})
-                .then((response)=> {
-                    window.location=response.data;
-                }).catch(() =>{
-                    alert(this.props.t('ScheduleList.error.registrationfailed.text'),this.props.t('ScheduleList.error.registrationfailed.title'));
-                    this.props.onSubmit(false);
-                });
+            axios.post(
+                '/regist',
+                JSON.stringify({ data: this.props.trashes, offset: new Date().getTimezoneOffset() }),
+                { headers: { 'Content-Type': 'application/json' } }
+            ).then((response) => {
+                window.location = response.data;
+            }).catch(() => {
+                alert(this.props.t('ScheduleList.error.registrationfailed.text'), this.props.t('ScheduleList.error.registrationfailed.title'));
+                this.props.onSubmit(false);
+            });
         }
         return (
             <Grid container justify='center' item xs={12} spacing={24}>
@@ -71,4 +72,4 @@ ScheduleList.propTypes = {
     classes: PropTypes.object
 };
 
-export default withStyles(AppStyle)(withTranslation()(ScheduleList));
+export default withTranslation()(ScheduleList);
