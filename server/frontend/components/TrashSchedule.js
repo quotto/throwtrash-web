@@ -16,7 +16,6 @@ import {
 } from '@material-ui/core';
 import {ToggleButton,ToggleButtonGroup} from '@material-ui/lab';
 import {withStyles,createMuiTheme} from '@material-ui/core/styles';
-import {AppStyle} from './style';
 import CalendarToday  from '@material-ui/icons/CalendarToday';
 import Delete  from '@material-ui/icons/Delete';
 
@@ -47,6 +46,111 @@ const ScheduleType = ['none','weekday','biweek','month','evweek'];
 
 const WeekdayType =  ['0','1','2','3','4','5','6'];
 
+const styles = {
+    ScheduleTypeFormControl: {
+        'vertical-align':'top',
+        'text-align':'center',
+        [defaultTheme.breakpoints.up('sm')] : {
+            'margin-right':'10px',
+            'width':'40%',
+            'min-width':'130px',
+            'max-width':'210px'
+        },
+        [defaultTheme.breakpoints.down('xs')]: {
+            'width':'100%'
+        }
+    },
+    OptionMonthFormControl: {
+        'display':'inline-block',
+        'vertical-align':'top',
+        [defaultTheme.breakpoints.up('sm')] : {
+            'text-align':'center',
+            'width':'40%',
+            'min-width':'130px',
+            'max-width':'210px'
+        },
+        [defaultTheme.breakpoints.down('xs')]: {
+            'text-align':'left',
+            'width':'50%'
+        }
+    },
+    OptionWeekFormControl: {
+        'display':'inline-block',
+        'vertical-align':'top',
+        [defaultTheme.breakpoints.up('sm')] : {
+            'width':'40%',
+            'min-width':'130px',
+            'max-width':'210px'
+        },
+        [defaultTheme.breakpoints.down('xs')]: {
+            'text-align':'left',
+            'width':'50%'
+        }
+    },
+    OptionWeekSelect: {
+        'width':'100%',
+        'text-align':'center'
+    },
+    OptionEvWeekDiv: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        [defaultTheme.breakpoints.down('xs')]: {
+            flexDirection: 'column',
+            alignItems:'flex-start'
+        }
+    },
+    OptionEvweekFormControl: {
+        textAlign:'center',
+        width:'50%',
+        marginRight: '10px',
+        [defaultTheme.breakpoints.down('xs')]: {
+            textAlign:'left',
+            'width':'50%',
+            'min-width':'none',
+            'max-width':'none',
+            'margin-bottom':'8px'
+        }
+    },
+    OptionEvWeekSelect: {
+        [defaultTheme.breakpoints.down('xs')]: {
+            'width':'100%',
+            'text-align':'center'
+        }
+    },
+    TrashTypeFormControl: {
+        [defaultTheme.breakpoints.up('sm')] : {
+            'margin-right':'10px',
+            'width': '40%',
+            'min-width':'130px',
+            'max-width':'210px',
+        },
+        [defaultTheme.breakpoints.down('xs')] : {
+            'width': '100%',
+        }
+    },
+    OtherTrashInputFormControl: {
+        [defaultTheme.breakpoints.up('sm')] : {
+            'margin-right':'10px',
+            'width': '40%',
+            'min-width':'130px',
+            'max-width':'210px',
+        },
+        [defaultTheme.breakpoints.down('xs')] : {
+            'width': '50%',
+        }
+    },
+    TrashScheduleDiv: {
+        display: 'flex',
+        [defaultTheme.breakpoints.up('sm')]: {
+            flexDirection: 'row',
+            alignItems: 'baseline'
+        },
+        [defaultTheme.breakpoints.down('xs')]: {
+            flexDirection: 'column'
+        }
+    }
+};
 class TrashSchedule extends React.Component {
     getErrorMessage(message_id,params=[]) {
         let message =  message_id ? this.props.t(`error.${message_id}`) : undefined;
@@ -379,4 +483,4 @@ TrashSchedule.propTypes = {
     classes: PropTypes.object
 };
 
-export default withStyles(AppStyle)(withTranslation()(TrashSchedule));
+export default withStyles(styles)(withTranslation()(TrashSchedule));
