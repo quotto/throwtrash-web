@@ -1,21 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormHelperText, Select, FormControl, InputLabel, withStyles, createMuiTheme } from '@material-ui/core';
+import { FormHelperText, Select, FormControl, InputLabel, withStyles } from '@material-ui/core';
 import { withTranslation } from 'react-i18next';
 import { getErrorMessage} from '../common';
 import { WeekDayList } from './WeekDayList';
 
-const defaultTheme = createMuiTheme();
-const styles = {
+const styles = (theme)=>({
     OptionWeekFormControl: {
         'display':'inline-block',
         'vertical-align':'top',
-        [defaultTheme.breakpoints.up('sm')] : {
+        [theme.breakpoints.up('sm')] : {
             'width':'40%',
             'min-width':'130px',
             'max-width':'210px'
         },
-        [defaultTheme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('xs')]: {
             'text-align':'left',
             'width':'50%'
         }
@@ -24,7 +23,7 @@ const styles = {
         'width':'100%',
         'text-align':'center'
     }
-};
+});
 
 class WeekDay extends React.Component {
     render() {

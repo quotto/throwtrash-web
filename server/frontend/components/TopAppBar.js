@@ -48,7 +48,12 @@ class TopAppBar extends React.Component {
                         <Typography variant="h6" className={classes.appBarTitle}>
                             今日のゴミ出し
                         </Typography>
-                        <SignInDialog {...this.props} />
+                        <SignInDialog 
+                            signinDialog={this.props.signinDialog}
+                            onSigninDialog={this.props.onSigninDialog}
+                            signedIn={this.props.signedIn}
+                            onSetUserInfo={this.props.onSetUserInfo}
+                        />
                     </Toolbar>
                 </AppBar>
             </div>
@@ -58,6 +63,10 @@ class TopAppBar extends React.Component {
 
 TopAppBar.propTypes = {
     classes: PropTypes.object,
-    onChangeMenu: PropTypes.func
+    onChangeMenu: PropTypes.func,
+    signinDialog: PropTypes.bool,
+    onSigninDialog: PropTypes.func,
+    signedIn: PropTypes.bool,
+    onSetUserInfo: PropTypes.func
 };
 export default withStyles(styles)(TopAppBar);

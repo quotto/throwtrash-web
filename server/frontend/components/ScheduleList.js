@@ -59,7 +59,7 @@ class ScheduleList extends React.Component {
 
 ScheduleList.propTypes = {
     submitting: PropTypes.bool,
-    submit_error: PropTypes.string,
+    submit_error: PropTypes.bool.isRequired,
     trashes: PropTypes.array,
     onChangeSchedule: PropTypes.func,
     onChangeTrash: PropTypes.func,
