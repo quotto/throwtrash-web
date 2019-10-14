@@ -6,7 +6,7 @@ import axios from 'axios';
 import {withTranslation} from 'react-i18next';
 
 const MAX_SCHEDULE = 10;
-class ScheduleList extends React.Component {
+class Main extends React.Component {
     render() {
         if(this.props.submitting) {
             axios.post(
@@ -57,7 +57,7 @@ class ScheduleList extends React.Component {
     }
 }
 
-ScheduleList.propTypes = {
+Main.propTypes = {
     submitting: PropTypes.bool,
     submit_error: PropTypes.bool.isRequired,
     trashes: PropTypes.array,
@@ -72,4 +72,4 @@ ScheduleList.propTypes = {
     classes: PropTypes.object
 };
 
-export default withTranslation()(ScheduleList);
+export default withTranslation()(Main);
