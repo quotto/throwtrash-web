@@ -1,21 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormHelperText,FormControl, InputLabel, withStyles, createMuiTheme, Select } from '@material-ui/core';
+import { FormHelperText,FormControl, InputLabel, withStyles, Select } from '@material-ui/core';
 import { withTranslation } from 'react-i18next';
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab';
 import { WeekDayList } from './WeekDayList';
 
-const defaultTheme = createMuiTheme({
-    typography: {
-        useNextVariants: true
-    }
-});
-const styles = {
+const styles = (theme)=>({
     OptionEvWeekDiv: {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'flex-end',
-        [defaultTheme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('xs')]: {
             flexDirection: 'column',
             alignItems:'flex-start'
         }
@@ -24,7 +19,7 @@ const styles = {
         textAlign:'center',
         width:'50%',
         marginRight: '10px',
-        [defaultTheme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('xs')]: {
             textAlign:'left',
             'width':'50%',
             'min-width':'none',
@@ -33,25 +28,27 @@ const styles = {
         }
     },
     OptionEvWeekSelect: {
-        [defaultTheme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('xs')]: {
             'width':'100%',
             'text-align':'center'
         }
     }
-};
+});
 
-const StyleToggleButton = withStyles({
-    selected: {
-        color: 'white',
-        background: defaultTheme.palette.secondary.main,
-        '&:after': {
-            background: 'none'
-        },
-        '&:hover': {
-            background: defaultTheme.palette.secondary.main
+const StyleToggleButton = withStyles(
+    (theme) => ({
+        selected: {
+            color: 'white',
+            background: theme.palette.secondary.main,
+            '&:after': {
+                background: 'none'
+            },
+            '&:hover': {
+                background: theme.palette.secondary.main
+            }
         }
-    }
-})(ToggleButton);
+    })
+)(ToggleButton);
 
 class EvWeek extends React.Component {
     render() {

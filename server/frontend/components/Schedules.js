@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Hidden, Grid, withStyles, FormHelperText, Select, Chip, InputLabel, Avatar, MenuItem, FormControl, createMuiTheme } from '@material-ui/core';
+import { Hidden, Grid, withStyles, FormHelperText, Select, Chip, InputLabel, Avatar, MenuItem, FormControl } from '@material-ui/core';
 import { withTranslation } from 'react-i18next';
 import WeekDay from './schedule-inputs/WeekDay';
 import EvWeek from './schedule-inputs/EvWeek';
@@ -9,32 +9,31 @@ import Month from './schedule-inputs/Month';
 import CalendarToday  from '@material-ui/icons/CalendarToday';
 import { ScheduleType } from './common';
 
-const defaultTheme = createMuiTheme();
-const styles = {
+const styles = (theme)=>({
     TrashSchedule: {
         display: 'flex',
-        [defaultTheme.breakpoints.up('sm')]: {
+        [theme.breakpoints.up('sm')]: {
             flexDirection: 'row',
             alignItems: 'baseline'
         },
-        [defaultTheme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('xs')]: {
             flexDirection: 'column'
         }
     },
     ScheduleTypeFormControl: {
         'vertical-align':'top',
         'text-align':'center',
-        [defaultTheme.breakpoints.up('sm')] : {
+        [theme.breakpoints.up('sm')] : {
             'margin-right':'10px',
             'width':'40%',
             'min-width':'130px',
             'max-width':'210px'
         },
-        [defaultTheme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('xs')]: {
             'width':'100%'
         }
     },
-};
+});
 
 function ScheduleOption(props) {
     const {trash_index,schedule_index,onChangeInput,trash} = props;

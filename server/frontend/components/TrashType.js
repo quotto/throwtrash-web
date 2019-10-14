@@ -2,23 +2,34 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { MenuItem, FormControl, InputLabel, Chip, Avatar, Select, FormHelperText, Input } from '@material-ui/core';
 import Delete from '@material-ui/icons/Delete';
-import { withStyles,createMuiTheme } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import { withTranslation } from 'react-i18next';
+import { isError } from './common';
 
-const defaultTheme = createMuiTheme();
-const styles = {
+const styles = (theme)=>({
     TrashTypeFormControl: {
-        [defaultTheme.breakpoints.up('sm')] : {
+        [theme.breakpoints.up('sm')] : {
             'margin-right':'10px',
             'width': '40%',
             'min-width':'130px',
             'max-width':'210px',
         },
-        [defaultTheme.breakpoints.down('xs')] : {
+        [theme.breakpoints.down('xs')] : {
             'width': '100%',
         }
     },
-};
+    OtherTrashInputFormControl: {
+        [theme.breakpoints.up('sm')] : {
+            'margin-right':'10px',
+            'width': '40%',
+            'min-width':'130px',
+            'max-width':'210px',
+        },
+        [theme.breakpoints.down('xs')] : {
+            'width': '50%',
+        }
+    },
+});
 
 const TRASH_OPTION = [
     'burn','unburn','plastic','bin','can','petbottle','paper','resource','coarse','other'
@@ -66,7 +77,7 @@ class TrashType extends React.Component {
                     >
                         {TRASH_OPTION_TAG}
                     </Select>
-                    <FormHelperText error={this.props.trash.trash_type_error}>
+                    <FormHelperText error={isError(this.props.trash.trash_type_error)}>
                         {this.getErrorMessage(this.props.trash.trash_type_error)}
                     </FormHelperText>
                 </FormControl>
@@ -87,7 +98,7 @@ class TrashType extends React.Component {
                                 this.props.onInputTrashType(this.props.number, e.target.value, this.props.t('TrashSchedule.input.other.maxlength'));
                             }}
                         />
-                        <FormHelperText error={this.props.trash.input_trash_type_error}>
+                        <FormHelperText error={isError(this.props.trash.input_trash_type_error)}>
                             {this.getErrorMessage(
                                 this.props.trash.input_trash_type_error,
                                 [this.props.t('TrashSchedule.input.other.maxlength')])

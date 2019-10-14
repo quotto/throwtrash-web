@@ -8,4 +8,8 @@ export function getErrorMessage(props, message_id, params = []) {
     return message;
 }
 
+export function isError(error) {
+    return typeof(error) != 'undefined';
+}
+
 export const ScheduleType = ['none','weekday','biweek','month','evweek'];

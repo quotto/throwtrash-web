@@ -1,26 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormHelperText,FormControl, InputLabel, withStyles, createMuiTheme, Input, InputAdornment } from '@material-ui/core';
+import { FormHelperText,FormControl, InputLabel, withStyles, Input, InputAdornment } from '@material-ui/core';
 import { withTranslation } from 'react-i18next';
-import { getErrorMessage } from '../common';
+import { getErrorMessage, isError } from '../common';
 
-const defaultTheme = createMuiTheme();
-const styles = {
+const styles = (theme)=>({
     OptionMonthFormControl: {
         'display':'inline-block',
         'vertical-align':'top',
-        [defaultTheme.breakpoints.up('sm')] : {
+        [theme.breakpoints.up('sm')] : {
             'text-align':'center',
             'width':'40%',
             'min-width':'130px',
             'max-width':'210px'
         },
-        [defaultTheme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('xs')]: {
             'text-align':'left',
             'width':'50%'
         }
     }
-};
+});
 
 class Month extends React.Component {
     render() {
@@ -40,7 +39,7 @@ class Month extends React.Component {
                     endAdornment={<InputAdornment position='end'>{this.props.t('TrashSchedule.input.month.suffix')}</InputAdornment>}
                     inputProps={{ style: { textAlign: 'center', width: '100%' } }}
                 />
-                <FormHelperText error={this.props.target_schedule.error}>
+                <FormHelperText error={isError(this.props.target_schedule.error)}>
                     {getErrorMessage(this.props, this.props.target_schedule.error)}
                 </FormHelperText>
             </FormControl>
