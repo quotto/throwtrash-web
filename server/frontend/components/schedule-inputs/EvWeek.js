@@ -1,0 +1,122 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import { FormHelperText,FormControl, InputLabel, withStyles, createMuiTheme, Select } from '@material-ui/core';
+import { withTranslation } from 'react-i18next';
+import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab';
+import { WeekDayList } from './WeekDayList';
+
+const defaultTheme = createMuiTheme({
+    typography: {
+        useNextVariants: true
+    }
+});
+const styles = {
+    OptionEvWeekDiv: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        [defaultTheme.breakpoints.down('xs')]: {
+            flexDirection: 'column',
+            alignItems:'flex-start'
+        }
+    },
+    OptionEvweekFormControl: {
+        textAlign:'center',
+        width:'50%',
+        marginRight: '10px',
+        [defaultTheme.breakpoints.down('xs')]: {
+            textAlign:'left',
+            'width':'50%',
+            'min-width':'none',
+            'max-width':'none',
+            'margin-bottom':'8px'
+        }
+    },
+    OptionEvWeekSelect: {
+        [defaultTheme.breakpoints.down('xs')]: {
+            'width':'100%',
+            'text-align':'center'
+        }
+    }
+};
+
+const StyleToggleButton = withStyles({
+    selected: {
+        color: 'white',
+        background: defaultTheme.palette.secondary.main,
+        '&:after': {
+            background: 'none'
+        },
+        '&:hover': {
+            background: defaultTheme.palette.secondary.main
+        }
+    }
+})(ToggleButton);
+
+class EvWeek extends React.Component {
+    render() {
+        return(
+            <div className={this.props.classes.OptionEvWeekDiv}>
+                <FormControl className={this.props.classes.OptionEvweekFormControl}>
+                    <InputLabel htmlFor={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}>{this.props.t('TrashSchedule.select.weekday.label')}</InputLabel>
+                    <Select
+                        id={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
+                        name={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
+                        value={this.props.target_schedule.value.weekday}
+                        style={{ textAlign: 'center' }}
+                        onChange={(e) => this.props.onChangeInput(
+                            this.props.trash_index, 
+                            this.props.schedule_index, 
+                            { weekday: e.target.value, start: this.props.target_schedule.value.start }
+                        )}
+                    >
+                        {WeekDayList(this.props)}
+                    </Select>
+                </FormControl>
+                <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'start' }}>
+                    <FormHelperText style={{ margin: '0 0 8px 0' }}>
+                        {this.props.t('TrashSchedule.select.evweek.helper')}
+                    </FormHelperText>
+                    <ToggleButtonGroup
+                        value={this.props.target_schedule.value.start}
+                        exclusive
+                        onChange={(e, changed_value) => {
+                            if (changed_value) {
+                                this.props.onChangeInput(
+                                    this.props.trash_index, 
+                                    this.props.schedule_index, 
+                                    { weekday: this.props.target_schedule.value.weekday, start: changed_value }
+                                );
+                            }
+                        }}
+                        style={{ flexDirection: 'column', alignItems: 'start' }}
+                    >
+                        <StyleToggleButton
+                            value='thisweek'
+                            style={{ fontSize: this.props.t('TrashSchedule.style.StyleToggleButton.fontsize') }}
+                        >
+                            {this.props.t('TrashSchedule.select.evweek.thisweek')}
+                        </StyleToggleButton>
+                        <StyleToggleButton
+                            value='nextweek'
+                            style={{ fontSize: this.props.t('TrashSchedule.style.StyleToggleButton.fontsize') }}
+                        >
+                            {this.props.t('TrashSchedule.select.evweek.nextweek')}
+                        </StyleToggleButton>
+                    </ToggleButtonGroup>
+                </div>
+            </div>
+        );
+    }
+}
+
+EvWeek.propTypes = {
+    classes: PropTypes.object,
+    trash_index: PropTypes.number,
+    schedule_index: PropTypes.number,
+    t: PropTypes.func,
+    target_schedule: PropTypes.object,
+    onChangeInput: PropTypes.func
+};
+
+export default withStyles(styles)(withTranslation()(EvWeek));
