@@ -1,5 +1,5 @@
 import {connect} from 'react-redux';
-import ScheduleList from '../components/ScheduleList';
+import Main from '../components/Main';
 import {
     changeSchedule,
     addTrash,
@@ -44,9 +44,9 @@ const mapDispatchToProps = (dispatch) => {
     };
 };
 
-const ScheduleListContainer = connect(
+const MainContainer = connect(
     mapPropsState,
     mapDispatchToProps
-)(ScheduleList);
+)(Main);
 
-export default ScheduleListContainer;
+export default MainContainer;

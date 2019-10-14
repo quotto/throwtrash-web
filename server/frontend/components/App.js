@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {Grid} from '@material-ui/core';
-import ScheduleListContainer from '../containers/ScheduleListContainer';
+import MainContainer from '../containers/MainContainer';
 import TopAppBarContainer from '../containers/AppBarContainer';
 import {withStyles, createMuiTheme, MuiThemeProvider} from '@material-ui/core/styles';
 import {withTranslation} from 'react-i18next';
@@ -30,7 +30,7 @@ class App extends React.Component {
                         </ul>
                     </Grid>
                     <Grid container justify='center' item xs={12}>
-                        <ScheduleListContainer />
+                        <MainContainer />
                     </Grid>
                 </Grid>
             </MuiThemeProvider>
