@@ -18,8 +18,10 @@ jobs:
           command: npm run test-front
           working_directory: server
   deploy:
-    docker:
-      - image: kroniak/ssh-client
+    # docker:
+    #   - image: kroniak/ssh-client
+    machine:
+      enabled: true
     steps:
       - run:
           name: set environment
