@@ -18,8 +18,8 @@ jobs:
           command: npm run test-front
           working_directory: server
   deploy:
-    docker:
-      - image: ubuntu:18.04
+    machine: 
+      enabled: true
     steps:
       - run:
           name: set environment
