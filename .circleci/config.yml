@@ -21,6 +21,10 @@ jobs:
     machine: 
       enabled: true
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - ${SSH_KEY_PRODUCTION}
+            - ${SSH_KEY_STAGING}
       - run:
           name: set environment
           command: |
@@ -29,10 +33,6 @@ jobs:
             else
               echo "export HOST_NAME=${HOST_STAGING}" >> $BASH_ENV
             fi
-      - add_ssh_keys:
-          fingerprints:
-            - ${SSH_KEY_PRODUCTION}
-            - ${SSH_KEY_STAGING}
       - run:
           name: deployment
           command: |
