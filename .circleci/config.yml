@@ -25,11 +25,11 @@ jobs:
           name: set environment
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              HOST_NAME=${HOST_PRODUCTION}
-              SSH_KEY=${SSH_KEY_PRODUCTION}
+              echo "export HOST_NAME=${HOST_PRODUCTION}" >> $BASH_ENV
+              echo "export SSH_KEY=${SSH_KEY_PRODUCTION}" >> $BASH_ENV
             else
-              HOST_NAME=${HOST_STAGING}
-              SSH_KEY=${SSH_KEY_STAGING}
+              echo "export HOST_NAME=${HOST_STAGING}" >> $BASH_ENV
+              echo "export SSH_KEY=${SSH_KEY_STAGING}" >> $BASH_ENV
             fi
       - add_ssh_keys:
           fingerprints:
