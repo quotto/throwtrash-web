@@ -1,17 +1,5 @@
 version: '2'
 services:
-  jenkins:
-    build:
-        context: ./jenkins
-        args:
-           - DOCKER_GROUP_ID=${DOCKER_GROUP_ID}
-    ports:
-        - 8080:8080
-    volumes:
-        - /var/jenkins:/var/jenkins_home
-        - ../:/src
-        - /var/run/docker.sock:/var/run/docker.sock
-    privileged: true
   https-portal:
     image: steveltn/https-portal:1.7.3
     ports:
