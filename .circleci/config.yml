@@ -15,7 +15,7 @@ jobs:
           working_directory: server
       - run:
           name: frontend test
-          command: npm test-front
+          command: npm run test-front
           working_directory: server
   deploy:
     docker:
