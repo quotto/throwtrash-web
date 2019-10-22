@@ -22,7 +22,7 @@ services:
     restart: always
     environment:
       STAGE: 'production'
-      DOMAINS: 'link.mythrowaway.net -> http://node:2000'
+      DOMAINS: '${FQDN} -> http://node:2000'
     volumes:
       - ./web/cert:/var/lib/https-portal
     dns: 8.8.8.8
