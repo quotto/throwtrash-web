@@ -19,7 +19,7 @@ jobs:
           working_directory: server
   deploy:
     docker: 
-      image: kroniak/ssh-client
+      - image: kroniak/ssh-client:3.9
     steps:
       - add_ssh_keys:
           fingerprints:
