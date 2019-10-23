@@ -18,8 +18,8 @@ jobs:
           command: npm run test-front
           working_directory: server
   deploy:
-    machine: 
-      enabled: true
+    docker: 
+      image: kroniak/ssh-client
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -36,6 +36,9 @@ jobs:
       - run:
           name: deployment
           command: |
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            ssh-keyscan -H ${HOST_NAME} >> ~/.ssh/known_hosts
             ssh ${SSH_USER}@${HOST_NAME} 'hostname'
             ssh ${SSH_USER}@${HOST_NAME} 'sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git fetch && checkout ${CIRCLE_BRANCH}'
             ssh ${SSH_USER}@${HOST_NAME} 'sudo docker-compose -f ${PROJECT_DIRECTORY}/docker/docker-compose.xml restart node'
