@@ -51,7 +51,7 @@ jobs:
   frontend-deploy:
     executor: aws-cli/default
     steps:
-      - attach_to_workspace:
+      - attach_workspace:
           at: /tmp/workspace
       - run:
           name: deploy
@@ -96,9 +96,12 @@ workflows:
     jobs:
       - test:
           context: aws-test
-      - frontend:
+      - frontend-build:
           requires:
             - test
+      - frontend-deploy:
+          requires:
+            - frontend-build
       - backend:
           requires:
             - test
