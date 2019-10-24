@@ -43,7 +43,7 @@ jobs:
           working_directory: server
       - run:
           name: build
-          command: npm run build -- -p --env.version={{ .Revision }}
+          command: npm run build -- -p --env.version=${CIRCLE_SHA1}
           working_directory: server
       - persist_to_workspace:
           root: /tmp/bucket
@@ -67,7 +67,7 @@ jobs:
       - run: 
           name: set path
           command: |
-            chmod 755 ${CIRCLE_WORKING_DIRECTORY}/.circleci
+            chmod 755 ${CIRCLE_WORKING_DIRECTORY}/.circleci/is_changed
             echo 'export PATH=$PATH:${CIRCLE_WORKING_DIRECTORY}/.circleci' >> $BASH_ENV
       - add_ssh_keys:
           fingerprints:
