@@ -36,7 +36,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - npm-deps-{{ .Branch }}-{{ checksum server/package-lock.json"}}
+            - npm-deps-{{ .Branch }}-{{ checksum "server/package-lock.json"}}
       - run:
           name: install
           command: npm install
@@ -44,6 +44,7 @@ jobs:
       - run:
           name: build
           command: npm run build -- -p --env.version={{ .Revision }}
+          working_directory: server
       - persist_to_workspace:
           root: /tmp/bucket
           paths:
@@ -65,7 +66,9 @@ jobs:
       - checkout
       - run: 
           name: set path
-          command: echo 'export PATH=$PATH:${CIRCLE_WORKING_DIRECTORY}/.circleci' >> $BASH_ENV
+          command: |
+            chmod 755 ${CIRCLE_WORKING_DIRECTORY}/.circleci
+            echo 'export PATH=$PATH:${CIRCLE_WORKING_DIRECTORY}/.circleci' >> $BASH_ENV
       - add_ssh_keys:
           fingerprints:
             - ${SSH_KEY_PRODUCTION}
