@@ -1,14 +1,26 @@
 version: "2.1"
+orbs:
+  aws-cli: circleci/aws-cli@0.1.16
+
 jobs:
   test:
     docker:
       - image: circleci/node:10.1.0
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - npm-deps-{{ .Branch }}-{{ checksum "server/package-lock.json"}}
+            - npm-deps-{{ .Branch }}
+            - npm-deps-
       - run:
           name: install
           command: npm install
           working_directory: server
+      - save_cache:
+          key: npm-deps-{{ .Branch }}-{{ checksum "server/package-lock.json"}}
+          paths:
+            - server/node_modules
       - run:
           name: backend test
           command: npm test
@@ -17,10 +29,43 @@ jobs:
           name: frontend test
           command: npm run test-front
           working_directory: server
-  deploy:
+  frontend-build:
+    docker:
+      - image: circleci/node10.1.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - npm-deps-{{ .Branch }}-{{ checksum server/package-lock.json"}}
+      - run:
+          name: install
+          command: npm install
+          working_directory: server
+      - run:
+          name: build
+          command: npm run build -- -p --env.version={{ .Revision }}
+      - persist_to_workspace:
+          root: /tmp/bucket
+          paths:
+            - server/backend/public/resource
+  frontend-deploy:
+    executor: aws-cli/default
+    steps:
+      - attach_to_workspace:
+          at: /tmp/workspace
+      - run:
+          name: deploy
+          command: |
+            aws s3 sync /tmp/workspace s3://${AWS_BUCKET}/ 
+            aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /bundle/*.js
+  backend:
     docker: 
       - image: kroniak/ssh-client:3.9
     steps:
+      - checkout
+      - run: 
+          name: set path
+          command: echo 'export PATH=$PATH:${CIRCLE_WORKING_DIRECTORY}/.circleci' >> $BASH_ENV
       - add_ssh_keys:
           fingerprints:
             - ${SSH_KEY_PRODUCTION}
@@ -36,20 +81,24 @@ jobs:
       - run:
           name: deployment
           command: |
-            mkdir -p ~/.ssh
-            chmod 700 ~/.ssh
-            ssh-keyscan -H ${HOST_NAME} >> ~/.ssh/known_hosts
-            ssh ${SSH_USER}@${HOST_NAME} 'hostname'
-            ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git pull"
-            ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git checkout ${CIRCLE_BRANCH}"
-            ssh ${SSH_USER}@${HOST_NAME} "sudo docker-compose -f ${PROJECT_DIRECTORY}/docker/docker-compose.yml restart node"
-    
+            if is_changed 'server/backend'; then
+              mkdir -p ~/.ssh
+              chmod 700 ~/.ssh
+              ssh-keyscan -H ${HOST_NAME} >> ~/.ssh/known_hosts
+              ssh ${SSH_USER}@${HOST_NAME} 'hostname'
+              ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git pull"
+              ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git checkout ${CIRCLE_BRANCH}"
+              ssh ${SSH_USER}@${HOST_NAME} "sudo docker-compose -f ${PROJECT_DIRECTORY}/docker/docker-compose.yml restart node"
+            fi
 workflows:
   version: 2
   test_and_deploy:
     jobs:
       - test:
           context: aws-test
-      - deploy:
+      - frontend:
+          requires:
+            - test
+      - backend:
           requires:
             - test
