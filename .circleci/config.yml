@@ -31,7 +31,7 @@ jobs:
           working_directory: server
   frontend-build:
     docker:
-      - image: circleci/node10.1.0
+      - image: circleci/node:10.1.0
     steps:
       - checkout
       - restore_cache:
