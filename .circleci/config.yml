@@ -67,6 +67,7 @@ jobs:
     steps:
       - attach_workspace:
           at: server/backend/public
+      - aws-cli/install
       - set-stage-env
       - run:
           name: deploy
@@ -79,6 +80,9 @@ jobs:
     working_directory: /home/circleci/project
     steps:
       - checkout
+      - run:
+          name: add git command
+          command: apk add git
       - run: 
           name: set path
           command: |
