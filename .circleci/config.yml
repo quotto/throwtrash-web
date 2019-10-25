@@ -72,7 +72,7 @@ jobs:
       - run:
           name: deploy
           command: |
-            aws s3 sync ./resource s3://${STAGE}/${AWS_BUCKET}/ 
+            aws s3 sync server/backend/public/resource s3://${STAGE}/${AWS_BUCKET}/ 
             aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /bundle/*.js
   backend:
     docker: 
@@ -104,6 +104,8 @@ jobs:
               ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git pull"
               ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git checkout ${CIRCLE_BRANCH}"
               ssh ${SSH_USER}@${HOST_NAME} "sudo docker-compose -f ${PROJECT_DIRECTORY}/docker/docker-compose.yml restart node"
+            else
+              echo "nothing backend resource that need deploy"
             fi
 workflows:
   version: 2
