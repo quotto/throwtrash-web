@@ -2,6 +2,19 @@ version: "2.1"
 orbs:
   aws-cli: circleci/aws-cli@0.1.16
 
+commands:
+  set-stage-env:
+    steps:
+      - run:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              echo "export STAGE=production" >> $BASH_ENV
+              echo "export HOST_NAME=${HOST_PRODUCTION}" >> $BASH_ENV
+            else
+              echo "export STAGE=staging" >> $BASH_ENV
+              echo "export HOST_NAME=${HOST_STAGING}" >> $BASH_ENV
+            fi
+
 jobs:
   test:
     docker:
@@ -43,25 +56,27 @@ jobs:
           working_directory: server
       - run:
           name: build
-          command: npm run build -- -p --env.version=${CIRCLE_SHA1}
+          command: npm run build -- -p --env.version=${MYTRASH_VERSION}
           working_directory: server
       - persist_to_workspace:
-          root: /tmp/bucket
+          root: server/backend/public
           paths:
-            - server/backend/public/resource
+            - resource
   frontend-deploy:
     executor: aws-cli/default
     steps:
       - attach_workspace:
-          at: /tmp/workspace
+          at: server/backend/public
+      - set-stage-env
       - run:
           name: deploy
           command: |
-            aws s3 sync /tmp/workspace s3://${AWS_BUCKET}/ 
+            aws s3 sync ./resource s3://${STAGE}/${AWS_BUCKET}/ 
             aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /bundle/*.js
   backend:
     docker: 
       - image: kroniak/ssh-client:3.9
+    working_directory: /home/circleci/project
     steps:
       - checkout
       - run: 
@@ -73,14 +88,7 @@ jobs:
           fingerprints:
             - ${SSH_KEY_PRODUCTION}
             - ${SSH_KEY_STAGING}
-      - run:
-          name: set environment
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              echo "export HOST_NAME=${HOST_PRODUCTION}" >> $BASH_ENV
-            else
-              echo "export HOST_NAME=${HOST_STAGING}" >> $BASH_ENV
-            fi
+      - set-stage-env
       - run:
           name: deployment
           command: |
