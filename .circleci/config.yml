@@ -72,7 +72,7 @@ jobs:
       - run:
           name: deploy
           command: |
-            aws s3 sync server/backend/public/resource s3://${STAGE}/${AWS_BUCKET}/ 
+            aws s3 sync server/backend/public/resource s3://throwtrash/${STAGE}/${AWS_BUCKET}/ 
             aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /bundle/*.js
   backend:
     docker: 
