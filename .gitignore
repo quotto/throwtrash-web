@@ -8,5 +8,4 @@ server/backend/config.json
 server/backend/public/bundle
 server/backend/public/css/index.css
 docker/web/cert/**
-docker/jenkins/id_rsa
 docker/.env

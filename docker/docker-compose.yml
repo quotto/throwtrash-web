@@ -9,8 +9,8 @@ services:
       - node
     restart: always
     environment:
-      STAGE: 'production'
-      DOMAINS: '${FQDN} -> http://node:2000'
+      STAGE: ${HTTP_STAGE}
+      DOMAINS: '${HTTP_DOMAIN} -> http://node:${NODE_PORT}'
     volumes:
       - ./web/cert:/var/lib/https-portal
     dns: 8.8.8.8
@@ -22,5 +22,5 @@ services:
     expose: 
         - 2000
     environment: 
-        - NODE_OPTION=--port 2000 
+        - NODE_OPTION=--port=${NODE_PORT} --level=${NODE_LEVEL} --mode=${NODE_MODE}
     dns: 8.8.8.8
