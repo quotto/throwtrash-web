@@ -73,7 +73,7 @@ jobs:
           name: deploy
           command: |
             aws s3 sync server/backend/public/resource s3://${AWS_BUCKET}/${STAGE}/
-            aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /bundle/*.js
+            aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /${STAGE}/*
   backend:
     docker: 
       - image: kroniak/ssh-client:3.9
@@ -83,11 +83,6 @@ jobs:
       - run:
           name: add git command
           command: apk add git
-      - run: 
-          name: set path
-          command: |
-            chmod 755 ${CIRCLE_WORKING_DIRECTORY}/.circleci/is_changed
-            echo 'export PATH=$PATH:${CIRCLE_WORKING_DIRECTORY}/.circleci' >> $BASH_ENV
       - add_ssh_keys:
           fingerprints:
             - ${SSH_KEY_PRODUCTION}
@@ -96,17 +91,13 @@ jobs:
       - run:
           name: deployment
           command: |
-            if is_changed 'server/backend'; then
-              mkdir -p ~/.ssh
-              chmod 700 ~/.ssh
-              ssh-keyscan -H ${HOST_NAME} >> ~/.ssh/known_hosts
-              ssh ${SSH_USER}@${HOST_NAME} 'hostname'
-              ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git pull"
-              ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git checkout ${CIRCLE_BRANCH}"
-              ssh ${SSH_USER}@${HOST_NAME} "sudo docker-compose -f ${PROJECT_DIRECTORY}/docker/docker-compose.yml restart node"
-            else
-              echo "nothing backend resource that need deploy"
-            fi
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            ssh-keyscan -H ${HOST_NAME} >> ~/.ssh/known_hosts
+            ssh ${SSH_USER}@${HOST_NAME} 'hostname'
+            ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git pull"
+            ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git checkout ${CIRCLE_BRANCH}"
+            ssh ${SSH_USER}@${HOST_NAME} "sudo docker-compose -f ${PROJECT_DIRECTORY}/docker/docker-compose.yml restart node"
 workflows:
   version: 2
   test_and_deploy:
