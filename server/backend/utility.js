@@ -1,3 +1,8 @@
+
+/**
+ * ユーザーIDをランダムに生成する
+ * @return {string} ユーザーID
+ */
 exports.create_id = ()=>{
     let uuid = '', i, random;
     for (i = 0; i < 32; i++) {
@@ -12,24 +17,24 @@ exports.create_id = ()=>{
 };
 
 /**
-    params:offset 今週=0,来週=1
-**/
-const calculateStartDate = (offset) => {
-    const JSTOffset = 60 * 9 * 60 * 1000; // JST時間を求めるためのオフセット
-    var localdt = new Date(); // 実行サーバのローカル時間
-    var jsttime = localdt.getTime() + (localdt.getTimezoneOffset() * 60 * 1000) + JSTOffset;
-    // 開始日を日曜日にセットする
-    var dt = new Date(jsttime);
-    dt.setDate(dt.getDate() - dt.getDay() + (7 * offset));
+ * 隔週スケジュールの開始日（今週の日曜日 または 来週の日曜日）を求める 
+ * @param {int} weektype : 0:今週,1:来週
+ * @param {int} offset : ユーザー地域のタイムゾーンオフセット
+ */
+const calculateStartDate = (weektype, offset) => {
+    const utcdt = new Date();
+    const localdt = new Date(utcdt.getTime() + (-1 * offset * 60 * 1000));
+    localdt.setUTCDate(localdt.getUTCDate() - localdt.getUTCDay() + (7 * weektype));
 
-    return `${dt.getFullYear()}-${dt.getMonth()+1}-${dt.getDate()}`;
+    return `${localdt.getUTCFullYear()}-${localdt.getUTCMonth()+1}-${localdt.getUTCDate()}`;
 };
 
 /**
-    DB登録用にデータを整形する
-    params: input_data Webフォームから入力されたゴミ出しスケジュールのJSONデータ
-**/
-exports.adjustData = (input_data) => {
+ * ユーザーより送信されたゴミ出しスケジュールを最適化する
+ * @param {object} : JSON形式のゴミ出しスケジュール
+ * @param {int} offset : ユーザー地域のタイムゾーンオフセット
+ */
+exports.adjustData = (input_data, offset) => {
     let regist_data = [];
     input_data.forEach((trash)=>{
         let regist_trash = {
@@ -47,8 +52,8 @@ exports.adjustData = (input_data) => {
             };
             if(regist_schedule.type && regist_schedule.type != 'none' && regist_schedule.value) {
                 if(regist_schedule.type === 'evweek') {
-                    const offset = regist_schedule.value.start==='thisweek' ? 0 : 1;
-                    const start_date = calculateStartDate(offset);
+                    const weektype = regist_schedule.value.start==='thisweek' ? 0 : 1;
+                    const start_date = calculateStartDate(weektype, offset);
                     regist_schedule.value.start = start_date;
                 }
                 trash_schedules.push(regist_schedule);

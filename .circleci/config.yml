@@ -1,0 +1,117 @@
+version: "2.1"
+orbs:
+  aws-cli: circleci/aws-cli@0.1.16
+
+commands:
+  set-stage-env:
+    steps:
+      - run:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              echo "export STAGE=production" >> $BASH_ENV
+              echo "export HOST_NAME=${HOST_PRODUCTION}" >> $BASH_ENV
+              echo "export AWS_DISTRIBUTION_ID=${AWS_PRO_DIST_ID}" >> $BASH_ENV
+            else
+              echo "export STAGE=staging" >> $BASH_ENV
+              echo "export HOST_NAME=${HOST_STAGING}" >> $BASH_ENV
+              echo "export AWS_DISTRIBUTION_ID=${AWS_STAGE_DIST_ID}" >> $BASH_ENV
+            fi
+
+jobs:
+  test:
+    docker:
+      - image: circleci/node:10.1.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - npm-deps-{{ .Branch }}-{{ checksum "server/package-lock.json"}}
+            - npm-deps-{{ .Branch }}
+            - npm-deps-
+      - run:
+          name: install
+          command: npm install
+          working_directory: server
+      - save_cache:
+          key: npm-deps-{{ .Branch }}-{{ checksum "server/package-lock.json"}}
+          paths:
+            - server/node_modules
+      - run:
+          name: backend test
+          command: npm test
+          working_directory: server
+      - run:
+          name: frontend test
+          command: npm run test-front
+          working_directory: server
+  frontend-build:
+    docker:
+      - image: circleci/node:10.1.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - npm-deps-{{ .Branch }}-{{ checksum "server/package-lock.json"}}
+      - run:
+          name: install
+          command: npm install
+          working_directory: server
+      - run:
+          name: build
+          command: npm run build -- -p --env.version=${MYTRASH_VERSION}
+          working_directory: server
+      - persist_to_workspace:
+          root: server/backend/public
+          paths:
+            - resource
+  frontend-deploy:
+    executor: aws-cli/default
+    steps:
+      - attach_workspace:
+          at: server/backend/public
+      - aws-cli/install
+      - set-stage-env
+      - run:
+          name: deploy
+          command: |
+            aws s3 sync server/backend/public/resource s3://${AWS_BUCKET}/${STAGE}/
+            aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /*
+  backend:
+    docker: 
+      - image: kroniak/ssh-client:3.9
+    working_directory: /home/circleci/project
+    steps:
+      - checkout
+      - run:
+          name: add git command
+          command: apk add git
+      - add_ssh_keys:
+          fingerprints:
+            - ${SSH_KEY_PRODUCTION}
+            - ${SSH_KEY_STAGING}
+      - set-stage-env
+      - run:
+          name: deployment
+          command: |
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            ssh-keyscan -H ${HOST_NAME} >> ~/.ssh/known_hosts
+            ssh ${SSH_USER}@${HOST_NAME} 'hostname'
+            ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git pull"
+            ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git checkout ${CIRCLE_BRANCH}"
+            ssh ${SSH_USER}@${HOST_NAME} "sudo docker-compose -f ${PROJECT_DIRECTORY}/docker/docker-compose.yml restart node"
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - test:
+          context: aws-test
+      - frontend-build:
+          requires:
+            - test
+      - frontend-deploy:
+          requires:
+            - frontend-build
+      - backend:
+          requires:
+            - test

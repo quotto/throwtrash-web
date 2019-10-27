@@ -12,7 +12,7 @@ const MetaInfo = require('./public/meta.json');
 const CONFIG = require('./config.json');
 
 const args = require('args');
-args.option('mode', 'production or debug', 'production');
+args.option('mode', 'production or staging or development', 'production');
 args.option('level', 'logger level', 'info');
 args.option('port', 'listening port', 8888);
 const argv = args.parse(process.argv);
@@ -36,10 +36,8 @@ log4js.configure({
 });
 const logger = log4js.getLogger();
 
-const errorRedirect = (res, code, message)=>{
-    res.set('Content-Type', 'text/plain;charset=utf-8');
-    res.status(code).end(message);
-};
+// CDNへのパス(developmentの場合はローカルサーバーから配信)
+const RESOURCE_PATH = (argv.mode === 'production' || argv.mode === 'staging') ? CONFIG.base.static : '/resource';
 
 const createNewId = async()=>{
     let user_id = null;
@@ -169,21 +167,24 @@ app.use('/', express.static('./public'));
 app.get('/index/:version/:lang',(req,res)=>{
     const lang = req.params.lang;
     if(MetaInfo[lang]) {
-        const resource_path = argv.mode === 'production' ? 
-            'https://d29p8bq9xwgr82.cloudfront.net' : '/resource';
         res.charset = 'utf-8';
         res.header('Content-Type', 'text/html;charset=utf-8');
         res.status(200);
         res.render('index',{
             lang: lang,
             title: MetaInfo[lang].title,
-            resource_path: resource_path,
+            resource_path: RESOURCE_PATH,
             version: req.params.version
         });
     } else {
-        logger.warn('Wrong lang');
-        errorRedirect(res,400,'お使いの言語には対応していません');
+        logger.warn(`Wrong lang:${lang}`);
+        res.redirect('/static/500');
     }
+});
+
+app.get('/static/:template(manual|policy|404|500)', (req, res)=>{
+    res.status(200);
+    res.render(req.params.template,{resource_path: RESOURCE_PATH});
 });
 
 app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
@@ -200,7 +201,7 @@ app.get(/oauth\/request_token(\/ || \?).*/,(req,res)=>{
         return;
     } else {
         logger.error('oauth reqeust session state is not match.');
-        errorRedirect(res, 400, '不正なリクエストです');
+        res.redirect('/static/500');
         return;
     }
 });
@@ -241,7 +242,7 @@ app.get('/signin', (req,res)=>{
     
     if(get_profile_task === null) {
         logger.error('invalid request');
-        errorRedirect(res, 400, '不正なリクエストです');
+        res.redirect('/static/500');
         return;
     }
 
@@ -262,7 +263,7 @@ app.get('/signin', (req,res)=>{
         res.redirect(`/index/v${req.session.version}/${req.acceptsLanguages(['en','ja'])}`);
     }).catch(err=>{
         logger.errpr(err);
-        errorRedirect(res, 500, 'エラーが発生しました');
+        res.redirect('/static/500');
     });
 });
 
@@ -287,16 +288,17 @@ app.get('/user_info', (req,res)=>{
 });
 
 app.post('/regist',(req,res)=>{
-    logger.debug('Regist request:',JSON.stringify(req.body));
-    const recv_data = req.body;
+    logger.info(`Regist request from ${req.sessionID}`);
+    logger.debug('Regist Data:',JSON.stringify(req.body));
+    const recv_data = req.body.data;
     if(common_check.exist_error(recv_data)) {
-        logger.error(`Bad Data\n${recv_data}`);
-        errorRedirect(res, 400, '不正なリクエストです');
+        logger.error(`Bad Data\n${JSON.stringify(recv_data)}`);
+        res.redirect('/static/500');
         return;
     }
 
     // 検証した登録データをセッションに格納
-    const regist_data = Util.adjustData(recv_data);
+    const regist_data = Util.adjustData(recv_data, req.body.offset);
     req.session.regist_data = regist_data;
 
     // リダイレクト元の検証用にランダム値をセッションに格納
@@ -306,6 +308,7 @@ app.post('/regist',(req,res)=>{
 });
 
 app.get('/submit', async(req,res)=>{
+    logger.info(`Submit request from ${req.sessionID}`);
     if(req.session.state && req.session.client_id && req.session.redirect_uri && req.query.redirect_state === req.session.redirect_state) {
         const item = {};
         if(req.session.userInfo) {
@@ -319,7 +322,7 @@ app.get('/submit', async(req,res)=>{
             const user_id = await createNewId();
             if(!user_id) {
                 logger.error('Failed to create Id');
-                errorRedirect(res, 500, '登録に失敗しました。');
+                res.redirect('/static/500');
                 return;
             }
             item.id = user_id;
@@ -338,7 +341,7 @@ app.get('/submit', async(req,res)=>{
         dynamoClient.put(params,(err)=>{
             if(err) {
                 logger.error(`DB Insert Error\n${err}`);
-                errorRedirect(res, 500, '登録に失敗しました。');
+                res.redirect('/static/500');
                 return;
             } else {
                 logger.info(`Regist user(${JSON.stringify(item)})`);
@@ -362,7 +365,7 @@ app.get('/submit', async(req,res)=>{
                         res.status(200).end(redirect_url);
                     }).catch(err => {
                         logger.error(`DB Insert Error\n${err}`);
-                        errorRedirect(res, 500, '登録に失敗しました。');
+                        res.redirect('/static/500');
                         return;
                     });
                 }  else {
@@ -374,8 +377,24 @@ app.get('/submit', async(req,res)=>{
             }
         });
     } else {
-        logger.error('submit session state is not match.');
-        errorRedirect(res, 400, '不正なリクエストです');
+        logger.error('submit session state is not match\n'+
+            `state:${req.session.state}\n` +
+            `client_id:${req.session.client_id}\n` +
+            `redirect_uri:${req.session.redirect_uri}\n` +
+            `redirect_state:${req.query.redirect_state}\n` +
+            `session_redirect_state:${req.session.redirect_state}`);
+        res.redirect('/static/500');
         return;
     }
+});
+
+app.use(function (req, res) {
+    res.status(404);
+    res.render('404');
+});
+
+app.use(function (err, req, res) {
+    logger.error(err.stack);
+    res.status(500);
+    res.render('500');
 });
