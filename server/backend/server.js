@@ -37,8 +37,7 @@ log4js.configure({
 const logger = log4js.getLogger();
 
 // CDNへのパス(developmentの場合はローカルサーバーから配信)
-const RESOURCE_PATH = (argv.mode === 'production' || argv.mode === 'staging') ? 
-    `https://d29p8bq9xwgr82.cloudfront.net/${argv.mode}` : '/resource';
+const RESOURCE_PATH = (argv.mode === 'production' || argv.mode === 'staging') ? CONFIG.base.static : '/resource';
 
 const createNewId = async()=>{
     let user_id = null;

@@ -10,9 +10,11 @@ commands:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               echo "export STAGE=production" >> $BASH_ENV
               echo "export HOST_NAME=${HOST_PRODUCTION}" >> $BASH_ENV
+              echo "export AWS_DISTRIBUTION_ID=${AWS_PRO_DIST_ID}" >> $BASH_ENV
             else
               echo "export STAGE=staging" >> $BASH_ENV
               echo "export HOST_NAME=${HOST_STAGING}" >> $BASH_ENV
+              echo "export AWS_DISTRIBUTION_ID=${AWS_STAGE_DIST_ID}" >> $BASH_ENV
             fi
 
 jobs:
@@ -73,7 +75,7 @@ jobs:
           name: deploy
           command: |
             aws s3 sync server/backend/public/resource s3://${AWS_BUCKET}/${STAGE}/
-            aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /${STAGE}/*
+            aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /*
   backend:
     docker: 
       - image: kroniak/ssh-client:3.9

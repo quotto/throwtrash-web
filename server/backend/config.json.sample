@@ -6,7 +6,8 @@
     },
     "base": {
         "secret": "xxxxxxxxxxxxxxxxxxxxxx",
-        "endpoint": "https://www.example.com"
+        "endpoint": "https://www.example.com",
+        "static": "https://static.example.com"
     },
     "api": {
         "token": "xxxxx",
