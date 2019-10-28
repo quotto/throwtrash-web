@@ -293,6 +293,7 @@ app.post('/regist',(req,res)=>{
     const recv_data = req.body.data;
     if(common_check.exist_error(recv_data)) {
         logger.error(`Bad Data\n${JSON.stringify(recv_data)}`);
+        logger.error(req.headers);
         res.redirect('/static/500');
         return;
     }
