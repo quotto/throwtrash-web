@@ -1,4 +1,4 @@
-import {updateState,initialState,initialSchedule} from '../reducers/index.js';
+import {updateState,SubmitState,initialState} from '../reducers/index.js';
 import {ActionType} from '../actions/index.js';
 const assert = require('assert');
 const _ = require('lodash');
@@ -9,14 +9,14 @@ multiInitialState.trashes.push(_.cloneDeep(initialState.trashes[0]));
 
 describe('updateState',()=>{
     it('Add Trash Type',()=>{
-        const state = updateState(initialState,{type:ActionType.ADD_TRASH});
+        const state = updateState(undefined,{type:ActionType.ADD_TRASH});
         assert.deepEqual(multiInitialState,state);
     });
     describe('change trash',()=>{
         it('single trash',()=>{
             let except = _.cloneDeep(initialState);
             except.trashes[0].type='bin';
-            const state = updateState(initialState,{type:ActionType.CHANGE_TRASH,value:'bin',index:0});
+            const state = updateState(undefined,{type:ActionType.CHANGE_TRASH,value:'bin',index:0});
             assert.deepEqual(except,state);
         });
         it('multi trash',()=>{
@@ -31,7 +31,7 @@ describe('updateState',()=>{
             let except = _.cloneDeep(initialState);
             Object.assign(except.trashes[0].schedules[1],{type: 'month',value:''});
             except.error = true; //monthの場合は入力必須のため初期状態はエラー
-            const state = updateState(initialState,{type:ActionType.CHANGE_SCHEDULE,index:[0,1],value:'month'});
+            const state = updateState(undefined,{type:ActionType.CHANGE_SCHEDULE,index:[0,1],value:'month'});
             assert.deepEqual(except,state);
         });
         it('multi trash',()=>{
@@ -43,7 +43,7 @@ describe('updateState',()=>{
             state = updateState(state,{type:ActionType.CHANGE_SCHEDULE,index:[1,1],value:'weekday'});
             assert.deepEqual(except,state);
         });
-    })
+    });
     describe('change input',()=>{
         it('single trash',()=>{
             let except = _.cloneDeep(initialState);
@@ -58,8 +58,8 @@ describe('updateState',()=>{
         });
         it('multi trash',()=>{
             let except = _.cloneDeep(multiInitialState);
-            Object.assign(except.trashes[0].schedules[1],{type:'biweek',value:'1-1',error:undefined});;
-            Object.assign(except.trashes[1].schedules[2],{type:'week',value:'3',error:undefined});;
+            Object.assign(except.trashes[0].schedules[1],{type:'biweek',value:'1-1',error:undefined});
+            Object.assign(except.trashes[1].schedules[2],{type:'week',value:'3',error:undefined});
             except.error=false;
 
             let teststate = _.cloneDeep(multiInitialState);
@@ -163,7 +163,7 @@ describe('updateState',()=>{
             assert.deepEqual(state.trashes[0],expect.trashes[0]);
         });
         it('elegular error SQL injection',()=>{
-            const input_value = "or x='x';";
+            const input_value = 'or x=\'x\';';
             let expect = _.cloneDeep(initialState);
             Object.assign(expect.trashes[0],{type: 'other',trash_val: input_value,input_trash_type_error: 'wrongcharacter'});
 
@@ -185,7 +185,7 @@ describe('updateState',()=>{
             assert.equal(state.trashes[0].input_trash_type_error,undefined);
         });
         it('length over',()=>{
-            let expect = 'wronglengthstring'
+            let expect = 'wronglengthstring';
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
             let state = updateState(teststate,{type:ActionType.INPUT_TRASH_TYPE,index:0,value:'これは１１文字の入力だ',maxlength:10});
@@ -206,18 +206,8 @@ describe('updateState',()=>{
             teststate.trashes[0].type='paper';
             let except = _.cloneDeep(initialState);
             except.trashes[0].type='paper';
-            let state = updateState(teststate,{type:ActionType.DEL_TRASH,index:1});;
+            let state = updateState(teststate,{type:ActionType.DEL_TRASH,index:1});
             assert.deepEqual(except,state);
-        });
-    });
-    describe('submitting',()=>{
-        it('submit true',()=>{
-            let state = updateState(initialState,{type:ActionType.SET_SUBMITTING,value:true});
-            assert.equal(true,state.submitting);
-        });
-        it('submit false',()=>{
-            let state = updateState(initialState,{type:ActionType.SET_SUBMITTING,value:false});
-            assert.equal(false,state.submitting);
         });
     });
     describe('set preset', ()=>{
@@ -237,6 +227,27 @@ describe('updateState',()=>{
             assert.equal(state.error,false);
             assert.deepEqual(state.trashes[0].schedules[0],preset[0].schedules[0]);
             assert.deepEqual(state.trashes[0].schedules[1],initial_schedule);
+        });
+    });
+});
+
+describe('SubmitState',()=> {
+    describe('submitting',()=>{
+        it('submit true',()=>{
+            const state = SubmitState(undefined,{type:ActionType.SET_SUBMITTING,value:true});
+            assert.equal(true,state.submitting);
+        });
+        it('submit false',()=>{
+            const state = SubmitState({submitting:true},{type:ActionType.SET_SUBMITTING,value:false});
+            assert.equal(false,state.submitting);
+        });
+        it('open error Dialog', ()=>{
+            const state = SubmitState(undefined, {type:ActionType.ERROR_DIALOG, open: true});
+            assert.equal(state.showErrorDialog, true);
+        });
+        it('close error Dialog', ()=>{
+            const state = SubmitState({showErrorDialog:true}, {type:ActionType.ERROR_DIALOG, open: false});
+            assert.equal(state.showErrorDialog, false);
         });
     });
 });
