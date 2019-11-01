@@ -80,9 +80,6 @@ export const updateState = (state=initialState,action)=> {
         new_state.error = common_check.exist_error(new_state.trashes);
         return new_state;
     }
-    case ActionType.SET_SUBMITTING:{
-        return Object.assign({},state,{submitting:action.value});
-    }
     case ActionType.SET_USER_INFO: {
         if(action.preset.length > 0) {
             action.preset.forEach(trash => {
@@ -95,6 +92,19 @@ export const updateState = (state=initialState,action)=> {
             new_state.error = common_check.exist_error(new_state.trashes);
         }
         return new_state;
+    }
+    default:
+        return state;
+    }
+};
+
+export const SubmitState = (state={submitting:false, showErrorDialog:false}, action) => {
+    switch(action.type) {
+    case ActionType.ERROR_DIALOG: {
+        return Object.assign({}, state, { showErrorDialog: action.open });
+    }
+    case ActionType.SET_SUBMITTING: {
+        return Object.assign({}, state, { submitting: action.value });
     }
     default:
         return state;
@@ -143,6 +153,7 @@ const LoginState = (state={signedIn: false, userInfo: null, signinDialog: false}
 
 const TrashScheduleApp = combineReducers({
     updateState,
+    SubmitState,
     LoginState,
     MenuState
 });

@@ -7,6 +7,7 @@ import {
     changeTrashType,
     inputTrashType,
     changeInput,
+    errorDialog,
     setSubmitting
 } from '../actions';
 
@@ -14,7 +15,8 @@ const mapPropsState = (state) => {
     return {
         trashes: state.updateState.trashes,
         submit_error: state.updateState.error,
-        submitting: state.updateState.submitting
+        showErrorDialog: state.SubmitState.showErrorDialog,
+        submitting: state.SubmitState.submitting
     };
 };
 
@@ -37,6 +39,9 @@ const mapDispatchToProps = (dispatch) => {
         },
         onClickDelete: (i) =>{
             dispatch(deleteTrash(i));
+        },
+        onError: (open)=> {
+            dispatch(errorDialog(open));
         },
         onSubmit: (status)=>{
             dispatch(setSubmitting(status));

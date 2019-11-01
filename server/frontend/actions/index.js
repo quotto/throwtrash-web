@@ -5,6 +5,7 @@ export const ActionType = {
     CHANGE_INPUT: 'CHANGE_INPUT',
     INPUT_TRASH_TYPE: 'INPUT_TRASH_TYPE',
     DEL_TRASH: 'DEL_TRASH',
+    ERROR_DIALOG: 'ERROR_DIALOG',
     SET_SUBMITTING: 'SET_SUBMITTING',
     SET_USER_INFO: 'SET_USER_INFO',
     SIGN_OUT: 'SIGN_OUT',
@@ -78,6 +79,10 @@ export const signOut = ()=>{
     return {
         type: ActionType.SIGN_OUT
     };
+};
+
+export const errorDialog = (open)=>{
+    return {type: ActionType.ERROR_DIALOG, open:open};
 };
 
 export const signinDialog =(value)=>{

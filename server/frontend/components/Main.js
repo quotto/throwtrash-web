@@ -4,6 +4,7 @@ import TrashSchedule from './TrashSchedule';
 import {Button,Grid} from '@material-ui/core';
 import axios from 'axios';
 import {withTranslation} from 'react-i18next';
+import ErrorDialog from './ErrorDialog';
 
 const MAX_SCHEDULE = 10;
 class Main extends React.Component {
@@ -16,7 +17,8 @@ class Main extends React.Component {
             ).then((response) => {
                 window.location = response.data;
             }).catch(() => {
-                alert(this.props.t('ScheduleList.error.registrationfailed.text'), this.props.t('ScheduleList.error.registrationfailed.title'));
+                // alert(this.props.t('ScheduleList.error.registrationfailed.text'), this.props.t('ScheduleList.error.registrationfailed.title'));
+                this.props.onError(true);
                 this.props.onSubmit(false);
             });
         }
@@ -43,6 +45,10 @@ class Main extends React.Component {
                 <Grid item xs={2}></Grid>
                 <Grid item xs={4}></Grid>
                 <Grid item xs={4} style={{textAlign:'center'}}>
+                    <ErrorDialog
+                        showErrorDialog={this.props.showErrorDialog}
+                        onError={this.props.onError}
+                    />
                     <Button
                         variant="contained"
                         color="primary"
@@ -67,9 +73,11 @@ Main.propTypes = {
     onClickDelete: PropTypes.func,
     onInputTrashType: PropTypes.func,
     onClickAdd: PropTypes.func,
+    onError: PropTypes.func,
     onSubmit: PropTypes.func,
     t: PropTypes.func,
-    classes: PropTypes.object
+    classes: PropTypes.object,
+    showErrorDialog: PropTypes.bool
 };
 
 export default withTranslation()(Main);
