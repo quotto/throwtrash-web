@@ -75,7 +75,7 @@ jobs:
           name: deploy
           command: |
             aws s3 sync server/backend/public/resource s3://${AWS_BUCKET}/${STAGE}/
-            aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /*
+            aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /bundle/*.js /css/*.css
   backend:
     docker: 
       - image: kroniak/ssh-client:3.9
