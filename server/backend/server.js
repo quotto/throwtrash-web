@@ -294,7 +294,8 @@ app.post('/regist',(req,res)=>{
     if(common_check.exist_error(recv_data)) {
         logger.error(`Bad Data\n${JSON.stringify(recv_data)}`);
         logger.error(req.headers);
-        res.redirect('/static/500');
+        logger.error(`platform: ${req.session.platform}`);
+        res.status(500).send('Bad Data');
         return;
     }
 
@@ -383,8 +384,9 @@ app.get('/submit', async(req,res)=>{
             `client_id:${req.session.client_id}\n` +
             `redirect_uri:${req.session.redirect_uri}\n` +
             `redirect_state:${req.query.redirect_state}\n` +
-            `session_redirect_state:${req.session.redirect_state}`);
-        res.redirect('/static/500');
+            `session_redirect_state:${req.session.redirect_state}\n`+
+            `platform: ${req.session.platform}`);
+        res.status(500).send('no state');
         return;
     }
 });
