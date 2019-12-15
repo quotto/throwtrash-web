@@ -847,6 +847,7 @@ describe('handler',()=>{
     });
     describe('handler /google_signin',()=>{
         const generateState = new StubModule(index, 'generateState');
+        const session_id_001 = 'google_signin_session_id_001';
         let event = {};
         before((done)=>{
             process.env.GoogleClientId = 'test-google-client-id';
@@ -854,7 +855,7 @@ describe('handler',()=>{
             generateState.set(()=>{return 'test-generated-state'});
             documentClient.put({
                 TableName: TBL_ThrowTrashSession,
-                Item:{id:'google_signin_001', expire: DEFAULT_EXPIRE}
+                Item:{id: session_id_001, expire: DEFAULT_EXPIRE}
             }).promise().then(()=>done());
         });
         beforeEach(()=>{
@@ -862,14 +863,14 @@ describe('handler',()=>{
         });
         it('セッションあり', async()=>{
             event.headers = {
-                Cookie: 'throwaway-session=google_signin_001'
+                Cookie: `throwaway-session=${session_id_001}`
             };
             const response = await handler(event,{});
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location,`https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GoogleClientId}&response_type=code&scope=openid profile&redirect_uri=${process.env.BackendURI}/signin?service=google&state=test-generated-state&login_hint=mythrowaway.net@gmail.com&nonce=test-generated-state`);
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
-                Key:{id: 'google_signin_001'}
+                Key:{id: session_id_001}
             }).promise().then(data=>{
                 assert.equal(data.Item.googleState, 'test-generated-state');
             });
@@ -884,17 +885,17 @@ describe('handler',()=>{
             generateState.restore();
             documentClient.delete({
                 TableName: TBL_ThrowTrashSession,
-                Key:{id: 'google_signin_001'}
+                Key:{id: session_id_001}
             }).promise().then(()=>done());
         });
     });
     describe('handler /signin', ()=>{
         let event = {};
-        const session_id_001 = 'session_id_001';
-        const session_id_002 = 'session_id_002';
-        const schedule_id_001 = 'test_id_001';
-        const signin_id_001 = 'signin_id_001';
-        const signin_id_002 = 'signin_id_002';
+        const session_id_001 = 'signin_session_id_001';
+        const session_id_002 = 'signin_session_id_002';
+        const schedule_id_001 = 'signin_test_id_001';
+        const signin_id_001 = 'signin_signin_id_001';
+        const signin_id_002 = 'signin_signin_id_002';
         const test_data_001 = [{type: 'bottole',schedules:[{type: 'month', value: '13'}]}];
         const requestAmazonProfile = new StubModule(index, 'requestAmazonProfile');
         const requestGoogleProfile = new StubModule(index, 'requestGoogleProfile');
@@ -1097,16 +1098,16 @@ describe('handler',()=>{
     });
     describe('handler /regist',()=>{
         let event = {};
-        const session_id_001 = 'session_id_001';
-        const session_id_002 = 'session_id_002';
-        const session_id_003 = 'session_id_003';
-        const session_id_004 = 'session_id_004';
-        const session_id_005 = 'session_id_005';
-        const signin_id_002 = 'signin_id_002';
-        const signin_id_003 = 'signin_id_003';
-        const schedule_id_001 = 'schedule_id_001';
-        const schedule_id_002 = 'schedule_id_002';
-        const schedule_id_003 = 'schedule_id_003';
+        const session_id_001 = 'regist_session_id_001';
+        const session_id_002 = 'regist_session_id_002';
+        const session_id_003 = 'regist_session_id_003';
+        const session_id_004 = 'regist_session_id_004';
+        const session_id_005 = 'regist_session_id_005';
+        const signin_id_002 = 'regist_signin_id_002';
+        const signin_id_003 = 'regist_signin_id_003';
+        const schedule_id_001 = 'regist_schedule_id_001';
+        const schedule_id_002 = 'regist_schedule_id_002';
+        const schedule_id_003 = 'regist_schedule_id_003';
         const test_data_001 = [{type: 'bottole',schedules:[{type: 'month', value: '13'},{},{}]}];
         const test_data_002 = [{type: 'bottole',schedules:[{type: 'weekday', value: '0'}]}];
         const test_data_003 = [{type: 'burn',schedules:[{type: 'weekday', value: '0'}]}];
