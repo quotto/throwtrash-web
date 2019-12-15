@@ -1,9 +1,16 @@
 const AWS = require('aws-sdk');
-const MAX_AGE=3600;
-const SESSIONID_NAME='throwaway-session';
-const common_check = require('./common_check');
+const firebase_admin = require('firebase-admin');
 const rp = require('request-promise');
 const jwt = require('jsonwebtoken');
+const common_check = require('./common_check');
+
+const MAX_AGE=3600;
+const SESSIONID_NAME='throwaway-session';
+const documentClient = new AWS.DynamoDB.DocumentClient({region: process.env.DB_REGION});
+firebase_admin.initializeApp({
+    credential: firebase_admin.credential.applicationDefault()
+});
+const firestore = firebase_admin.firestore();
 
 /**
  * 隔週スケジュールの開始日（今週の日曜日 または 来週の日曜日）を求める 
@@ -61,7 +68,6 @@ const generateState = (length)=>{
 }
 
 const getSession = async(sessionId) => {
-    const documentClient = new AWS.DynamoDB.DocumentClient({region: process.env.DB_REGION});
     const params = {
         Key: {
             id: sessionId
@@ -116,7 +122,6 @@ const publishSession = async()=>{
             id: generateId(),
             expire: (new Date()).getTime()+MAX_AGE
     }
-    const documentClient = new AWS.DynamoDB.DocumentClient({region: process.env.DB_REGION});
     return documentClient.put({
         TableName: 'ThrowTrashSession',
         Item: new_session,
@@ -146,7 +151,6 @@ const UserError = {
 
 const getDataBySigninId = async(signinId)=>{
     console.debug('get data by signinId:'+signinId);
-    const documentClient = new AWS.DynamoDB.DocumentClient({region: process.env.DB_REGION});
     return documentClient.query({
         TableName: 'TrashSchedule',
         IndexName: 'signinId-index',
@@ -192,9 +196,9 @@ const requestGoogleProfile = (code)=>{
         method: 'POST',
         body: {
             code: code,
-            client_id: CONFIG.google.client_id,
-            client_secret: CONFIG.google.client_secret,
-            redirect_uri: `${CONFIG.base.endpoint}/signin?service=google`,
+            client_id: process.env.GOOGLE_CLIENT_ID,
+            client_secret: process.env.GOOGLE_CLIENT_SECRET,
+            redirect_uri: `${process.env.ENDPOINT_URL}/signin?service=google`,
             grant_type: 'authorization_code'
         },
         json: true
@@ -214,7 +218,6 @@ const requestGoogleProfile = (code)=>{
 }
 
 const saveSession = async(session)=>{
-    const documentClient = new AWS.DynamoDB.DocumentClient({region: process.env.DB_REGION});
     console.debug('save session',session);
     return documentClient.put({
         TableName: 'ThrowTrashSession',
@@ -228,7 +231,6 @@ const saveSession = async(session)=>{
 }
 
 const deleteSession = async(sessionId)=>{
-    const documentClient = new AWS.DynamoDB.DocumentClient({region: process.env.DB_REGION});
     return documentClient.delete({
         TableName: 'ThrowTrashSession',
         Key:{
@@ -243,7 +245,6 @@ const deleteSession = async(sessionId)=>{
 }
 
 const publishId = async()=>{
-    const documentClient = new AWS.DynamoDB.DocumentClient({region: process.env.DB_REGION});
     let user_id = null;
     // 初回登録は最大5回まで重複のないIDの採番を試みる
     let retry = 0;
@@ -273,7 +274,6 @@ const publishId = async()=>{
 }
 
 const registData = async(item, regist_data) =>{
-    const documentClient = new AWS.DynamoDB.DocumentClient({region: process.env.DB_REGION});
     const params = {
         TableName: 'TrashSchedule',
         Item: item
@@ -287,23 +287,18 @@ const registData = async(item, regist_data) =>{
             console.info(`Regist user(${JSON.stringify(item)})`);
 
             // Googleアシスタントの登録はfirestore登録後にリダイレクトする
-            // if (item.platform === 'google') {
-            //     console.debug(`regist firestore: ${item.id},${regist_data}`);
-            //     return firestore.runTransaction(t => {
-            //         const params = {
-            //             id: item.id,
-            //             data: regist_data
-            //         };
-            //         t.set(firestore.collection('schedule').doc(item.id), params);
-            //         return Promise.resolve('Regist Complelete');
-            //     }).then(() => {
-            //         logger.info(`Regist user(${item.id}\n${JSON.stringify(regist_data)})`);
-            //         return true;
-            //     }).catch(err => {
-            //         logger.error(`DB Insert Error\n${err}`);
-            //         return false;
-            //     });
-            // } 
+            if (item.platform === 'google') {
+                console.debug(`regist firestore: ${item.id},${regist_data}`);
+                return firestore.collection('schedule').doc(item.id).set({
+                    data: regist_data
+                }).then(() => {
+                    console.info(`Regist user(Firestore)(${item.id}\n${JSON.stringify(regist_data)})`);
+                    return true;
+                }).catch(err => {
+                    console.error(`DB Insert Error(Firestore)\n${err}`);
+                    return false;
+                });
+            } 
             return true;
         }
     });
@@ -356,6 +351,11 @@ const regist = async(body,session)=>{
             return {
                 statusCode: 200,
                 body: redirect_url
+            }
+        } else {
+            return {
+                statusCode: 500,
+                body: 'Registration Failed'
             }
         }
     } else {
@@ -417,7 +417,6 @@ const signin = async(params,session)=>{
             session.userInfo.preset = [];
         }
 
-        console.debug('save session with signinId',session);
         return saveSession(session).then(()=>{return {
             statusCode: 301,
             headers: {
@@ -487,6 +486,7 @@ const isNull = (value)=>{
     return value === null ? true : false;
 }
 
+// eslint-disable-next-line no-unused-vars
 exports.handler = async function(event,context) {
     console.log(event);
     let session = null;

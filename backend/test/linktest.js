@@ -6,7 +6,14 @@ const rewire = require('rewire');
 const index = rewire('../index.js');
 const assert = require('assert');
 const AWS = require('aws-sdk');
+const firebase_admin = require('firebase-admin');
+
 const documentClient = new AWS.DynamoDB.DocumentClient({region: 'us-west-2'});
+// firebase_admin.initializeApp({
+//     credential: firebase_admin.credential.applicationDefault()
+// });
+const firestore = firebase_admin.firestore();
+
 const TBL_ThrowTrashSession = 'ThrowTrashSession';
 const TBL_TrashSchedule = 'TrashSchedule';
 
@@ -286,27 +293,32 @@ describe('publishSession',()=>{
 });
 
 describe('backend test', ()=>{
-    describe('regist',()=>{
+    describe('backend regist',()=>{
         const regist = index.__get__('regist');
         const test_regist_data = [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }];
+        const session_id_001 = 'session_id_001';
+        const session_id_002 = 'session_id_002';
+        const session_id_003 = 'session_id_003';
+        const schedule_id_001 = 'schedule_id_001';
+        const schedule_id_002 = 'schedule_id_002';
+        const schedule_id_003 = 'schedule_id_003';
         before((done)=>{
-            process.env.DB_REGION = 'us-west-2';
             documentClient.batchWrite({
                 RequestItems: {
                     ThrowTrashSession: [
                         {
                             PutRequest: {
-                                Item:{id: 'test001'}
+                                Item:{id: session_id_001}
                             }
                         },
                         {
                             PutRequest:{
-                                Item:{id: 'test002',userInfo:{signinId: 'amazon-xxxx'}}
+                                Item:{id: session_id_002,userInfo:{signinId: 'amazon-xxxx'}}
                             }
                         },
                         {
                             PutRequest:{
-                                Item:{id: 'test003',userInfo:{signinId: 'google-xxxx'}}
+                                Item:{id: session_id_003,userInfo:{signinId: 'google-xxxx'}}
                             }
                         }
                     ],
@@ -326,27 +338,28 @@ describe('backend test', ()=>{
             }).promise().then(()=>done());
         });
 
-        it('サインインしていないユーザー',async()=>{
+        it('サインインしていないユーザー,プラットフォーム:amazon',async()=>{
+            // 検証のため発行IDはmockで設定
             const publishId = new StubModule(index, 'publishId');
-            publishId.set(async()=>{return 'xxxx-xxxx-xxxx-xxxx'});
+            publishId.set(async()=>{return schedule_id_001});
 
             try {
                 // パラメータはリクエストパラメータ（登録データ）とセッション情報
                 // セッションIDは呼び出し前に採番されるため、セッション情報は必ず存在する
                 const response = await regist(
                     { data:  test_regist_data},
-                    { id: 'test001', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id:'alexa-skill', platform: 'amazon' });
+                    { id: session_id_001, redirect_uri: 'https://xxxx.com', state: 'state-value', client_id:'alexa-skill', platform: 'amazon' });
                 assert.equal(response.statusCode, 200);
-                assert.equal(response.body, 'https://xxxx.com#state=state-value&access_token=xxxx-xxxx-xxxx-xxxx&client_id=alexa-skill&token_type=Bearer');
+                assert.equal(response.body, `https://xxxx.com#state=state-value&access_token=${schedule_id_001}&client_id=alexa-skill&token_type=Bearer`);
                 await documentClient.get({
                     TableName: TBL_TrashSchedule,
-                    Key:{id: 'xxxx-xxxx-xxxx-xxxx'}
+                    Key:{id: schedule_id_001}
                 }).promise().then(async(data)=>{
                     assert.deepEqual(JSON.parse(data.Item.description),test_regist_data);
                     assert.equal(data.Item.platform, 'amazon');
                     await documentClient.get({
                         TableName: TBL_ThrowTrashSession,
-                        Key:{id: 'test001'}
+                        Key:{id: session_id_001}
                     }).promise().then(data=>{
                         // 正常に登録した場合はセッションが削除されていること
                         assert.equal(data.Item,undefined);
@@ -356,15 +369,15 @@ describe('backend test', ()=>{
                 publishId.restore();
             }
         });
-        it('サインインしているユーザー（事前登録なし）',async()=>{
+        it('サインインしているユーザー（事前登録なし）,プラットフォーム:amazon',async()=>{
             const publishId = new StubModule(index, 'publishId');
-            publishId.set(async()=>{return 'yyyy-yyyy-yyyy-yyyy'});
+            publishId.set(async()=>{return schedule_id_002});
 
             try {
                 const response = await regist(
                     { data:  test_regist_data},
                     { 
-                        id: 'test002', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id:'alexa-skill', platform: 'amazon',
+                        id: session_id_002, redirect_uri: 'https://xxxx.com', state: 'state-value', client_id:'alexa-skill', platform: 'amazon',
                         userInfo: {
                             name: 'テストユーザー',
                             signinId: 'amazon-xxxx',
@@ -372,10 +385,10 @@ describe('backend test', ()=>{
                         }
                      });
                 assert.equal(response.statusCode, 200);
-                assert.equal(response.body, 'https://xxxx.com#state=state-value&access_token=yyyy-yyyy-yyyy-yyyy&client_id=alexa-skill&token_type=Bearer');
+                assert.equal(response.body, `https://xxxx.com#state=state-value&access_token=${schedule_id_002}&client_id=alexa-skill&token_type=Bearer`);
                 await documentClient.get({
                     TableName: TBL_TrashSchedule,
-                    Key:{id: 'yyyy-yyyy-yyyy-yyyy'}
+                    Key:{id: schedule_id_002}
                 }).promise().then(async(data)=>{
                     assert.deepEqual(JSON.parse(data.Item.description),test_regist_data);
                     assert.equal(data.Item.signinId, 'amazon-xxxx');
@@ -383,7 +396,7 @@ describe('backend test', ()=>{
                     assert.equal(data.Item.platform, 'amazon');
                     await documentClient.get({
                         TableName: TBL_ThrowTrashSession,
-                        Key:{id: 'test002'}
+                        Key:{id: session_id_002}
                     }).promise().then(data=>{
                         // 正常に登録した場合はセッションが削除されていること
                         assert.equal(data.Item,undefined);
@@ -393,23 +406,23 @@ describe('backend test', ()=>{
                 publishId.restore();
             }
         });
-        it('サインインしているユーザー（事前登録あり）',async()=>{
+        it('サインインしているユーザー（事前登録あり）,プラットフォーム:google',async()=>{
             const response = await regist(
                 { data:  test_regist_data},
                 { 
-                    id: 'test003', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id:'alexa-skill', platform: 'google',
+                    id: session_id_003, redirect_uri: 'https://xxxx.com', state: 'state-value', client_id:'alexa-skill', platform: 'google',
                     userInfo: {
                         name: 'テストユーザー',
                         signinId: 'google-xxxx',
                         signinService: 'google',
-                        id: 'zzzz-zzzz-zzzz-zzzz'
+                        id: schedule_id_003
                     }
                     });
             assert.equal(response.statusCode, 200);
-            assert.equal(response.body, 'https://xxxx.com#state=state-value&access_token=zzzz-zzzz-zzzz-zzzz&client_id=alexa-skill&token_type=Bearer');
+            assert.equal(response.body, `https://xxxx.com#state=state-value&access_token=${schedule_id_003}&client_id=alexa-skill&token_type=Bearer`);
             await documentClient.get({
                 TableName: TBL_TrashSchedule,
-                    Key:{id: 'zzzz-zzzz-zzzz-zzzz'}
+                    Key:{id: schedule_id_003}
             }).promise().then(async (data) => {
                 assert.deepEqual(JSON.parse(data.Item.description), test_regist_data);
                 assert.equal(data.Item.signinId, 'google-xxxx');
@@ -417,10 +430,15 @@ describe('backend test', ()=>{
                 assert.equal(data.Item.platform, 'google');
                 await documentClient.get({
                     TableName: TBL_ThrowTrashSession,
-                    Key: { id: 'test003' }
-                }).promise().then(data => {
+                    Key: { id: session_id_003 }
+                }).promise().then(async(data) => {
                     // 正常に登録した場合はセッションが削除されていること
                     assert.equal(data.Item, undefined);
+                    // firestore側の確認
+                    await firestore.collection('schedule').doc(schedule_id_003).get().then(doc=>{
+                        assert.ok(doc.exists);
+                        assert.deepEqual(doc.data().data,test_regist_data)
+                    });
                 });
             });
         });
@@ -432,27 +450,34 @@ describe('backend test', ()=>{
             assert.equal(response.statusCode, 400);
         });
         after((done)=>{
-            documentClient.batchWrite({
-                RequestItems: {
-                    TrashSchedule: [
-                        {
-                            DeleteRequest: {
-                                Key:{id:'xxxx-xxxx-xxxx-xxxx'}
+            const remove_list = [];
+            remove_list.push(
+                documentClient.batchWrite({
+                    RequestItems: {
+                        TrashSchedule: [
+                            {
+                                DeleteRequest: {
+                                    Key: { id: schedule_id_001 }
+                                },
                             },
-                        },
-                        {
-                            DeleteRequest: {
-                                Key:{id:'yyyy-yyyy-yyyy-yyyy'}
+                            {
+                                DeleteRequest: {
+                                    Key: { id: schedule_id_002 }
+                                },
                             },
-                        },
-                        {
-                            DeleteRequest: {
-                                Key:{id:'zzzz-zzzz-zzzz-zzzz'}
+                            {
+                                DeleteRequest: {
+                                    Key: { id: schedule_id_003 }
+                                }
                             }
-                        }
-                    ]
-                }
-            }).promise().then(()=>done());
+                        ]
+                    }
+                }).promise()
+            );
+            remove_list.push(
+                firestore.collection('schedule').doc(schedule_id_003).delete()
+            );
+            Promise.all(remove_list).then(()=>done());
         });
     });
 
@@ -1113,7 +1138,7 @@ describe('handler',()=>{
                                     client_id: 'alexa-skill',
                                     redirect_uri: 'https://xxxxx.com',
                                     version: 7,
-                                    platform: 'amazon',
+                                    platform: 'google',
                                     userInfo: {
                                         signinId: signin_id_003,
                                         name: 'テストユーザー',
@@ -1170,7 +1195,7 @@ describe('handler',()=>{
             event.resource = '/regist';
             event.headers = {};
         });
-        it('サインインなし', async()=>{
+        it('サインインなし,プラットフォーム：amazon', async()=>{
             // テスト対象データ特定のためpublishIdの戻り値を固定
             publishId.set(async()=>{return schedule_id_001});
             event.headers.Cookie = `throwaway-session=${session_id_001};`;
@@ -1196,7 +1221,7 @@ describe('handler',()=>{
                 publishId.restore();
             }
         });
-        it('サインインあり、プリセットなし', async()=>{
+        it('サインインあり、プリセットなし、プラットフォーム：amazon', async()=>{
             // テスト対象データ特定のためpublishIdの戻り値を固定
             publishId.set(async()=>{return schedule_id_002});
             event.headers.Cookie = `throwaway-session=${session_id_002};`;
@@ -1221,7 +1246,7 @@ describe('handler',()=>{
                 publishId.restore();
             }
         });
-        it('サインインあり、プリセットあり', async()=>{
+        it('サインインあり、プリセットあり、プラットフォーム:google', async()=>{
             event.headers.Cookie = `throwaway-session=${session_id_003};`;
             event.body = JSON.stringify({data: test_data_003});
             try {
@@ -1236,8 +1261,13 @@ describe('handler',()=>{
                     await documentClient.get({
                         TableName: TBL_ThrowTrashSession,
                         Key: {id: schedule_id_003}
-                    }).promise().then(data=>{
+                    }).promise().then(async(data)=>{
                         assert.equal(data.Item, undefined);
+                        //firestore側の確認
+                        await firestore.collection('schedule').doc(schedule_id_003).get().then(doc=>{
+                            assert.ok(doc.exists);
+                            assert.deepEqual(doc.data().data,test_data_003);
+                        });
                     });
                 });
             } finally {
@@ -1271,29 +1301,36 @@ describe('handler',()=>{
             assert.equal(response.body, 'Invalid Session');
         })
         after((done)=>{
-            documentClient.batchWrite({
-                RequestItems: {
-                    ThrowTrashSession: [
-                        {
-                            DeleteRequest: {
-                                Key: {id: session_id_004}
+            const remove_list = [];
+            remove_list.push(
+                documentClient.batchWrite({
+                    RequestItems: {
+                        ThrowTrashSession: [
+                            {
+                                DeleteRequest: {
+                                    Key: { id: session_id_004 }
+                                }
+                            },
+                            {
+                                DeleteRequest: {
+                                    Key: { id: session_id_005 }
+                                }
                             }
-                        },
-                        {
-                            DeleteRequest: {
-                                Key: {id: session_id_005}
+                        ],
+                        TrashSchedule: [
+                            {
+                                DeleteRequest: {
+                                    Key: { id: schedule_id_003 }
+                                }
                             }
-                        }
-                    ],
-                    TrashSchedule: [
-                        {
-                            DeleteRequest: {
-                                Key:{id: schedule_id_003}
-                            }
-                        }
-                    ]
-                }
-            }).promise().then(()=>done());
+                        ]
+                    }
+                }).promise()
+            );
+            remove_list.push(
+                firestore.collection('schedule').doc(schedule_id_003).delete()
+            );
+            Promise.all(remove_list).then(()=>done());
         });
     });
 });
