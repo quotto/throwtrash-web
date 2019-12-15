@@ -9,3 +9,4 @@ server/backend/public/bundle
 server/backend/public/css/index.css
 docker/web/cert/**
 docker/.env
+backend/node_modules
