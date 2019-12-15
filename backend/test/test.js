@@ -1,8 +1,11 @@
+process.env.DB_REGION = 'us-west-2';
+const AWS = require('aws-sdk');
+
 const rewire = require('rewire');
 const index = rewire('../index.js');
-const AWSMock = require('aws-sdk-mock');
 const sinon = require('sinon');
 
+const sandbox = sinon.createSandbox();
 const assert = require('assert');
 
 class StubModule {
@@ -69,9 +72,11 @@ describe('extract session',()=>{
 describe('getSession', ()=>{
     const getSession = index.__get__('getSession');
     it('有効期限内',async ()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','get',(params,callback)=>{
-            //2019-12-08T09:11:57.300Z
-            return callback(null, {Item:{id:'hogehoge',expire: 1575796317300}})
+        sandbox.stub(AWS.DynamoDB.DocumentClient.prototype, 'get').returns({
+            promise: async () => {
+                //expire = 2019-12-08T09:11:57.300Z
+                return { Item: { id: 'hogehoge', expire: 1575796317300 } };
+            }
         });
         const stub = sinon.stub(Date.prototype,'getTime');
         stub.returns(1475796317300);
@@ -82,13 +87,14 @@ describe('getSession', ()=>{
             assert.equal(session.expire, 1575796317300);
         } finally {
             stub.restore();
-            AWSMock.restore('DynamoDB.DocumentClient');
+            sandbox.restore();
         }
     });
     it('有効期限切れ',async()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','get',(params,callback)=>{
-            //2019-12-08T09:11:57.300Z
-            return callback(null, {Item:{id:'hogehoge',expire: 1575796317300}})
+        sandbox.stub(AWS.DynamoDB.DocumentClient.prototype, 'get').returns({
+            promise: async () => {
+                return {Item:{id:'hogehoge',expire: 1575796317300}}
+            }
         });
         const stub = sinon.stub(Date.prototype,'getTime');
         stub.returns(1675796317300);
@@ -98,16 +104,17 @@ describe('getSession', ()=>{
             assert.equal(session, null);
         } finally {
             stub.restore();
-            AWSMock.restore('DynamoDB.DocumentClient');
+            sandbox.restore();
         }
     });
     it('有効期限と同じ',async()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','get',(params,callback)=>{
-            //2019-12-08T09:11:57.300Z
-            return callback(null, {Item:{id:'hogehoge',expire: 1575796317300}})
-        });
         const stub = sinon.stub(Date.prototype,'getTime');
         stub.returns(1575796317300);
+        sandbox.stub(AWS.DynamoDB.DocumentClient.prototype, 'get').returns({
+            promise: async () => {
+                return {Item:{id:'hogehoge',expire: 1575796317300}}
+            }
+        });
         try {
             //有効期限までは許容
             const session = await getSession('hogehoge');
@@ -115,39 +122,41 @@ describe('getSession', ()=>{
             assert.equal(session.expire, 1575796317300);
         } finally {
             stub.restore();
-            AWSMock.restore('DynamoDB.DocumentClient');
+            sandbox.restore();
         }
     });
     it('sessionIdで見つからない場合',async()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','get',(params,callback)=>{
-            //2019-12-08T09:11:57.300Z
-            return callback(null, {});
-        });
         const stub = sinon.stub(Date.prototype,'getTime');
         stub.returns(1575796317300);
+        sandbox.stub(AWS.DynamoDB.DocumentClient.prototype, 'get').returns({
+            promise: async () => {
+                return {};
+            }
+        });
         try {
             //指定のsessionIdで見つからない場合はnull
             const session = await getSession('hogehoge');
             assert.equal(session, null);
         } finally {
             stub.restore();
-            AWSMock.restore('DynamoDB.DocumentClient');
+            sandbox.restore();
         }
     });
     it('DB取得でエラー',async()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','get',(params,callback)=>{
-            //2019-12-08T09:11:57.300Z
-            return callback(new Error('DB Get Error'), null)
-        });
         const stub = sinon.stub(Date.prototype,'getTime');
         stub.returns(1575796317300);
+        sandbox.stub(AWS.DynamoDB.DocumentClient.prototype, 'get').returns({
+            promise: async()=>{
+                throw new Error('DB Get Error');
+            }
+        });
         try {
             //DBのgetがエラーの場合はnull
             const session = await getSession('hogehoge');
             assert.equal(session, null);
         } finally {
             stub.restore();
-            AWSMock.restore('DynamoDB.DocumentClient');
+            sandbox.restore();
         }
     });
 });
@@ -163,25 +172,29 @@ describe('generateId',()=> {
 describe('publishSession',()=>{
     const publishSession = index.__get__('publishSession');
     it('publish new session id',async ()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','put', (params,callback)=>{
-            return callback(null, 'This is AWS mock');
+        sandbox.stub(AWS.DynamoDB.DocumentClient.prototype,'put').returns({
+            promise: async()=>{
+                return 'This is AWS mock';
+            }
         });
         try {
             const session = await publishSession();
             assert.equal(session.id.length,32);
         } finally {
-            AWSMock.restore();
+            sandbox.restore();
         }
     });
-    it('error',async ()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','put', (params,callback)=>{
-            return callback(new Error('This is AWS mock'),null);
-        })
+    it('DB登録でエラー',async ()=>{
+        sandbox.stub(AWS.DynamoDB.DocumentClient.prototype,'put').returns({
+            promise: async()=>{
+                throw new Error('DB Put Error');
+            }
+        });
         try {
             const session = await publishSession();
             assert.equal(session, null);
         } finally {
-            AWSMock.restore('DynamoDB.DocumentClient');
+            sandbox.restore();
         }
     });
 });
@@ -240,6 +253,7 @@ describe('regist', () => {
             { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' }
         );
         assert.equal(response.statusCode, 400);
+        assert.equal(response.body, 'Bad Data');
     });
     it('DB登録時にエラー', async () => {
         // eslint-disable-next-line no-unused-vars
@@ -247,6 +261,7 @@ describe('regist', () => {
         const response = await regist({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
             { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' });
         assert.equal(response.statusCode, 500);
+        assert.equal(response.body, 'Registration Failed');
     });
     afterEach(() => {
         stub.restore();

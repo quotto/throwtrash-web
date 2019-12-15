@@ -1,16 +1,15 @@
 /**
  * DBアクセス等すべて実装済みで実施する
  */
+process.env.DB_REGION = 'us-west-2';
 const rewire = require('rewire');
 const index = rewire('../index.js');
-const AWSMock = require('aws-sdk-mock');
 const assert = require('assert');
 const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient({region: 'us-west-2'});
 const TBL_ThrowTrashSession = 'ThrowTrashSession';
 const TBL_TrashSchedule = 'TrashSchedule';
 
-process.env.DB_REGION = 'us-west-2';
 const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
 const URL_BASE = 'https://accountlink.mythrowaway.net';
 // はるか未来の日付
@@ -55,17 +54,6 @@ describe('getDataBySigninId',()=>{
     it('IDなし',async()=>{
         const result = await getDataBySigninId('xxxx-xxxx-xxxx');
         assert.equal(result,null);
-    });
-    it('アクセスエラー',async()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','query',(params,callback)=>{
-            callback(new Error('DynamoDB Error'),null);
-        });
-        try {
-            const result = await getDataBySigninId('xxxx-xxxx-xxxx');
-            assert.equal(result,null);
-        } finally {
-            AWSMock.restore('DynamoDB.documentClient');
-        }
     });
     after((done)=>{
         documentClient.delete({
@@ -125,17 +113,6 @@ describe('saveSession',()=>{
             assert.equal(data.Item.userInfo, undefined);
         });
     });
-    it('セッション保存時にエラー', async()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','put',(params,callback)=>{
-            callback(new Error('DynamoDB Put Error'),null);
-        });
-        try { 
-            const result = await saveSession({});
-            assert.equal(result, false);
-        } finally {
-            AWSMock.restore('DynamoDB.DocumentClient','put');
-        }
-    })
     after((done)=>{
         documentClient.delete({
             TableName: TBL_ThrowTrashSession,
@@ -179,17 +156,6 @@ describe('deleteSession',()=>{
         // eslint-disable-next-line no-unused-vars
         }).promise().then(()=>assert.fail()).catch(err=>{assert.ok(true)});
     });
-    it('データ削除時にエラー',async()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','delete',(params,callback)=>{
-            callback(new Error('DB Delete Error'),null);
-        });
-        try {
-            const result = await deleteSession('test001');
-            assert.equal(result, false);
-        }finally {
-            AWSMock.restore('DynamoDB.DocumentClient');
-        }
-    });
     after((done)=>{
         documentClient.delete({
             TableName: TBL_ThrowTrashSession,
@@ -225,17 +191,6 @@ describe('publishId',()=>{
             assert.equal(id, null);
         } finally {
             index.__set__('generateId', generateId);
-        }
-    });
-    it('DBアクセスエラー',async()=>{
-        AWSMock.mock('DynamoDB.DocumentClient','get',(params,callback)=>{
-            callback(new Error('DB Get Error'),null);
-        });
-        try {
-            const result = await publishId();
-            assert.equal(result, null);
-        }finally {
-            AWSMock.restore('DynamoDB.DocumentClient');
         }
     });
     after((done)=>{
