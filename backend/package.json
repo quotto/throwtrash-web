@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.585.0",
+    "firebase-admin": "^8.8.0",
     "jsonwebtoken": "^8.5.1",
     "request": "^2.88.0",
     "request-promise": "^4.2.5"
