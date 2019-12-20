@@ -12,6 +12,9 @@ firebase_admin.initializeApp({
 });
 const firestore = firebase_admin.firestore();
 
+const URL_ACCOUNT_LINK = 'https://accountlink.mythrowaway.net';
+const URL_BACKEND = 'https://backend.mythrowaway.net';
+
 /**
  * 隔週スケジュールの開始日（今週の日曜日 または 来週の日曜日）を求める 
  * @param {int} weektype : 0:今週,1:来週
@@ -74,12 +77,18 @@ const getSession = async(sessionId) => {
         },
         TableName: 'ThrowTrashSession'
     }
-    return documentClient.get(params).promise().then(data=>{
+    return documentClient.get(params).promise().then(async(data)=>{
         if(data.Item) {
             const expire = data.Item.expire;
             const now = new Date().getTime();
             if(expire >= now) {
                 return data.Item;
+            } else {
+                console.info(`session ${sessionId} is expired`);
+                await documentClient.delete({
+                    TableName: 'ThrowTrashSession',
+                    Key:{id: sessionId}
+                }).promise();
             }
         }
         return null;
@@ -120,8 +129,9 @@ const generateId = (separator='')=>{
 const publishSession = async()=>{
     const new_session =  {
             id: generateId(),
-            expire: (new Date()).getTime()+MAX_AGE
+            expire: (new Date()).getTime()+(MAX_AGE*1000)
     }
+    console.info('publish new session:',new_session);
     return documentClient.put({
         TableName: 'ThrowTrashSession',
         Item: new_session,
@@ -190,7 +200,7 @@ const requestAmazonProfile = (access_token)=>{
     });
 }
 
-const requestGoogleProfile = (code)=>{
+const requestGoogleProfile = (code,stage)=>{
     const options = {
         uri: 'https://oauth2.googleapis.com/token',
         method: 'POST',
@@ -198,7 +208,7 @@ const requestGoogleProfile = (code)=>{
             code: code,
             client_id: process.env.GOOGLE_CLIENT_ID,
             client_secret: process.env.GOOGLE_CLIENT_SECRET,
-            redirect_uri: `${process.env.ENDPOINT_URL}/signin?service=google`,
+            redirect_uri: `${URL_BACKEND}/${stage}/signin?service=google`,
             grant_type: 'authorization_code'
         },
         json: true
@@ -350,7 +360,11 @@ const regist = async(body,session)=>{
             console.debug(redirect_url);
             return {
                 statusCode: 200,
-                body: redirect_url
+                body: redirect_url,
+                headers: {
+                    'Access-Control-Allow-Origin': URL_ACCOUNT_LINK,
+                    'Access-Control-Allow-Credentials': true
+                }
             }
         } else {
             return {
@@ -372,6 +386,25 @@ const regist = async(body,session)=>{
 
 }
 
+const user_info = (session)=>{
+    let body = {
+        name: null,
+        preset: null
+    };
+    if(session && session.userInfo) {
+        body.name = session.userInfo.name;
+        body.preset = session.userInfo.preset;
+    }
+    return {
+        statusCode: 200,
+        body: JSON.stringify(body),
+        headers: {
+            'Access-Control-Allow-Origin': URL_ACCOUNT_LINK,
+            'Access-Control-Allow-Credentials': true
+        }
+    }
+}
+
 const signout = async(session)=>{
     if(session.userInfo) {
         console.info('signout:'+session.userInfo.signinId);
@@ -379,25 +412,33 @@ const signout = async(session)=>{
         return saveSession(session).then(()=>{
             return {
                 statusCode: 200,
-                body: 'signout'
+                body: 'signout',
+                headers: {
+                    'Access-Control-Allow-Origin': URL_ACCOUNT_LINK,
+                    'Access-Control-Allow-Credentials': true
+                }
             }
         });
     }
     console.warn('not signed in user');
     return {
         statusCode: 200,
-        body: ''
+        body: '',
+        headers: {
+            'Access-Control-Allow-Origin': URL_ACCOUNT_LINK,
+            'Access-Control-Allow-Credentials': true
+        }
     }
 }
 
-const signin = async(params,session)=>{
+const signin = async(params,session,stage)=>{
     let service_request = null;
     if (params.service === 'amazon' && params.access_token && session) {
         service_request = requestAmazonProfile(params.access_token);
     } else if(params.service === 'google' 
                 && params.code && params.state 
                 && session && params.state === session.googleState) {
-        service_request = requestGoogleProfile(params.code);
+        service_request = requestGoogleProfile(params.code,stage);
     }  else {
         console.error('invalid parameter',params,session);
         return UserError;
@@ -420,7 +461,7 @@ const signin = async(params,session)=>{
         return saveSession(session).then(()=>{return {
             statusCode: 301,
             headers: {
-                Location: `https://accountlink.mythrowaway.net/v${session.version}/`
+                Location: `https://accountlink.mythrowaway.net/v${session.version}/index.html`
             }
         }});
     }).catch((err)=>{
@@ -441,11 +482,11 @@ const oauth_request = async (params,session,new_flg)=> {
             const response =  {
                 statusCode: 301,
                 headers: {
-                    Location: `https://accountlink.mythrowaway.net/v${params.version}/`
+                    Location: `https://accountlink.mythrowaway.net/v${params.version}/index.html`
                 }
             };
             if(new_flg) {
-               response.headers['Set-Cookie'] = `${SESSIONID_NAME}=${session.id};domain=mythrowaway.net;max-age=${MAX_AGE}`;
+               response.headers['Set-Cookie'] = `${SESSIONID_NAME}=${session.id};max-age=${MAX_AGE};`;
             }
             return response;
         }
@@ -455,14 +496,14 @@ const oauth_request = async (params,session,new_flg)=> {
     return UserError;
 };
 
-const google_signin = async(session)=>{
+const google_signin = async(session,stage)=>{
     const endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
     const google_state = generateState(16);
     const option = {
         client_id: process.env.GoogleClientId,
         response_type:'code',
         scope:'openid profile',
-        redirect_uri:`${process.env.BackendURI}/signin?service=google`,
+        redirect_uri:`${URL_BACKEND}/${stage}/signin?service=google`,
         state: google_state,
         login_hint: 'mythrowaway.net@gmail.com',
         nonce: generateState(16)
@@ -482,13 +523,10 @@ const google_signin = async(session)=>{
     });
 };
 
-const isNull = (value)=>{
-    return value === null ? true : false;
-}
-
 // eslint-disable-next-line no-unused-vars
 exports.handler = async function(event,context) {
     console.log(event);
+    console.log(context);
     let session = null;
     let sessionId = extractSessionId(event.headers.Cookie);
     console.debug('get sessionId in cookie:',sessionId);
@@ -497,22 +535,26 @@ exports.handler = async function(event,context) {
         console.debug('get session',session);
     }
    if(event.resource === '/oauth_request')  {
+       let new_session_flg = false;
        if(!session) {
-            session = await publishSession();
+           new_session_flg = true;
+           session = await publishSession();
        }
-       return oauth_request(event.queryStringParameters, session, isNull(sessionId));
+       return oauth_request(event.queryStringParameters, session, new_session_flg);
    } else if(event.resource === '/google_signin') {
        if(session) {
-           return google_signin(session);
+           return google_signin(session, event.requestContext.stage);
        }
    } else if(event.resource === '/signin') {
        if(session) {
-           return signin(event.queryStringParameters,session);
+           return signin(event.queryStringParameters,session),event.requestContext.stage;
        }
    } else if(event.resource === '/signout') {
        if(session) {
            return signout(session);
        }
+   } else if(event.resource === '/user_info') {
+       return user_info(session);
    } else if(event.resource === '/regist') {
        if(session) {
            try {

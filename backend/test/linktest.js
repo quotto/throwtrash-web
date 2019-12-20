@@ -18,7 +18,7 @@ const TBL_ThrowTrashSession = 'ThrowTrashSession';
 const TBL_TrashSchedule = 'TrashSchedule';
 
 const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
-const URL_BASE = 'https://accountlink.mythrowaway.net';
+const URL_ACCOUNT_LINK = 'https://accountlink.mythrowaway.net';
 // はるか未来の日付
 const DEFAULT_EXPIRE = 4133862000000;
 
@@ -212,6 +212,9 @@ describe('publishId',()=>{
 
 describe('getSession', ()=>{
     const getSession = index.__get__('getSession');
+    const session_id_001 = 'getSession_id_001';
+    const session_id_002 = 'getSession_id_002';
+    const session_id_003 = 'getSession_id_003';
     before((done)=>{
         process.env.DB_REGION = 'us-west-2';
         documentClient.batchWrite({
@@ -219,12 +222,12 @@ describe('getSession', ()=>{
                 ThrowTrashSession: [
                     {
                         PutRequest:{
-                            Item:{id: 'test001',expire: DEFAULT_EXPIRE}
+                            Item:{id: session_id_001,expire: DEFAULT_EXPIRE}
                         }
                     },
                     {
                         PutRequest:{
-                            Item:{id: 'test002',expire:1175796317300}
+                            Item:{id: session_id_002,expire:1175796317300}
                         }
                     }
                 ]
@@ -233,17 +236,22 @@ describe('getSession', ()=>{
     });
     it('有効期限内',async ()=>{
         //有効期限内ならセッションを返す
-        const session = await getSession('test001');
-        assert.deepEqual(session, {id: 'test001',expire: DEFAULT_EXPIRE});
+        const session = await getSession(session_id_001);
+        assert.deepEqual(session, {id: session_id_001,expire: DEFAULT_EXPIRE});
     });
     it('有効期限切れ',async()=>{
         //有効期限切れであればnull
-        const session = await getSession('test002');
+        const session = await getSession(session_id_002);
         assert.equal(session, null);
+        // 有効期限切れのセッションは削除されていること
+        documentClient.get({
+            TableName: TBL_ThrowTrashSession,
+            Key:{id: session_id_002}
+        }).promise().then((data)=>{assert.equal(data.Item, undefined)});
     });
     it('sessionIdナシ',async()=>{
         //セッションIDが無ければnull
-        const session = await getSession('test003');
+        const session = await getSession(session_id_003);
         assert.equal(session, null);
     });
     after((done)=>{
@@ -252,17 +260,7 @@ describe('getSession', ()=>{
                 ThrowTrashSession: [
                     {
                         DeleteRequest:{
-                            Key:{id: 'test001'}
-                        }
-                    },
-                                        {
-                        DeleteRequest:{
-                            Key:{id: 'test002'}
-                        }
-                    },
-                                        {
-                        DeleteRequest:{
-                            Key:{id: 'test003'}
+                            Key:{id: session_id_001}
                         }
                     }
                 ]
@@ -351,6 +349,8 @@ describe('backend test', ()=>{
                     { id: session_id_001, redirect_uri: 'https://xxxx.com', state: 'state-value', client_id:'alexa-skill', platform: 'amazon' });
                 assert.equal(response.statusCode, 200);
                 assert.equal(response.body, `https://xxxx.com#state=state-value&access_token=${schedule_id_001}&client_id=alexa-skill&token_type=Bearer`);
+                assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+                assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
                 await documentClient.get({
                     TableName: TBL_TrashSchedule,
                     Key:{id: schedule_id_001}
@@ -386,6 +386,8 @@ describe('backend test', ()=>{
                      });
                 assert.equal(response.statusCode, 200);
                 assert.equal(response.body, `https://xxxx.com#state=state-value&access_token=${schedule_id_002}&client_id=alexa-skill&token_type=Bearer`);
+                assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+                assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
                 await documentClient.get({
                     TableName: TBL_TrashSchedule,
                     Key:{id: schedule_id_002}
@@ -420,6 +422,8 @@ describe('backend test', ()=>{
                     });
             assert.equal(response.statusCode, 200);
             assert.equal(response.body, `https://xxxx.com#state=state-value&access_token=${schedule_id_003}&client_id=alexa-skill&token_type=Bearer`);
+            assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+            assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
             await documentClient.get({
                 TableName: TBL_TrashSchedule,
                     Key:{id: schedule_id_003}
@@ -502,6 +506,8 @@ describe('backend test', ()=>{
             const response = await signout({id: 'sessionId', userInfo:{name: 'testUser', signinId: 'signin-id', signinService: 'amazon'},expire:12456});
             assert.equal(response.statusCode, 200);
             assert.equal(response.body, 'signout');
+            assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+            assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
 
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
@@ -516,6 +522,8 @@ describe('backend test', ()=>{
             const response = await signout({id: 'sessionId'});
             assert.equal(response.statusCode, 200);
             assert.equal(response.body, '');
+            assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+            assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
         });
         after((done)=>{
             documentClient.delete({
@@ -563,7 +571,7 @@ describe('backend test', ()=>{
             // セッション情報のチェックは呼び出し元で設定するため必ず存在する
             const response = await signin({access_token: '12345', service: 'amazon'},{id:'test001',version: 7});
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/')
+            assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key:{
@@ -580,7 +588,7 @@ describe('backend test', ()=>{
         it('google-登録済ユーザー', async()=>{
             const response = await signin({ code: '12345', state: 'google-state-value',service: 'google' },{id:'test002',version: 7,googleState: 'google-state-value'});
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/')
+            assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key: {
@@ -626,11 +634,11 @@ describe('backend test', ()=>{
         it('正常リクエスト', async()=>{
             process.env.GoogleClientId='clientId';
             process.env.BackendURI='https://backend.net';
-            // パラメータはセッション情報
+            // パラメータはセッション情報,リクエストパス中のステージ
             // セッションは呼び出し元でチェックするので必ずセッション情報設定される
-            const response = await google_signin({ id: 'test001' });
+            const response = await google_signin({ id: 'test001' },'v7');
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, `https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.net/signin?service=google&state=${test_state}&login_hint=mythrowaway.net@gmail.com&nonce=${test_state}`);
+            assert.equal(response.headers.Location, `https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.net/v7/signin?service=google&state=${test_state}&login_hint=mythrowaway.net@gmail.com&nonce=${test_state}`);
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key: {
@@ -667,8 +675,8 @@ describe('backend test', ()=>{
             },{id: 'test001'},true);
             assert.equal(response.statusCode, 301);
             const headers = response.headers;
-            assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/v5/');
-            assert.equal(headers['Set-Cookie'],'throwaway-session=test001;domain=mythrowaway.net;max-age=3600');
+            assert.equal(headers.Location, `${URL_ACCOUNT_LINK}/v5/index.html`);
+            assert.equal(headers['Set-Cookie'],'throwaway-session=test001;max-age=3600;');
 
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
@@ -694,7 +702,7 @@ describe('backend test', ()=>{
             },{id: 'test002',expire: DEFAULT_EXPIRE},false);
             assert.equal(response.statusCode, 301);
             const headers = response.headers;
-            assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/v5/');
+            assert.equal(headers.Location, `${URL_ACCOUNT_LINK}/v5/index.html`);
             assert.equal(headers['Set-Cookie'],undefined);
 
             await documentClient.get({
@@ -731,6 +739,8 @@ describe('backend test', ()=>{
 
 describe('handler',()=>{
     const handler = index.handler;
+    const session_id_001 = 'oauth_request_session_id_001';
+    const session_id_002 = 'oauth_request_session_id_002';
     before((done)=>{
         documentClient.batchWrite({
             RequestItems: {
@@ -738,15 +748,23 @@ describe('handler',()=>{
                     {
                         PutRequest: {
                             Item: {
-                                id: 'oauth_request_001',
+                                id: session_id_001,
                                 expire: DEFAULT_EXPIRE
+                            }
+                        }
+                    },
+                    {
+                        PutRequest: {
+                            Item: {
+                                id: session_id_002,
+                                expire: 1
                             }
                         }
                     }
                 ]
             }
         }).promise().then(()=>done());
-    })
+    });
     describe('handler /oauth_request',()=>{
         it('セッションなし',async()=>{
             const extractSessionId = index.__get__('extractSessionId');
@@ -763,7 +781,7 @@ describe('handler',()=>{
                     }
                 });
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/')
+            assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
             assert.equal(response.headers['Set-Cookie'].indexOf('throwaway-session='), 0);
             const sessionId = extractSessionId(response.headers['Set-Cookie']);
             await documentClient.get({
@@ -788,17 +806,42 @@ describe('handler',()=>{
                         platform: 'amazon'
                     },
                     headers: {
-                        Cookie: 'throwaway-session=oauth_request_001; max-age=3600;'
+                        Cookie: `throwaway-session=${session_id_001}; max-age=3600;`
                     }
                 });
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/')
+            assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
             assert.equal(response.headers['Set-Cookie'], undefined);
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
-                Key: {id: 'oauth_request_001'}
+                Key: {id: session_id_001}
             }).promise().then(async(data)=>{
-                assert.equal(data.Item.id, 'oauth_request_001');
+                assert.equal(data.Item.id, session_id_001);
+            });
+        });
+        it('セッションの有効期限切れ',async()=>{
+            const response = await handler({
+                    resource: '/oauth_request',
+                    queryStringParameters: {
+                        state: '12345',
+                        client_id: 'alexa-skill',
+                        redirect_uri: 'https://xxxxx.com',
+                        version: 7,
+                        platform: 'amazon'
+                    },
+                    headers: {
+                        Cookie: `throwaway-session=${session_id_002}; max-age=3600;`
+                    }
+                });
+            assert.equal(response.statusCode, 301);
+            assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
+            assert.ok(response.headers['Set-Cookie']);
+            // 有効期限切れのセッションIDは削除されていること
+            await documentClient.get({
+                TableName: TBL_ThrowTrashSession,
+                Key: {id: session_id_002}
+            }).promise().then(async(data)=>{
+                assert.equal(data.Item, undefined);
             });
         });
         it('パラメータなし',async()=>{
@@ -809,7 +852,7 @@ describe('handler',()=>{
                 });
             assert.equal(response.statusCode, 301);
             const headers = response.headers;
-            assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+            assert.equal(headers.Location, URL_400);
         });
     })
     after((done)=>{
@@ -818,7 +861,7 @@ describe('handler',()=>{
                 ThrowTrashSession: [
                     {
                         DeleteRequest: {
-                            Key: {id: 'oauth_request_001'}
+                            Key: {id: session_id_001}
                         }
                     }
                 ]
@@ -839,7 +882,7 @@ describe('handler',()=>{
             }).promise().then(()=>done());
         });
         beforeEach(()=>{
-            event = {resource: '/google_signin', headers:{}};
+            event = {resource: '/google_signin', headers:{}, requestContext:{stage: 'v1'}};
         });
         it('セッションあり', async()=>{
             event.headers = {
@@ -847,7 +890,7 @@ describe('handler',()=>{
             };
             const response = await handler(event,{});
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location,`https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GoogleClientId}&response_type=code&scope=openid profile&redirect_uri=${process.env.BackendURI}/signin?service=google&state=test-generated-state&login_hint=mythrowaway.net@gmail.com&nonce=test-generated-state`);
+            assert.equal(response.headers.Location,`https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GoogleClientId}&response_type=code&scope=openid profile&redirect_uri=${process.env.BackendURI}/v1/signin?service=google&state=test-generated-state&login_hint=mythrowaway.net@gmail.com&nonce=test-generated-state`);
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key:{id: session_id_001}
@@ -917,13 +960,14 @@ describe('handler',()=>{
         beforeEach(()=>{
             event.resource = '/signin';
             event.headers = {};
+            event.requestContext = {stage: 'test'};
         })
         it('セッションあり,プリセットあり,amazon',async()=>{
             event.queryStringParameters = {access_token: 'access-token', service: 'amazon'};
             event.headers.Cookie = `throwaway-session=${session_id_001};`;
             const response = await handler(event,{});
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, `${URL_BASE}/v7/`);
+            assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`);
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key: {id: session_id_001}
@@ -945,7 +989,7 @@ describe('handler',()=>{
             event.headers.Cookie = `throwaway-session=${session_id_002};`;
             const response = await handler(event,{});
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, `${URL_BASE}/v7/`);
+            assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`);
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key: {id: session_id_002}
@@ -1038,6 +1082,8 @@ describe('handler',()=>{
             const response = await handler(event,{});
             assert.equal(response.statusCode, 200);
             assert.equal(response.body, 'signout');
+            assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+            assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key: {id: session_id_001}
@@ -1051,6 +1097,8 @@ describe('handler',()=>{
             const response = await handler(event,{});
             assert.equal(response.statusCode, 200);
             assert.equal(response.body, '');
+            assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+            assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
         });
         it('セッションなし', async()=>{
             const response = await handler(event,{});
@@ -1204,6 +1252,8 @@ describe('handler',()=>{
                 const response = await handler(event,{});
                 assert.equal(response.statusCode, 200);
                 assert.equal(response.body, `https://xxxxx.com#state=12345&access_token=${schedule_id_001}&client_id=alexa-skill&token_type=Bearer`);
+                assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+                assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
                 await documentClient.get({
                     TableName: TBL_TrashSchedule,
                     Key: {id: schedule_id_001}
@@ -1230,6 +1280,8 @@ describe('handler',()=>{
                 const response = await handler(event,{});
                 assert.equal(response.statusCode, 200);
                 assert.equal(response.body, `https://xxxxx.com#state=12345&access_token=${schedule_id_002}&client_id=alexa-skill&token_type=Bearer`);
+                assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+                assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
                 await documentClient.get({
                     TableName: TBL_TrashSchedule,
                     Key: {id: schedule_id_002}
@@ -1253,6 +1305,8 @@ describe('handler',()=>{
                 const response = await handler(event,{});
                 assert.equal(response.statusCode, 200);
                 assert.equal(response.body, `https://xxxxx.com#state=12345&access_token=${schedule_id_003}&client_id=alexa-skill&token_type=Bearer`);
+                assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+                assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
                 await documentClient.get({
                     TableName: TBL_TrashSchedule,
                     Key: {id: schedule_id_003}
@@ -1333,4 +1387,61 @@ describe('handler',()=>{
             Promise.all(remove_list).then(()=>done());
         });
     });
+    describe('handler /user_info', async()=>{
+        const session_id_001 = 'userinfo_session_id_001';
+        const session_id_002 = 'userinfo_session_id_002';
+        const signin_id_001 = 'userinfo_signin_id_001';
+        const schedule_id_001 = 'userinfo_schedule_id_001';
+        const test_data_001 = [{type: 'bottole',schedules:[{type: 'month', value: '13'}]}];
+        const signin_name_001 = 'テストユーザー';
+        let event = {};
+        before((done)=>{
+            documentClient.put({
+                TableName: TBL_ThrowTrashSession,
+                Item: {
+                    id: session_id_001,
+                    expire: DEFAULT_EXPIRE,
+                    userInfo: {
+                        signinId: signin_id_001,
+                        signinService: 'amazon',
+                        preset: test_data_001,
+                        name: signin_name_001,
+                        id: schedule_id_001
+                    }
+                }
+            }).promise().then(()=>done());
+        })
+        beforeEach(()=>{
+            event.resource = '/user_info';
+            event.headers = {};
+        });
+        it('セッションあり,サインインあり',async()=>{
+            event.headers.Cookie = `throwaway-session=${session_id_001};`;
+            const response = await handler(event,{});
+            assert.equal(response.statusCode, 200);
+            assert.deepEqual(JSON.parse(response.body),{name: signin_name_001, preset: test_data_001});
+            assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+            assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
+        }),
+        it('セッションあり,サインインなし',async()=>{
+            event.headers.Cookie = `throwaway-session=${session_id_002};`;
+            const response = await handler(event,{});
+            assert.equal(response.statusCode, 200);
+            assert.deepEqual(JSON.parse(response.body),{name: null, preset: null});
+            assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+            assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
+        });
+        it('セッションなし',async()=>{
+            const response = await handler(event,{});
+            assert.equal(response.statusCode, 200);
+            // user_infoは非同期で呼び出されるためエラー時のステータスコードも200とする
+            assert.deepEqual(JSON.parse(response.body),{name: null, preset: null});
+        });
+        after((done)=>{
+            documentClient.delete({
+                TableName: TBL_ThrowTrashSession,
+                Key:{id: session_id_001}
+            }).promise().then(()=>done());
+        });
+    })
 });

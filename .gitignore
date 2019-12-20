@@ -10,3 +10,4 @@ server/backend/public/css/index.css
 docker/web/cert/**
 docker/.env
 backend/node_modules
+backend/serviceAccountKey.json
