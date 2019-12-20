@@ -2,6 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { DialogTitle, withStyles, Button, Dialog, DialogContent, DialogContentText, DialogActions } from '@material-ui/core';
 import axios from 'axios';
+// import axiosCookiejarSupport from 'axios-cookiejar-support';
+// import tough from 'tough-cookie';
+// axiosCookiejarSupport(axios);
+// import rp from 'request-promise';
 
 const styles = (theme)=>({
     signinRoot:{
@@ -38,15 +42,29 @@ const styles = (theme)=>({
 class SignInDialog extends React.Component {
     constructor(props) {
         super(props);
-        axios.get('/user_info')
-            .then(response => {
-                if (response.status === 200) {
-                    props.onSetUserInfo(
-                        {name: response.data.name}, 
-                        response.data.preset
-                    );
-                }
-            });
+        // rp('https://backend.mythrowaway.net/test/user_info',{
+        //     jar:true,
+        //     json: true
+        // }).then((response)=>{
+        //     if(response.statuc === 200 && response.body.preset) {
+        //         props.onSetUserInfo(
+        //             { name: response.data.name },
+        //             response.data.preset
+        //         );
+        //     }
+        // });
+        // const cookiejar = new tough.CookieJar();
+        axios.get('https://backend.mythrowaway.net/test/user_info',{
+            // jar: cookiejar,
+            withCredentials: true
+        }).then(response => {
+            if (response.status === 200 && response.data.preset) {
+                props.onSetUserInfo(
+                    { name: response.data.name },
+                    response.data.preset
+                );
+            }
+        });
     }
 
     componentDidMount() {
@@ -68,8 +86,16 @@ class SignInDialog extends React.Component {
         var options = { scope: 'profile' };
 
         // eslint-disable-next-line no-undef
-        amazon.Login.authorize(options,
-            `${document.location.origin}/signin?service=amazon`);
+        // amazon.Login.authorize({scope: 'profile'},
+        //     'https://backend.mythrowaway.net/test/signin?service=amazon');
+        // eslint-disable-next-line no-undef
+        amazon.Login.authorize(options, (response)=>{
+            if(response.error) {
+                console.error('amazonログインエラー:' + response.error);
+                return;
+            }
+            document.location.href = `https://backend.mythrowaway.net/test/signin?service=amazon&access_token=${encodeURIComponent(response.access_token)}`;
+        });
         return false;
     }
 
@@ -100,7 +126,7 @@ class SignInDialog extends React.Component {
                             <a id='LoginWithAmazon' className={classes.signInButton} onClick={this.loginWithAmazon}>
                                 <img src='https://images-na.ssl-images-amazon.com/images/G/01/lwa/btnLWA_gold_156x32.png' alt='sign in with Amazon' />
                             </a>
-                            <a href='/oauth_signin' className={classes.signInButton}>
+                            <a href='https://backend.mythrowaway.net/test/google_signin' className={classes.signInButton}>
                                 <img className={classes.googleButtonImg} src='https://d29p8bq9xwgr82.cloudfront.net/img/btn_google_signin_ja.png' alt='sign in with Google' />
                             </a>
                         </div>
