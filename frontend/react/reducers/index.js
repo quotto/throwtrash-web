@@ -1,7 +1,7 @@
 import {ActionType} from '../actions';
 import {combineReducers} from 'redux';
 import _ from 'lodash';
-import common_check from '../../common_check';
+import common_check from '../../../backend/common_check';
 
 const initialScheduleValue = {
     'weekday': '0',

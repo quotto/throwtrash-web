@@ -11,7 +11,7 @@ class Main extends React.Component {
     render() {
         if(this.props.submitting) {
             axios.post(
-                '/regist',
+                '/test/regist',
                 JSON.stringify({ data: this.props.trashes, offset: new Date().getTimezoneOffset() }),
                 { headers: { 'Content-Type': 'application/json' } }
             ).then((response) => {

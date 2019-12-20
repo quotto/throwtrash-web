@@ -5,13 +5,14 @@ const TerserPlugin = require('terser-webpack-plugin');
  
 
 module.exports = (env)=>{
-    const filename = env.version ? `v${env.version}.js` : 'bundle.js';
-    const path = `${app_root.path}/backend/public/resource`;
+    const filename = 'bundle.js';
+    const path = `${app_root.path}/deploy/v${env.version}`;
     return {
-        entry: './frontend/index.js',
+        entry: './react/index.js',
+        // target: 'node',
         output: {
             path: path,
-            filename: `bundle/${filename}`
+            filename: `js/${filename}`
         },
         module: {
             rules: [
