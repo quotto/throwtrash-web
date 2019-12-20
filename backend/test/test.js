@@ -24,31 +24,34 @@ class StubModule {
     }
 }
 
+const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
+const URL_ACCOUNT_LINK = 'https://accountlink.mythrowaway.net';
+
 describe('extract session',()=>{
     const extractSessionId = index.__get__('extractSessionId');
     it('通常パターン', ()=>{
-        const cookie = 'throwaway-session=hogehoge;domain=mythrowaway.net;max-age=3600';
+        const cookie = 'throwaway-session=hogehoge;max-age=3600';
         // API Gatewayのheadersから取得したCookieを渡す
         const sessionId = extractSessionId(cookie);
         assert.equal(sessionId, 'hogehoge');
     });
     it(';にブランクが入っている', ()=>{
-        const cookie = 'throwaway-session=hogehoge; domain=mythrowaway.net;max-age=3600';
+        const cookie = 'throwaway-session=hogehoge; max-age=3600';
         const sessionId = extractSessionId(cookie);
         assert.equal(sessionId, 'hogehoge');
     });
     it('sessionidは中盤', ()=>{
-        const cookie = 'domain=mythrowaway.net;throwaway-session=hogehoge;max-age=3600';
+        const cookie = 'a=aaaaa;throwaway-session=hogehoge;max-age=3600';
         const sessionId = extractSessionId(cookie);
         assert.equal(sessionId, 'hogehoge');
     });
     it('sessionidは中盤で;にブランクが入っている', ()=>{
-        const cookie = 'domain=mythrowaway.net;throwaway-session=hogehoge; max-age=3600';
+        const cookie = 'a=aaaa; throwaway-session=hogehoge; max-age=3600';
         const sessionId = extractSessionId(cookie);
         assert.equal(sessionId, 'hogehoge');
     });
     it('sessionidが最後（;が無い）', ()=>{
-        const cookie = 'domain=mythrowaway.net;max-age=3600;throwaway-session=hogehoge';
+        const cookie = 'max-age=3600;throwaway-session=hogehoge';
         const sessionId = extractSessionId(cookie);
         assert.equal(sessionId, 'hogehoge');
     });
@@ -58,7 +61,7 @@ describe('extract session',()=>{
         assert.equal(sessionId, 'hogehoge');
     });
     it('sessionidが無い', ()=>{
-        const cookie = 'domain=mythrowaway.net;max-age=3600';
+        const cookie = 'max-age=3600';
         const sessionId = extractSessionId(cookie);
         // sessionidが無ければnullを返す
         assert.equal(sessionId, null);
@@ -225,6 +228,41 @@ describe('generateState',()=>{
     })
 });
 
+describe('user_info', ()=>{
+    const user_info = index.__get__('user_info');
+    it('セッションあり,サインインあり', ()=>{
+        const test_data_001 = [{type: 'bottole',schedules:[{type: 'month', value: '13'}]}];
+        // パラメータはセッション情報
+        const response = user_info(
+            {
+                id: 'sessionid', 
+                userInfo: { 
+                    name: 'testUser', 
+                    signinId: 'signin-id', 
+                    signinService: 'amazon',
+                    preset: test_data_001
+                }
+            }
+        );
+        assert.equal(response.statusCode, 200);
+        assert.deepEqual(JSON.parse(response.body),{name: 'testUser', preset: test_data_001});
+        assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+        assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
+    });
+    it('セッションあり,サインインなし',()=>{
+        const response = user_info({id: 'sessionid'});
+        assert.equal(response.statusCode, 200);
+        assert.deepEqual(JSON.parse(response.body),{name: null, preset: null});
+        assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+        assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
+    });
+    it('セッションなし',()=>{
+        const response = user_info(null);
+        assert.equal(response.statusCode, 200);
+        assert.deepEqual(JSON.parse(response.body),{name: null, preset: null});
+    });
+})
+
 describe('regist', () => {
     const regist = index.__get__('regist');
     const stub = sinon.stub(require('../common_check.js'), 'exist_error');
@@ -245,6 +283,8 @@ describe('regist', () => {
             { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' });
         assert.equal(response.statusCode, 200);
         assert.equal(response.body, 'https://xxxx.com#state=state-value&access_token=new-id&client_id=alexa-skill&token_type=Bearer');
+        assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+        assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
     });
     it('登録データに誤りがある', async () => {
         stub.returns(true);
@@ -281,6 +321,8 @@ describe('signout', () => {
             const response = await signout({ id: 'sessionId', userInfo: { name: 'testUser', signinId: 'signin-id', signinService: 'amazon' } });
             assert.equal(response.statusCode, 200);
             assert.equal(response.body, 'signout');
+            assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+        assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
         } finally {
             saveSession.restore();
         }
@@ -290,6 +332,8 @@ describe('signout', () => {
         const response = await signout({ id: 'sessionId' });
         assert.equal(response.statusCode, 200);
         assert.equal(response.body, '');
+        assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
+        assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
     });
 })
 describe('signin', () => {
@@ -307,34 +351,34 @@ describe('signin', () => {
         // eslint-disable-next-line no-unused-vars
         requestAmazonProfile.set(async (access_token) => { return { id: 'amazon-xxxxx', name: 'テスト' } });
         // eslint-disable-next-line no-unused-vars
-        requestGoogleProfile.set(async (code) => { return { id: 'google-xxxxx', name: 'テスト' } });
+        requestGoogleProfile.set(async (code,stage) => { return { id: 'google-xxxxx', name: 'テスト' } });
     })
     it('amazon', async () => {
         // パラメータはqueryStringParameters
-        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 });
+        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 }, 'test');
         assert.equal(response.statusCode, 301);
-        assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/')
+        assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/index.html')
     });
     it('google', async () => {
-        const response = await signin({ code: '12345', state: 'google-state-value', service: 'google' }, { id: 'session-id', version: 7, googleState: 'google-state-value' });
+        const response = await signin({ code: '12345', state: 'google-state-value', service: 'google' }, { id: 'session-id', version: 7, googleState: 'google-state-value' }, 'test');
         assert.equal(response.statusCode, 301);
-        assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/')
+        assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/index.html')
     })
     it('規定外のサービス', async () => {
-        const response = await signin({ code: '12345', service: 'another' }, { id: 'session-id', version: 7 });
+        const response = await signin({ code: '12345', service: 'another' }, { id: 'session-id', version: 7 }, 'test');
         assert.equal(response.statusCode, 301);
-        assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/400.html')
+        assert.equal(response.headers.Location, URL_400);
     })
     it('セッションIDが無い', async () => {
-        const response = await signin({ code: '12345', service: 'another' }, undefined);
+        const response = await signin({ code: '12345', service: 'another' }, undefined, 'test');
         assert.equal(response.statusCode, 301);
         // セッションIDの不正はユーザーエラー
-        assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/400.html')
+        assert.equal(response.headers.Location, URL_400);
     })
     it('サービスへのリクエストエラー', async () => {
         // eslint-disable-next-line no-unused-vars
         requestAmazonProfile.set(async (access_token) => { throw new Error('Service Request Error'); });
-        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 });
+        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 }, 'test');
         assert.equal(response.statusCode, 301);
         // サービスリクエスト異常はサーバーエラー
         assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/500.html');
@@ -342,32 +386,32 @@ describe('signin', () => {
     it('データ取得エラー', async () => {
         // eslint-disable-next-line no-unused-vars
         getDataBySigninId.set(async (access_token) => { throw new Error('Service Request Error'); });
-        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id' });
+        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id' }, 'test');
         assert.equal(response.statusCode, 301);
         // 登録データ取得異常はサーバーエラー
         assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/500.html');
     });
     it('パラーメーターの不足（Google,codeがない）', async () => {
-        const response = await signin({ service: 'google' }, { id: 'session-id', version: 7 });
+        const response = await signin({ service: 'google' }, { id: 'session-id', version: 7 }, 'test');
         assert.equal(response.statusCode, 301);
-        assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+        assert.equal(response.headers.Location, URL_400);
     });
     it('パラーメーターの不足（Google,state不一致）', async () => {
-        const response = await signin({ code: 1234, service: 'google', state: 'invalid-state' }, { id: 'session-id', version: 7, state: 'valid-state' });
+        const response = await signin({ code: 1234, service: 'google', state: 'invalid-state' }, { id: 'session-id', version: 7, state: 'valid-state' }, 'test');
         assert.equal(response.statusCode, 301);
-        assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+        assert.equal(response.headers.Location, URL_400);
     });
     it('パラメーターの不足（Google,stateが無い）', async () => {
         // eslint-disable-next-line no-unused-vars
         requestAmazonProfile.set(async (access_token) => { throw new Error('Service Request Error'); });
-        const response = await signin({ code: '12345', service: 'google' }, { id: 'session-id', version: 7 });
+        const response = await signin({ code: '12345', service: 'google' }, { id: 'session-id', version: 7 }, 'test');
         assert.equal(response.statusCode, 301);
-        assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+        assert.equal(response.headers.Location, URL_400);
     });
     it('パラーメーターの不足（amazon）', async () => {
-        const response = await signin({ service: 'amazon' }, { id: 'session-id', version: 7 });
+        const response = await signin({ service: 'amazon' }, { id: 'session-id', version: 7 }, 'test');
         assert.equal(response.statusCode, 301);
-        assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+        assert.equal(response.headers.Location, URL_400);
     });
     afterEach(() => {
         getDataBySigninId.restore();
@@ -390,10 +434,10 @@ describe('google_signin', () => {
         const generateState = index.__get__('generateState');
         index.__set__('generateState', () => { return 'statevalue' });
         try {
-            //パラメータはセッション情報
-            const response = await google_signin({ id: 'hogehoge' });
+            //パラメータはセッション情報とリクエストパス中のstage
+            const response = await google_signin({ id: 'hogehoge' },'v2');
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, 'https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.net/signin?service=google&state=statevalue&login_hint=mythrowaway.net@gmail.com&nonce=statevalue');
+            assert.equal(response.headers.Location, 'https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.net/v2/signin?service=google&state=statevalue&login_hint=mythrowaway.net@gmail.com&nonce=statevalue');
         } finally {
             index.__set__('generateState', generateState);
         }
@@ -421,8 +465,8 @@ describe('oauth_request', () => {
         }, { id: 'hogehoge', expire: 99999999 }, true);
         assert.equal(response.statusCode, 301);
         const headers = response.headers;
-        assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/v5/');
-        assert.equal(headers['Set-Cookie'], 'throwaway-session=hogehoge;domain=mythrowaway.net;max-age=3600');
+        assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/v5/index.html');
+        assert.equal(headers['Set-Cookie'], 'throwaway-session=hogehoge;max-age=3600;');
     });
     it('有効なセッションIDがすでにある場合', async () => {
         const getSssion = index.__get__('getSession');
@@ -438,7 +482,7 @@ describe('oauth_request', () => {
             }, { id: 'hogehoge', expire: 99999999 }, false);
             assert.equal(response.statusCode, 301);
             const headers = response.headers;
-            assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/v5/');
+            assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/v5/index.html');
             assert.equal(headers['Set-Cookie'], undefined);
         } finally {
             index.__set__('getSession', getSssion);
@@ -453,7 +497,7 @@ describe('oauth_request', () => {
         });
         assert.equal(response.statusCode, 301);
         const headers = response.headers;
-        assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+        assert.equal(headers.Location, URL_400);
     }, {}, true);
     it('missing client_id', async () => {
         const response = await oauth_request({
@@ -464,7 +508,7 @@ describe('oauth_request', () => {
         }, {}, true);
         assert.equal(response.statusCode, 301);
         const headers = response.headers;
-        assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+        assert.equal(headers.Location, URL_400);
     });
     it('missing redirect_uri', async () => {
         const response = await oauth_request({
@@ -475,7 +519,7 @@ describe('oauth_request', () => {
         }, {}, false);
         assert.equal(response.statusCode, 301);
         const headers = response.headers;
-        assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+        assert.equal(headers.Location, URL_400);
     });
     it('missing platform', async () => {
         const response = await oauth_request({
@@ -486,7 +530,7 @@ describe('oauth_request', () => {
         }, {}, false);
         assert.equal(response.statusCode, 301);
         const headers = response.headers;
-        assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+        assert.equal(headers.Location, URL_400);
     });
     it('missing version', async () => {
         const response = await oauth_request({
@@ -497,13 +541,13 @@ describe('oauth_request', () => {
         }, {}, false);
         assert.equal(response.statusCode, 301);
         const headers = response.headers;
-        assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+        assert.equal(headers.Location, URL_400);
     });
     it('missing all parameter', async () => {
         const response = await oauth_request(undefined, undefined, false);
         assert.equal(response.statusCode, 301);
         const headers = response.headers;
-        assert.equal(headers.Location, 'https://accountlink.mythrowaway.net/400.html');
+        assert.equal(headers.Location, URL_400);
     });
     after(() => {
         saveSession.restore();
