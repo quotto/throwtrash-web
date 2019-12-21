@@ -8,8 +8,9 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = (env)=>{
     const filename = 'bundle.js';
-    const path = `${app_root.path}/deploy/v${env.version}`;
-    const api_stage = process.env.NODE_ENV === 'production' ? env.apiversion : 'test';
+    const frontend_version = process.env.NODE_ENV === 'production' ? env.version : '0';
+    const path = `${app_root.path}/deploy/v${frontend_version}`;
+    const api_stage = process.env.NODE_ENV === 'production' ? process.env.API_STAGE : 'test';
     return {
         entry: './react/index.js',
         // target: 'node',
