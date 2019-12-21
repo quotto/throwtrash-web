@@ -1,4 +1,4 @@
-import Axios from 'axios';
+import axios from 'axios';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Menu, MenuItem, Divider } from '@material-ui/core';
@@ -11,7 +11,7 @@ class BarMenu extends React.Component {
     }
 
     signOut() {
-        Axios.get('/signout')
+        axios.get(`https://backend.mythrowaway.net/${API_STAGE}/signout`,{withCredentials: true})
             .then(()=>{
                 this.props.onSignOut();
             });

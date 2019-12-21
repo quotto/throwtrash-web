@@ -44,6 +44,7 @@
     "backend": "0.0.0",
     "bedecked": "^0.10.1",
     "browserify": "^16.5.0",
+    "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.4.0",
     "eslint": "^5.16.0",
     "eslint-plugin-import": "^2.19.1",
