@@ -632,13 +632,13 @@ describe('backend test', ()=>{
             }).promise().then(()=>done());
         });
         it('正常リクエスト', async()=>{
-            process.env.GoogleClientId='clientId';
+            process.env.GOOGLE_CLIENT_ID='clientId';
             process.env.BackendURI='https://backend.net';
             // パラメータはセッション情報,リクエストパス中のステージ
             // セッションは呼び出し元でチェックするので必ずセッション情報設定される
             const response = await google_signin({ id: 'test001' },'v7');
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, `https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.net/v7/signin?service=google&state=${test_state}&login_hint=mythrowaway.net@gmail.com&nonce=${test_state}`);
+            assert.equal(response.headers.Location, `https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.mythrowaway.net/v7/signin?service=google&state=${test_state}&login_hint=mythrowaway.net@gmail.com&nonce=${test_state}`);
             assert.equal(response.headers['Cache-Control'], 'no-store');
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
@@ -874,8 +874,7 @@ describe('handler',()=>{
         const session_id_001 = 'google_signin_session_id_001';
         let event = {};
         before((done)=>{
-            process.env.GoogleClientId = 'test-google-client-id';
-            process.env.BackendURI = 'https://test-backend.com';
+            process.env.GOOGLE_CLIENT_ID = 'test-google-client-id';
             generateState.set(()=>{return 'test-generated-state'});
             documentClient.put({
                 TableName: TBL_ThrowTrashSession,
@@ -891,7 +890,7 @@ describe('handler',()=>{
             };
             const response = await handler(event,{});
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location,`https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GoogleClientId}&response_type=code&scope=openid profile&redirect_uri=${process.env.BackendURI}/v1/signin?service=google&state=test-generated-state&login_hint=mythrowaway.net@gmail.com&nonce=test-generated-state`);
+            assert.equal(response.headers.Location,`https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&response_type=code&scope=openid profile&redirect_uri=https://backend.mythrowaway.net/v1/signin?service=google&state=test-generated-state&login_hint=mythrowaway.net@gmail.com&nonce=test-generated-state`);
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key:{id: session_id_001}
