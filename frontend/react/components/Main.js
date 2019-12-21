@@ -11,13 +11,15 @@ class Main extends React.Component {
     render() {
         if(this.props.submitting) {
             axios.post(
-                '/test/regist',
+                `https://backend.mythrowaway.net/${API_STAGE}/regist`,
                 JSON.stringify({ data: this.props.trashes, offset: new Date().getTimezoneOffset() }),
-                { headers: { 'Content-Type': 'application/json' } }
+                { 
+                    headers: { 'Content-Type': 'application/json' },
+                    withCredentials: true
+                 }
             ).then((response) => {
                 window.location = response.data;
             }).catch(() => {
-                // alert(this.props.t('ScheduleList.error.registrationfailed.text'), this.props.t('ScheduleList.error.registrationfailed.title'));
                 this.props.onError(true);
                 this.props.onSubmit(false);
             });
