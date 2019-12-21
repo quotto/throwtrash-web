@@ -57,12 +57,14 @@ jobs:
           command: npm install
           working_directory: backend
       - save_cache:
-          key: npm-deps-{{ .Branch }}-{{ checksum "frontend/package-lock.json"}}
+          key: npm-deps-{{ .Branch }}-{{ checksum "backend/package-lock.json"}}
           paths:
             - backend/node_modules
       - run:
-          name: create GCP Credentials
-          command: echo ${GCP_TEST_CREDENTIALS} >> ./serviceAccountKey.json
+          name: set GCP Credentials
+          command: 
+            echo ${GCP_TEST_CREDENTIALS} >> ./serviceAccountKey.json
+            export GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json
           working_directory: backend
       - run:
           name: backend unit test
