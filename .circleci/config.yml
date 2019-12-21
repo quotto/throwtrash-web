@@ -133,3 +133,4 @@ workflows:
       - deploy:
           requires:
             - frontend-build
+          context: aws-deploy
