@@ -103,7 +103,7 @@ jobs:
       - run:
           name: frontend deploy
           command: |
-            aws s3 sync frontend/deploy s3://${AWS_BUCKET}
+            aws s3 sync frontend/deploy s3://throwtrash
             aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /v${FRONTEND_VERSION}/*
       - run:
           name: backend deploy
