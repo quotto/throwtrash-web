@@ -62,9 +62,9 @@ jobs:
             - backend/node_modules
       - run:
           name: set GCP Credentials
-          command: 
+          command: |
             echo ${GCP_TEST_CREDENTIALS} >> ./serviceAccountKey.json
-            export GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json
+            echo "export GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json" >> $BASH_ENV
           working_directory: backend
       - run:
           name: backend unit test
