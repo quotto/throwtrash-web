@@ -61,7 +61,7 @@ Resources:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
     Properties:
-      CodeUri: ./
+      CodeUri: .
       FunctionName: ThrowTrashBackend
       Handler: index.handler
       Role: !GetAtt LambdaExecRole.Arn
