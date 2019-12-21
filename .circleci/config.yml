@@ -10,13 +10,11 @@ commands:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               echo "export AWS_DEFAULT_REGION=${AWS_PRODUCTION_REGION}" >> $BASH_ENV
               echo "export RUNLEVEL=INFO" >> $BASH_ENV
-              echo "export GCP_CREDENTIALS=`echo ${GCP_PRODUCTION_CREDENTIALS}`" >> $BASH_ENV
             else
               echo "export AWS_DEFAULT_REGION=${AWS_DEVELOPMENT_REGION}" >> $BASH_ENV
               echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
               echo "export API_STAGE=test" >> $BASH_ENV
               echo "export BACKEND_ALIAS=test" >> $BASH_ENV
-              echo "export GCP_CREDENTIALS=`echo ${GCP_TEST_CREDENTIALS}`" >> $BASH_ENV
             fi
 
 jobs:
@@ -110,7 +108,11 @@ jobs:
       - run:
           name: backend deploy
           command: |
-            echo ${GCP_CREDENTIALS} > backend/serviceAccountKey.json
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              echo ${GCP_PRODUCTION_CREDENTIALS} > backend/serviceAccountKey.json
+            else
+              echo ${GCP_TEST_CREDENTIALS} > backend/serviceAccountKey.json
+            fi
             aws cloudformation package --template-file backend/template.yml --output-template-file backend/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
             aws cloudformation deploy --template-file backend/package-template.yml --stack-name throwtrash-backend-stack --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} FUNCTIONALIAS=${BACKEND_ALIAS} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
 workflows:
