@@ -91,21 +91,22 @@ jobs:
           command: npm run build -- -p --env.version=${FRONTEND_VERSION} --env.api-stage=${API_STAGE}
           working_directory: frontend
       - persist_to_workspace:
-          root: frontend
+          root:  .
           paths:
-            - deploy
+            - frontend
+            - backend
   deploy:
     executor: aws-cli/default
     steps:
       - attach_workspace:
-          at: frontend/deploy
+          at: .
       - aws-cli/install
       - set-stage-env
       - run:
           name: frontend deploy
           command: |
             aws s3 sync frontend/deploy s3://${AWS_BUCKET}
-            aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID}
+            aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /v${FRONTEND_VERSION}/*
       - run:
           name: backend deploy
           command: |
