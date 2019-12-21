@@ -358,11 +358,13 @@ describe('signin', () => {
         const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 }, 'test');
         assert.equal(response.statusCode, 301);
         assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/index.html')
+            assert.equal(response.headers['Cache-Control'], 'no-store');
     });
     it('google', async () => {
         const response = await signin({ code: '12345', state: 'google-state-value', service: 'google' }, { id: 'session-id', version: 7, googleState: 'google-state-value' }, 'test');
         assert.equal(response.statusCode, 301);
         assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/index.html')
+        assert.equal(response.headers['Cache-Control'], 'no-store');
     })
     it('規定外のサービス', async () => {
         const response = await signin({ code: '12345', service: 'another' }, { id: 'session-id', version: 7 }, 'test');
@@ -377,7 +379,7 @@ describe('signin', () => {
     })
     it('サービスへのリクエストエラー', async () => {
         // eslint-disable-next-line no-unused-vars
-        requestAmazonProfile.set(async (access_token) => { throw new Error('Service Request Error'); });
+        requestAmazonProfile.set(async (access_token) => {return null});
         const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 }, 'test');
         assert.equal(response.statusCode, 301);
         // サービスリクエスト異常はサーバーエラー
@@ -385,7 +387,7 @@ describe('signin', () => {
     });
     it('データ取得エラー', async () => {
         // eslint-disable-next-line no-unused-vars
-        getDataBySigninId.set(async (access_token) => { throw new Error('Service Request Error'); });
+        getDataBySigninId.set(async (access_token) => { return null});
         const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id' }, 'test');
         assert.equal(response.statusCode, 301);
         // 登録データ取得異常はサーバーエラー
@@ -429,15 +431,15 @@ describe('google_signin', () => {
         saveSession.set(async (session) => { return session });
     });
     it('正常リクエスト', async () => {
-        process.env.GoogleClientId = 'clientId';
-        process.env.BackendURI = 'https://backend.net';
+        process.env.GOOGLE_CLIENT_ID = 'clientId';
         const generateState = index.__get__('generateState');
         index.__set__('generateState', () => { return 'statevalue' });
         try {
             //パラメータはセッション情報とリクエストパス中のstage
             const response = await google_signin({ id: 'hogehoge' },'v2');
             assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, 'https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.net/v2/signin?service=google&state=statevalue&login_hint=mythrowaway.net@gmail.com&nonce=statevalue');
+            assert.equal(response.headers.Location, 'https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.mythrowaway.net/v2/signin?service=google&state=statevalue&login_hint=mythrowaway.net@gmail.com&nonce=statevalue');
+            assert.equal(response.headers['Cache-Control'], 'no-store');
         } finally {
             index.__set__('generateState', generateState);
         }

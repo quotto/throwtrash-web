@@ -60,7 +60,7 @@ describe('getDataBySigninId',()=>{
     });
     it('IDなし',async()=>{
         const result = await getDataBySigninId('xxxx-xxxx-xxxx');
-        assert.equal(result,null);
+        assert.deepEqual(result,{});
     });
     after((done)=>{
         documentClient.delete({
@@ -639,6 +639,7 @@ describe('backend test', ()=>{
             const response = await google_signin({ id: 'test001' },'v7');
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location, `https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.net/v7/signin?service=google&state=${test_state}&login_hint=mythrowaway.net@gmail.com&nonce=${test_state}`);
+            assert.equal(response.headers['Cache-Control'], 'no-store');
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key: {
@@ -968,6 +969,7 @@ describe('handler',()=>{
             const response = await handler(event,{});
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`);
+            assert.equal(response.headers['Cache-Control'], 'no-store');
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key: {id: session_id_001}
@@ -990,6 +992,7 @@ describe('handler',()=>{
             const response = await handler(event,{});
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`);
+            assert.equal(response.headers['Cache-Control'], 'no-store');
             await documentClient.get({
                 TableName: TBL_ThrowTrashSession,
                 Key: {id: session_id_002}

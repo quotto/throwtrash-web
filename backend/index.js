@@ -84,7 +84,7 @@ const getSession = async(sessionId) => {
             if(expire >= now) {
                 return data.Item;
             } else {
-                console.info(`session ${sessionId} is expired`);
+                console.warn(`session ${sessionId} is expired`);
                 await documentClient.delete({
                     TableName: 'ThrowTrashSession',
                     Key:{id: sessionId}
@@ -172,7 +172,7 @@ const getDataBySigninId = async(signinId)=>{
             console.debug('get data',data.Items[0]);
             return data.Items[0];
         }
-        return null;
+        return {};
     }).catch(err=>{
         console.error(err);
         return null;
@@ -188,15 +188,15 @@ const requestAmazonProfile = (access_token)=>{
         resolveWithFullResponse: true,
         json: true
     }).then(response => {
-        console.debug(JSON.stringify(response));
+        console.debug('signin on amazon',JSON.stringify(response));
         if (response.statusCode === 200) {
             return {id: response.body.user_id, name: response.body.name};
         }
         console.error(response);
-        return null;
+        throw new Error(response);
     }).catch(err=>{
         console.error(err);
-        return null;
+        throw new Error(err);
     });
 }
 
@@ -214,12 +214,11 @@ const requestGoogleProfile = (code,stage)=>{
         json: true
     };
     return rp(options).then(response=>{
+        console.debug('sign in on google:',response);
         if(response.id_token) {
             const decoded_token = jwt.decode(response.id_token);
-            console.debug(decoded_token);
             return {id: decoded_token.sub, name: decoded_token.name};
         } 
-        console.error(response);
         return null;
     }).catch(err=>{
         console.error(err);
@@ -260,7 +259,6 @@ const publishId = async()=>{
     let retry = 0;
     while(retry < 5) {
         user_id = generateId('-');
-        console.debug('generate new id request:');
         try {
             const result = await documentClient.get({
                 TableName: 'TrashSchedule',
@@ -268,11 +266,11 @@ const publishId = async()=>{
                     id: user_id
                 }
             }).promise();
-            console.debug(result);
             if(!result.Item) {
                 console.debug('generate new id:', user_id);
                 break;  
             }
+            console.warn('duplicate id:',user_id);
             user_id = null;
             retry++;
         } catch(err) {
@@ -289,28 +287,26 @@ const registData = async(item, regist_data) =>{
         Item: item
     };
     console.debug('regist parameter:', params);
-    return documentClient.put(params, (err) => {
-        if (err) {
-            console.error(`DB Insert Error\n${err}`);
-            return false;
-        } else {
-            console.info(`Regist user(${JSON.stringify(item)})`);
+    return documentClient.put(params).promise().then(()=>{ 
+        console.info(`Regist user(${JSON.stringify(item)})`);
 
-            // Googleアシスタントの登録はfirestore登録後にリダイレクトする
-            if (item.platform === 'google') {
-                console.debug(`regist firestore: ${item.id},${regist_data}`);
-                return firestore.collection('schedule').doc(item.id).set({
-                    data: regist_data
-                }).then(() => {
-                    console.info(`Regist user(Firestore)(${item.id}\n${JSON.stringify(regist_data)})`);
-                    return true;
-                }).catch(err => {
-                    console.error(`DB Insert Error(Firestore)\n${err}`);
-                    return false;
-                });
-            } 
-            return true;
+        // Googleアシスタントの登録はfirestore登録後にリダイレクトする
+        if (item.platform === 'google') {
+            console.debug(`regist firestore: ${item.id},${JSON.stringify(regist_data)}`);
+            return firestore.collection('schedule').doc(item.id).set({
+                data: regist_data
+            }).then(() => {
+                console.info(`Regist user(Firestore)(${item.id}\n${JSON.stringify(regist_data)})`);
+                return true;
+            }).catch(err => {
+                console.error(`DB Insert Error(Firestore)\n${err}`);
+                return false;
+            });
         }
+        return true;
+    }).catch(err => {
+        console.error(`DB Insert Error\n${err}`);
+        return false;
     });
 }
 
@@ -328,7 +324,6 @@ const regist = async(body,session)=>{
     // 検証した登録データをセッションに格納
     const regist_data = adjustData(body.data, body.offset);
 
-    console.info(`Submit request from ${session.id}`);
     if(session && session.state && session.client_id && session.redirect_uri) {
         const item = {};
         if(session.userInfo) {
@@ -357,7 +352,7 @@ const regist = async(body,session)=>{
         if(await registData(item, regist_data)) {
             await deleteSession(session.id);
             const redirect_url = `${session.redirect_uri}#state=${session.state}&access_token=${item.id}&client_id=${session.client_id}&token_type=Bearer`;
-            console.debug(redirect_url);
+            console.debug('redirect to skill:',redirect_url);
             return {
                 statusCode: 200,
                 body: redirect_url,
@@ -444,30 +439,34 @@ const signin = async(params,session,stage)=>{
         return UserError;
     }
 
-    return service_request.then(async(user_info)=>{
-        session.userInfo = { 
+    const user_info = await service_request;
+    if(user_info) {
+        session.userInfo = {
             signinId: user_info.id,
             name: user_info.name,
             signinService: params.service
         };
-        const user_data =  await getDataBySigninId(user_info.id);
-        if(user_data) {
-            session.userInfo.id = user_data.id;
-            session.userInfo.preset = JSON.parse(user_data.description);
-        } else {
-            session.userInfo.preset = [];
-        }
-
-        return saveSession(session).then(()=>{return {
-            statusCode: 301,
-            headers: {
-                Location: `https://accountlink.mythrowaway.net/v${session.version}/index.html`
+        const user_data = await getDataBySigninId(user_info.id);
+        if (user_data) {
+            if(user_data.id) {
+                session.userInfo.id = user_data.id;
+                session.userInfo.preset = JSON.parse(user_data.description);
+            } else {
+                session.userInfo.preset = [];
             }
-        }});
-    }).catch((err)=>{
-        console.error(err);
-        return ServerError;
-    });
+
+            if(await saveSession(session)) {
+                return {
+                    statusCode: 301,
+                    headers: {
+                        Location: `https://accountlink.mythrowaway.net/v${session.version}/index.html`,
+                        'Cache-Control': 'no-store'
+                    }
+                }
+            }
+        }
+    }
+    return ServerError;
 }
 
 const oauth_request = async (params,session,new_flg)=> {
@@ -500,7 +499,7 @@ const google_signin = async(session,stage)=>{
     const endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
     const google_state = generateState(16);
     const option = {
-        client_id: process.env.GoogleClientId,
+        client_id: process.env.GOOGLE_CLIENT_ID,
         response_type:'code',
         scope:'openid profile',
         redirect_uri:`${URL_BACKEND}/${stage}/signin?service=google`,
@@ -517,6 +516,7 @@ const google_signin = async(session,stage)=>{
         return {
             statusCode: 301,
             headers: {
+                'Cache-Control': 'no-store',
                 Location: endpoint + '?' + params_array.join('&')
             }
         }
@@ -547,7 +547,7 @@ exports.handler = async function(event,context) {
        }
    } else if(event.resource === '/signin') {
        if(session) {
-           return signin(event.queryStringParameters,session),event.requestContext.stage;
+           return signin(event.queryStringParameters,session,event.requestContext.stage);
        }
    } else if(event.resource === '/signout') {
        if(session) {
