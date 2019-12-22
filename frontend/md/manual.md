@@ -1,6 +1,6 @@
 <link href="http://d29p8bq9xwgr82.cloudfront.net/css/manual.css" rel="stylesheet"></link>
 
-# 今日のゴミ出しについて
+# 『今日のゴミ出し』について
 
 当サービスは[AmazonAlexaスキル](https://alexa.amazon.co.jp/spa/index.html#skills/dp/B07BHTKYDQ/?ref=skill_dsk_skb_sr_0&qid=1563599668)と[Googleアシスタント](https://assistant.google.com/services/a/uid/000000ba9a971987?hl=ja_jp)からご利用できます。
 
@@ -63,20 +63,20 @@
 
 お持ちのアカウントでログインするには登録ページ右上の **「ログイン」** ボタンをクリックします。
 
-![ログインボタンをクリック](http://d29p8bq9xwgr82.cloudfront.net/img/manual/login.png "ログインボタンをクリック")
+![ログインボタンをクリック](/img/manual/login.png "ログインボタンをクリック")
 
 AmazonまたはGoogleを選択すると、各サービスのログインページが表示されるためログインを行ってください。
 
-![サービスを選択](http://d29p8bq9xwgr82.cloudfront.net/img/manual/choose_service.png "サービスを選択")
+![サービスを選択](/img/manual/choose_service.png "サービスを選択")
 
 既にゴミ出し予定が登録されている場合は、登録済みの情報がページに表示されます。
 
-![登録済み情報が表示される](http://d29p8bq9xwgr82.cloudfront.net/img/manual/after_login.png "登録済み情報が表示される")
+![登録済み情報が表示される](/img/manual/after_login.png "登録済み情報が表示される")
 
 ### ログアウト
 
 ログアウトするには画面左上からメニューを表示して **「ログアウト」** ボタンをクリックしてください。
 
-![メニューを表示](http://d29p8bq9xwgr82.cloudfront.net/img/manual/logout.png "メニューを表示")
+![メニューを表示](/img/manual/logout.png "メニューを表示")
 
-![ログアウトをクリック](http://d29p8bq9xwgr82.cloudfront.net/img/manual/logout_menu.png "ログアウトをクリック")
+![ログアウトをクリック](/img/manual/logout_menu.png "ログアウトをクリック")
