@@ -12,9 +12,6 @@ Parameters:
   APISTAGE:
     Type: "String"
     Default: "test"
-  FUNCTIONALIAS:
-    Type: "String"
-    Default: "test"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -66,7 +63,7 @@ Resources:
       Handler: index.handler
       Role: !GetAtt LambdaExecRole.Arn
       Runtime: nodejs12.x
-      AutoPublishAlias: !Ref FUNCTIONALIAS
+      AutoPublishAlias: !Ref APISTAGE
       Timeout: 30
       Environment:
         Variables:
