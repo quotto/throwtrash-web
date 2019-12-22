@@ -108,6 +108,9 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /v${FRONTEND_VERSION}/*
             fi
+      - restore_cache:
+          keys:
+            - npm-deps-{{ .Branch }}-{{ checksum "backend/package-lock.json"}}
       - run:
           name: backend deploy
           command: |
