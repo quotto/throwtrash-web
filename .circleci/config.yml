@@ -8,42 +8,71 @@ commands:
       - run:
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              echo "export STAGE=production" >> $BASH_ENV
-              echo "export HOST_NAME=${HOST_PRODUCTION}" >> $BASH_ENV
-              echo "export AWS_DISTRIBUTION_ID=${AWS_PRO_DIST_ID}" >> $BASH_ENV
+              echo "export AWS_DEFAULT_REGION=${AWS_PRODUCTION_REGION}" >> $BASH_ENV
+              echo "export RUNLEVEL=INFO" >> $BASH_ENV
             else
-              echo "export STAGE=staging" >> $BASH_ENV
-              echo "export HOST_NAME=${HOST_STAGING}" >> $BASH_ENV
-              echo "export AWS_DISTRIBUTION_ID=${AWS_STAGE_DIST_ID}" >> $BASH_ENV
+              echo "export AWS_DEFAULT_REGION=${AWS_DEVELOPMENT_REGION}" >> $BASH_ENV
+              echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
+              echo "export API_STAGE=test" >> $BASH_ENV
+              echo "export FRONTEND_VERSION=0" >> $BASH_ENV
+              echo "export BACKEND_ALIAS=test" >> $BASH_ENV
             fi
 
 jobs:
-  test:
+  frontend-test:
     docker:
       - image: circleci/node:10.1.0
     steps:
       - checkout
       - restore_cache:
           keys:
-            - npm-deps-{{ .Branch }}-{{ checksum "server/package-lock.json"}}
+            - npm-deps-{{ .Branch }}-{{ checksum "frontend/package-lock.json"}}
             - npm-deps-{{ .Branch }}
             - npm-deps-
       - run:
           name: install
           command: npm install
-          working_directory: server
+          working_directory: frontend
       - save_cache:
-          key: npm-deps-{{ .Branch }}-{{ checksum "server/package-lock.json"}}
+          key: npm-deps-{{ .Branch }}-{{ checksum "frontend/package-lock.json"}}
           paths:
-            - server/node_modules
-      - run:
-          name: backend test
-          command: npm test
-          working_directory: server
+            - frontend/node_modules
       - run:
           name: frontend test
-          command: npm run test-front
-          working_directory: server
+          command: npm run test
+          working_directory: frontend
+  backend-test:
+    docker:
+      - image: circleci/node:12.0.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - npm-deps-{{ .Branch }}-{{ checksum "backend/package-lock.json"}}
+            - npm-deps-{{ .Branch }}
+            - npm-deps-
+      - run:
+          name: install
+          command: npm install
+          working_directory: backend
+      - save_cache:
+          key: npm-deps-{{ .Branch }}-{{ checksum "backend/package-lock.json"}}
+          paths:
+            - backend/node_modules
+      - run:
+          name: set GCP Credentials
+          command: |
+            echo ${GCP_TEST_CREDENTIALS} > ./serviceAccountKey.json
+            echo "export GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json" >> $BASH_ENV
+          working_directory: backend
+      - run:
+          name: backend unit test
+          command: npm run test
+          working_directory: backend
+      - run:
+          name: backend link test
+          command: npm run linktest
+          working_directory: backend
   frontend-build:
     docker:
       - image: circleci/node:10.1.0
@@ -51,67 +80,57 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - npm-deps-{{ .Branch }}-{{ checksum "server/package-lock.json"}}
+            - npm-deps-{{ .Branch }}-{{ checksum "frontend/package-lock.json"}}
       - run:
           name: install
           command: npm install
-          working_directory: server
+          working_directory: frontend
       - run:
           name: build
-          command: npm run build -- -p --env.version=${MYTRASH_VERSION}
-          working_directory: server
+          command: npm run build -- -p --env.version=${FRONTEND_VERSION} --env.apistage=${API_STAGE}
+          working_directory: frontend
       - persist_to_workspace:
-          root: server/backend/public
+          root:  .
           paths:
-            - resource
-  frontend-deploy:
+            - frontend
+            - backend
+  deploy:
     executor: aws-cli/default
     steps:
       - attach_workspace:
-          at: server/backend/public
+          at: .
       - aws-cli/install
       - set-stage-env
       - run:
-          name: deploy
+          name: frontend deploy
           command: |
-            aws s3 sync server/backend/public/resource s3://${AWS_BUCKET}/${STAGE}/
-            aws cloudfront create-invalidation --distribution-id ${AWS_DISTRIBUTION_ID} --paths /bundle/*.js /css/*.css
-  backend:
-    docker: 
-      - image: kroniak/ssh-client:3.9
-    working_directory: /home/circleci/project
-    steps:
-      - checkout
+            aws s3 sync frontend/dist s3://throwtrash
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /v${FRONTEND_VERSION}/*
+            fi
       - run:
-          name: add git command
-          command: apk add git
-      - add_ssh_keys:
-          fingerprints:
-            - ${SSH_KEY_PRODUCTION}
-            - ${SSH_KEY_STAGING}
-      - set-stage-env
-      - run:
-          name: deployment
+          name: backend deploy
           command: |
-            mkdir -p ~/.ssh
-            chmod 700 ~/.ssh
-            ssh-keyscan -H ${HOST_NAME} >> ~/.ssh/known_hosts
-            ssh ${SSH_USER}@${HOST_NAME} 'hostname'
-            ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git pull"
-            ssh ${SSH_USER}@${HOST_NAME} "sudo docker run --rm -v ${PROJECT_DIRECTORY}:/git alpine/git checkout ${CIRCLE_BRANCH}"
-            ssh ${SSH_USER}@${HOST_NAME} "sudo docker-compose -f ${PROJECT_DIRECTORY}/docker/docker-compose.yml restart node"
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              echo ${GCP_PRODUCTION_CREDENTIALS} > backend/serviceAccountKey.json
+            else
+              echo ${GCP_TEST_CREDENTIALS} > backend/serviceAccountKey.json
+            fi
+            aws cloudformation package --template-file backend/template.yml --output-template-file backend/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
+            aws cloudformation deploy --template-file backend/package-template.yml --stack-name throwtrash-backend-stack --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} FUNCTIONALIAS=${BACKEND_ALIAS} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
 workflows:
   version: 2
   test_and_deploy:
     jobs:
-      - test:
+      - frontend-test:
+          context: aws-test
+      - backend-test:
           context: aws-test
       - frontend-build:
           requires:
-            - test
-      - frontend-deploy:
+            - frontend-test
+            - backend-test
+      - deploy:
           requires:
             - frontend-build
-      - backend:
-          requires:
-            - test
+          context: aws-deploy
