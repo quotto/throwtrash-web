@@ -35,6 +35,20 @@ const styles = (theme)=>({
     }
 });
 
+
+const ToggleFormControl = withStyles(
+    (theme)=>({
+        root: {
+            [theme.breakpoints.down('xs')]: {
+                paddingBottom: '10px'
+            },
+            display: 'inline-flex',
+            flexDirection: 'column',
+            alignItems: 'start'
+        }
+    })
+)(FormControl);
+
 const StyleToggleButton = withStyles(
     (theme) => ({
         selected: {
@@ -46,7 +60,7 @@ const StyleToggleButton = withStyles(
             '&:hover': {
                 background: theme.palette.secondary.main
             }
-        }
+        },
     })
 )(ToggleButton);
 
@@ -70,7 +84,8 @@ class EvWeek extends React.Component {
                         {WeekDayList(this.props)}
                     </Select>
                 </FormControl>
-                <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'start' }}>
+                {/* <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'start' }}> */}
+                <ToggleFormControl>
                     <FormHelperText style={{ margin: '0 0 8px 0' }}>
                         {this.props.t('TrashSchedule.select.evweek.helper')}
                     </FormHelperText>
@@ -101,7 +116,8 @@ class EvWeek extends React.Component {
                             {this.props.t('TrashSchedule.select.evweek.nextweek')}
                         </StyleToggleButton>
                     </ToggleButtonGroup>
-                </div>
+                </ToggleFormControl>
+                {/* </div> */}
             </div>
         );
     }
