@@ -10,12 +10,14 @@ commands:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               echo "export AWS_DEFAULT_REGION=${AWS_PRODUCTION_REGION}" >> $BASH_ENV
               echo "export RUNLEVEL=INFO" >> $BASH_ENV
+              echo "export NODE_ENV=production" >> $BASH_ENV
             else
               echo "export AWS_DEFAULT_REGION=${AWS_DEVELOPMENT_REGION}" >> $BASH_ENV
               echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
               echo "export API_STAGE=test" >> $BASH_ENV
               echo "export FRONTEND_VERSION=0" >> $BASH_ENV
               echo "export BACKEND_ALIAS=test" >> $BASH_ENV
+              echo "export NODE_ENV=development" >> $BASH_ENV
             fi
 
 jobs:
@@ -88,7 +90,7 @@ jobs:
           working_directory: frontend
       - run:
           name: build
-          command: npm run build -- -p --env.version=${FRONTEND_VERSION} --env.apistage=${API_STAGE}
+          command: npm run build -- --env.version=${FRONTEND_VERSION} --env.apistage=${API_STAGE}
           working_directory: frontend
       - persist_to_workspace:
           root:  .
