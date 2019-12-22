@@ -41,10 +41,10 @@ class BarMenu extends React.Component {
                 onClose={() => this.props.onChangeMenu(false, null)} >
                 {UserName}
                 {UserNameDivider} 
-                <MenuItem onClick={()=>this.openWindow('/static/manual')}>
+                <MenuItem onClick={()=>this.openWindow('/manual.html')}>
                     使い方
                 </MenuItem>
-                <MenuItem onClick={()=>this.openWindow('/static/policy')}>
+                <MenuItem onClick={()=>this.openWindow('/policy.html')}>
                     プライバシーポリシー
                 </MenuItem>
                 <MenuItem onClick={()=>this.openWindow('https://docs.google.com/forms/d/e/1FAIpQLScQiZNzcYKgto1mQYAmxmo49RTuAnvtmkk3BQ02MsVlE4OmHg/viewform?embedded=true')}>

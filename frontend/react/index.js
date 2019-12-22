@@ -27,11 +27,22 @@ LangProvider.propTypes = {
     match: PropTypes.object
 };
 
-render(
-    <Provider store={store}>
-        <BrowserRouter>
-            <LangProvider/>
-        </BrowserRouter>
-    </Provider>,
-    document.getElementById('root')
-);
+let render_flg = false
+if(navigator.cookieEnabled) {
+    document.cookie = 'isEnabledCookie=true; '+document.cookie;
+    if(document.cookie.length > 0) {
+        render_flg = true;
+    }
+}
+if(render_flg) {
+    render(
+        <Provider store={store}>
+            <BrowserRouter>
+                <LangProvider />
+            </BrowserRouter>
+        </Provider>,
+        document.getElementById('root')
+    );
+} else {
+    document.getElementById('root').innerText = 'ブラウザのCookieが無効になっています。Cookieを有効にしてからお試しください。';
+}
