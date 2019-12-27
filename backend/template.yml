@@ -12,6 +12,9 @@ Parameters:
   APISTAGE:
     Type: "String"
     Default: "test"
+  DBREGION:
+    Type: "String"
+    Default: "us-west-2"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -67,7 +70,7 @@ Resources:
       Timeout: 30
       Environment:
         Variables:
-          DB_REGION: !Sub "${AWS::Region}"
+          DB_REGION: !Ref DBREGION
           RUNLEVEL: !Ref RUNLEVEL
           GOOGLE_CLIENT_ID: !Ref GOOGLECLIENTID
           GOOGLE_CLIENT_SECRET: !Ref GOOGLECLIENTSECRET
