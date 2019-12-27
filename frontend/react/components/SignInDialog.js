@@ -1,4 +1,5 @@
 import React from 'react';
+import {withTranslation} from 'react-i18next';
 import PropTypes from 'prop-types';
 import { DialogTitle, withStyles, Button, Dialog, DialogContent, DialogContentText, DialogActions } from '@material-ui/core';
 import axios from 'axios';
@@ -89,17 +90,17 @@ class SignInDialog extends React.Component {
                         className={classes.loginButton}
                         color="inherit" 
                         onClick={()=>{this.props.onSigninDialog(true);}}>
-                            ログイン
+                            {this.props.t('SigninDialog.login')}
                     </Button>
                     <Dialog 
                         onClose={()=>{this.props.onSigninDialog(false);}} 
                         open={this.props.signinDialog}
                         scroll='body'
                         aria-labelledby="signin-dialog-title">
-                        <DialogTitle id="signin-dialog-title">ログイン</DialogTitle>
+                        <DialogTitle id="signin-dialog-title">{this.props.t('SigninDialog.login')}</DialogTitle>
                         <DialogContent>
                             <DialogContentText className={classes.signinDescription}>
-                                お持ちのAmazonまたはGoogleアカウントでログインすることで登録したスケジュールを簡単に修正することができます。
+                                {this.props.t('SigninDialog.aboutlogin')}
                             </DialogContentText>
                         </DialogContent>
                         <div className={classes.signinRoot}>
@@ -112,7 +113,7 @@ class SignInDialog extends React.Component {
                         </div>
                         <DialogActions>
                             <Button onClick={()=>this.props.onSigninDialog(false)}>
-                                閉じる
+                                {this.props.t('SigninDialog.close')}
                             </Button>
                         </DialogActions>
                     </Dialog>
@@ -131,7 +132,8 @@ SignInDialog.propTypes = {
     classes: PropTypes.object,
     onSigninDialog: PropTypes.func,
     signedIn: PropTypes.bool,
-    onSetUserInfo: PropTypes.func
+    onSetUserInfo: PropTypes.func,
+    t: PropTypes.func
 };
 
-export default withStyles(styles)(SignInDialog);
+export default withTranslation()(withStyles(styles)(SignInDialog));

@@ -8,9 +8,9 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = (env)=>{
     const filename = 'bundle.js';
-    const frontend_version = env.version || '0';
+    const frontend_version = (env && env.version) || '0';
     const path = `${app_root.path}/dist/v${frontend_version}`;
-    const api_stage =  env.apistage || 'test';
+    const api_stage =  (env && env.apistage) || 'test';
     return {
         entry: './react/index.js',
         output: {
@@ -46,7 +46,7 @@ module.exports = (env)=>{
                 API_STAGE: JSON.stringify(api_stage)
             }),
             new CopyPlugin([
-                {from: 'html/index.html', to: path}
+                {from: 'react/index.html', to: path}
             ]),
         ],
         optimization: {
