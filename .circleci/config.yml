@@ -7,7 +7,7 @@ commands:
     steps:
       - run:
           command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
               echo "export AWS_DEFAULT_REGION=${AWS_PRODUCTION_REGION}" >> $BASH_ENV
               echo "export RUNLEVEL=INFO" >> $BASH_ENV
             else
@@ -46,6 +46,7 @@ jobs:
     docker:
       - image: circleci/node:12.0.0
     steps:
+      - set-stage-env
       - checkout
       - restore_cache:
           keys:
@@ -78,6 +79,7 @@ jobs:
     docker:
       - image: circleci/node:10.1.0
     steps:
+      - set-stage-env
       - checkout
       - restore_cache:
           keys:
@@ -98,6 +100,7 @@ jobs:
   deploy:
     executor: aws-cli/default
     steps:
+      - set-stage-env
       - attach_workspace:
           at: .
       - aws-cli/install
@@ -105,7 +108,7 @@ jobs:
           name: frontend deploy
           command: |
             aws s3 sync frontend/dist s3://throwtrash
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
               aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /v${FRONTEND_VERSION}/*
             fi
       - restore_cache:
@@ -114,7 +117,7 @@ jobs:
       - run:
           name: backend deploy
           command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
               echo ${GCP_PRODUCTION_CREDENTIALS} > backend/serviceAccountKey.json
             else
               echo ${GCP_TEST_CREDENTIALS} > backend/serviceAccountKey.json
@@ -127,13 +130,25 @@ workflows:
     jobs:
       - frontend-test:
           context: aws-test
+          filters:
+            branches:
+              ignore: master
       - backend-test:
           context: aws-test
+          filters:
+            branches:
+              ignore: master
       - frontend-build:
           requires:
             - frontend-test
             - backend-test
+          filters:
+            branches:
+              ignore: master
       - deploy:
           requires:
             - frontend-build
+          filters:
+            branches:
+              ignore: master
           context: aws-deploy
