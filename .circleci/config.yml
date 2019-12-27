@@ -9,11 +9,13 @@ commands:
           command: |
             if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
               echo "export AWS_DEFAULT_REGION=${AWS_PRODUCTION_REGION}" >> $BASH_ENV
+              echo "export API_HOST=backend.mythrowaway.net >> $BASH_ENV
               echo "export RUNLEVEL=INFO" >> $BASH_ENV
             else
               echo "export AWS_DEFAULT_REGION=${AWS_DEVELOPMENT_REGION}" >> $BASH_ENV
               echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
               echo "export API_STAGE=test" >> $BASH_ENV
+              echo "export API_HOST=test-backend.mythrowaway.net >> $BASH_ENV
               echo "export FRONTEND_VERSION=0" >> $BASH_ENV
               echo "export BACKEND_ALIAS=test" >> $BASH_ENV
             fi
@@ -90,7 +92,7 @@ jobs:
           working_directory: frontend
       - run:
           name: build
-          command: npm run build -- --env.version=${FRONTEND_VERSION} --env.apistage=${API_STAGE}
+          command: npm run build -- --env.version=${FRONTEND_VERSION} --env.apistage=${API_STAGE} --env.apihost=${API_HOST}
           working_directory: frontend
       - persist_to_workspace:
           root:  .
@@ -122,8 +124,8 @@ jobs:
             else
               echo ${GCP_TEST_CREDENTIALS} > backend/serviceAccountKey.json
             fi
-            aws cloudformation package --template-file backend/template.yml --output-template-file backend/package-template.yml --s3-bucket lambda-function-deployment-ap-northeast-1 --s3-prefix throwtrashbackend
-            aws cloudformation deploy --template-file backend/package-template.yml --stack-name throwtrash-backend-stack --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} DBREGION=${AWS_DEFAULT_REGION} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --region ap-northeast-1
+            aws cloudformation package --template-file backend/template.yml --output-template-file backend/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
+            aws cloudformation deploy --template-file backend/package-template.yml --stack-name throwtrash-backend-stack --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
 workflows:
   version: 2
   test_and_deploy:

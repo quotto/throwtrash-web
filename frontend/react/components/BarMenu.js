@@ -12,7 +12,7 @@ class BarMenu extends React.Component {
     }
 
     signOut() {
-        axios.get(`https://backend.mythrowaway.net/${API_STAGE}/signout`,{withCredentials: true})
+        axios.get(`https://${API_HOST}/${API_STAGE}/signout`,{withCredentials: true})
             .then(()=>{
                 this.props.onSignOut();
             });
