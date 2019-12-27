@@ -16,6 +16,26 @@
                 "schedule": "You can register up to 3 schedules on one trash."
             }
         },
+        "BarMenu": {
+            "usage": "Usage",
+            "policy": "Policy",
+            "contact": "Contact",
+            "logout": "Sign Out",
+            "loginas": "Signed in as %s."
+        },
+        "SigninDialog": {
+            "login": "Sign In",
+            "aboutlogin": "You can modify schedule easirly by signing in with your Amazon or Google Account.",
+            "close": "Close"
+        },
+        "TopAppBar": {
+            "title": "My Trash"
+        },
+        "ErrorDialog": {
+            "message": "Sorry,please contact to %s about error. We will research and reply to you.",
+            "formname": "Contact Form",
+            "close": "Close"
+        },
         "ScheduleList":{
             "error":{
                 "registrationfailed":{
