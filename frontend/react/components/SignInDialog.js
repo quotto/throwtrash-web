@@ -39,7 +39,7 @@ const styles = (theme)=>({
 class SignInDialog extends React.Component {
     constructor(props) {
         super(props);
-        axios.get(`https://backend.mythrowaway.net/${API_STAGE}/user_info`,{
+        axios.get(`https://${API_HOST}/${API_STAGE}/user_info`,{
             withCredentials: true
         }).then(response => {
             if (response.status === 200 && response.data.preset) {
@@ -75,7 +75,7 @@ class SignInDialog extends React.Component {
                 console.error('amazonログインエラー:' + response.error);
                 return;
             }
-            document.location.href = `https://backend.mythrowaway.net/${API_STAGE}/signin?service=amazon&access_token=${encodeURIComponent(response.access_token)}`;
+            document.location.href = `https://${API_HOST}/${API_STAGE}/signin?service=amazon&access_token=${encodeURIComponent(response.access_token)}`;
         });
         return false;
     }
@@ -107,7 +107,7 @@ class SignInDialog extends React.Component {
                             <a id='LoginWithAmazon' className={classes.signInButton} onClick={this.loginWithAmazon}>
                                 <img src='https://images-na.ssl-images-amazon.com/images/G/01/lwa/btnLWA_gold_156x32.png' alt='sign in with Amazon' />
                             </a>
-                            <a href={`https://backend.mythrowaway.net/${API_STAGE}/google_signin`} className={classes.signInButton}>
+                            <a href={`https://${API_HOST}/${API_STAGE}/google_signin`} className={classes.signInButton}>
                                 <img className={classes.googleButtonImg} src='/img/btn_google_signin_ja.png' alt='sign in with Google' />
                             </a>
                         </div>
