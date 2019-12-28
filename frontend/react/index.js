@@ -27,14 +27,15 @@ LangProvider.propTypes = {
     match: PropTypes.object
 };
 
-let render_flg = false
-if(navigator.cookieEnabled) {
-    document.cookie = 'isEnabledCookie=true; '+document.cookie;
-    if(document.cookie.length > 0) {
-        render_flg = true;
-    }
-}
-if(render_flg) {
+// let render_flg = false
+// if(navigator.cookieEnabled) {
+//     document.cookie = 'isEnabledCookie=true; '+document.cookie;
+//     if(document.cookie.length > 0) {
+//         render_flg = true;
+//     }
+// }
+// if(render_flg) {
+if(true) {
     render(
         <Provider store={store}>
             <LangProvider />
