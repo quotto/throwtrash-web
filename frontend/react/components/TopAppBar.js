@@ -2,6 +2,7 @@ import React from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import PropTypes from 'prop-types';
 import {withStyles} from '@material-ui/core/styles';
+import {withTranslation} from 'react-i18next';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -46,7 +47,7 @@ class TopAppBar extends React.Component {
                         </IconButton>
                         <BarMenu {...this.props} />
                         <Typography variant="h6" className={classes.appBarTitle}>
-                            今日のゴミ出し
+                            {this.props.t('TopAppBar.title')}
                         </Typography>
                         <SignInDialog 
                             signinDialog={this.props.signinDialog}
@@ -67,6 +68,7 @@ TopAppBar.propTypes = {
     signinDialog: PropTypes.bool,
     onSigninDialog: PropTypes.func,
     signedIn: PropTypes.bool,
-    onSetUserInfo: PropTypes.func
+    onSetUserInfo: PropTypes.func,
+    t: PropTypes.func
 };
-export default withStyles(styles)(TopAppBar);
+export default withTranslation()(withStyles(styles)(TopAppBar));

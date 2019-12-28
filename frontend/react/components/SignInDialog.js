@@ -1,4 +1,5 @@
 import React from 'react';
+import {withTranslation} from 'react-i18next';
 import PropTypes from 'prop-types';
 import { DialogTitle, withStyles, Button, Dialog, DialogContent, DialogContentText, DialogActions } from '@material-ui/core';
 import axios from 'axios';
@@ -38,7 +39,7 @@ const styles = (theme)=>({
 class SignInDialog extends React.Component {
     constructor(props) {
         super(props);
-        axios.get(`https://backend.mythrowaway.net/${API_STAGE}/user_info`,{
+        axios.get(`https://${API_HOST}/${API_STAGE}/user_info`,{
             withCredentials: true
         }).then(response => {
             if (response.status === 200 && response.data.preset) {
@@ -74,7 +75,7 @@ class SignInDialog extends React.Component {
                 console.error('amazonログインエラー:' + response.error);
                 return;
             }
-            document.location.href = `https://backend.mythrowaway.net/${API_STAGE}/signin?service=amazon&access_token=${encodeURIComponent(response.access_token)}`;
+            document.location.href = `https://${API_HOST}/${API_STAGE}/signin?service=amazon&access_token=${encodeURIComponent(response.access_token)}`;
         });
         return false;
     }
@@ -89,30 +90,30 @@ class SignInDialog extends React.Component {
                         className={classes.loginButton}
                         color="inherit" 
                         onClick={()=>{this.props.onSigninDialog(true);}}>
-                            ログイン
+                            {this.props.t('SigninDialog.login')}
                     </Button>
                     <Dialog 
                         onClose={()=>{this.props.onSigninDialog(false);}} 
                         open={this.props.signinDialog}
                         scroll='body'
                         aria-labelledby="signin-dialog-title">
-                        <DialogTitle id="signin-dialog-title">ログイン</DialogTitle>
+                        <DialogTitle id="signin-dialog-title">{this.props.t('SigninDialog.login')}</DialogTitle>
                         <DialogContent>
                             <DialogContentText className={classes.signinDescription}>
-                                お持ちのAmazonまたはGoogleアカウントでログインすることで登録したスケジュールを簡単に修正することができます。
+                                {this.props.t('SigninDialog.aboutlogin')}
                             </DialogContentText>
                         </DialogContent>
                         <div className={classes.signinRoot}>
                             <a id='LoginWithAmazon' className={classes.signInButton} onClick={this.loginWithAmazon}>
                                 <img src='https://images-na.ssl-images-amazon.com/images/G/01/lwa/btnLWA_gold_156x32.png' alt='sign in with Amazon' />
                             </a>
-                            <a href={`https://backend.mythrowaway.net/${API_STAGE}/google_signin`} className={classes.signInButton}>
+                            <a href={`https://${API_HOST}/${API_STAGE}/google_signin`} className={classes.signInButton}>
                                 <img className={classes.googleButtonImg} src='/img/btn_google_signin_ja.png' alt='sign in with Google' />
                             </a>
                         </div>
                         <DialogActions>
                             <Button onClick={()=>this.props.onSigninDialog(false)}>
-                                閉じる
+                                {this.props.t('SigninDialog.close')}
                             </Button>
                         </DialogActions>
                     </Dialog>
@@ -131,7 +132,8 @@ SignInDialog.propTypes = {
     classes: PropTypes.object,
     onSigninDialog: PropTypes.func,
     signedIn: PropTypes.bool,
-    onSetUserInfo: PropTypes.func
+    onSetUserInfo: PropTypes.func,
+    t: PropTypes.func
 };
 
-export default withStyles(styles)(SignInDialog);
+export default withTranslation()(withStyles(styles)(SignInDialog));
