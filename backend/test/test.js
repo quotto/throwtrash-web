@@ -351,28 +351,28 @@ describe('signin', () => {
         // eslint-disable-next-line no-unused-vars
         requestAmazonProfile.set(async (access_token) => { return { id: 'amazon-xxxxx', name: 'テスト' } });
         // eslint-disable-next-line no-unused-vars
-        requestGoogleProfile.set(async (code,stage) => { return { id: 'google-xxxxx', name: 'テスト' } });
+        requestGoogleProfile.set(async (code,domain,stage) => { return { id: 'google-xxxxx', name: 'テスト' } });
     })
     it('amazon', async () => {
-        // パラメータはqueryStringParameters
-        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 }, 'test');
+        // パラメータはqueryStringParameters,ドメイン名,APIステージ
+        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 }, 'backend.mythrowaway.net', 'test');
         assert.equal(response.statusCode, 301);
         assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/index.html')
             assert.equal(response.headers['Cache-Control'], 'no-store');
     });
     it('google', async () => {
-        const response = await signin({ code: '12345', state: 'google-state-value', service: 'google' }, { id: 'session-id', version: 7, googleState: 'google-state-value' }, 'test');
+        const response = await signin({ code: '12345', state: 'google-state-value', service: 'google' }, { id: 'session-id', version: 7, googleState: 'google-state-value' },'backend.mythrowaway.net', 'test');
         assert.equal(response.statusCode, 301);
         assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/v7/index.html')
         assert.equal(response.headers['Cache-Control'], 'no-store');
     })
     it('規定外のサービス', async () => {
-        const response = await signin({ code: '12345', service: 'another' }, { id: 'session-id', version: 7 }, 'test');
+        const response = await signin({ code: '12345', service: 'another' }, { id: 'session-id', version: 7 }, 'backend.mythrowaway.net','test');
         assert.equal(response.statusCode, 301);
         assert.equal(response.headers.Location, URL_400);
     })
     it('セッションIDが無い', async () => {
-        const response = await signin({ code: '12345', service: 'another' }, undefined, 'test');
+        const response = await signin({ code: '12345', service: 'another' }, undefined, 'backend.mythrowaway.net', 'test');
         assert.equal(response.statusCode, 301);
         // セッションIDの不正はユーザーエラー
         assert.equal(response.headers.Location, URL_400);
@@ -380,7 +380,7 @@ describe('signin', () => {
     it('サービスへのリクエストエラー', async () => {
         // eslint-disable-next-line no-unused-vars
         requestAmazonProfile.set(async (access_token) => {return null});
-        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 }, 'test');
+        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 }, 'backend.mythrowaway.net', 'test');
         assert.equal(response.statusCode, 301);
         // サービスリクエスト異常はサーバーエラー
         assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/500.html');
@@ -388,30 +388,30 @@ describe('signin', () => {
     it('データ取得エラー', async () => {
         // eslint-disable-next-line no-unused-vars
         getDataBySigninId.set(async (access_token) => { return null});
-        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id' }, 'test');
+        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id' }, 'backend.mythrowaway.net', 'test');
         assert.equal(response.statusCode, 301);
         // 登録データ取得異常はサーバーエラー
         assert.equal(response.headers.Location, 'https://accountlink.mythrowaway.net/500.html');
     });
     it('パラーメーターの不足（Google,codeがない）', async () => {
-        const response = await signin({ service: 'google' }, { id: 'session-id', version: 7 }, 'test');
+        const response = await signin({ service: 'google' }, { id: 'session-id', version: 7 }, 'backend.mythrowaway.net', 'test');
         assert.equal(response.statusCode, 301);
         assert.equal(response.headers.Location, URL_400);
     });
     it('パラーメーターの不足（Google,state不一致）', async () => {
-        const response = await signin({ code: 1234, service: 'google', state: 'invalid-state' }, { id: 'session-id', version: 7, state: 'valid-state' }, 'test');
+        const response = await signin({ code: 1234, service: 'google', state: 'invalid-state' }, { id: 'session-id', version: 7, state: 'valid-state' }, 'backend.mythrowaway.net', 'test');
         assert.equal(response.statusCode, 301);
         assert.equal(response.headers.Location, URL_400);
     });
     it('パラメーターの不足（Google,stateが無い）', async () => {
         // eslint-disable-next-line no-unused-vars
         requestAmazonProfile.set(async (access_token) => { throw new Error('Service Request Error'); });
-        const response = await signin({ code: '12345', service: 'google' }, { id: 'session-id', version: 7 }, 'test');
+        const response = await signin({ code: '12345', service: 'google' }, { id: 'session-id', version: 7 }, 'backend.mythrowaway.net', 'test');
         assert.equal(response.statusCode, 301);
         assert.equal(response.headers.Location, URL_400);
     });
     it('パラーメーターの不足（amazon）', async () => {
-        const response = await signin({ service: 'amazon' }, { id: 'session-id', version: 7 }, 'test');
+        const response = await signin({ service: 'amazon' }, { id: 'session-id', version: 7 }, 'backend.mythrowaway.net', 'test');
         assert.equal(response.statusCode, 301);
         assert.equal(response.headers.Location, URL_400);
     });
@@ -435,8 +435,8 @@ describe('google_signin', () => {
         const generateState = index.__get__('generateState');
         index.__set__('generateState', () => { return 'statevalue' });
         try {
-            //パラメータはセッション情報とリクエストパス中のstage
-            const response = await google_signin({ id: 'hogehoge' },'v2');
+            //パラメータはセッション情報とドメインとリクエストパス中のstage
+            const response = await google_signin({ id: 'hogehoge' },'backend.mythrowaway.net','v2');
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location, 'https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.mythrowaway.net/v2/signin?service=google&state=statevalue&login_hint=mythrowaway.net@gmail.com&nonce=statevalue');
             assert.equal(response.headers['Cache-Control'], 'no-store');
