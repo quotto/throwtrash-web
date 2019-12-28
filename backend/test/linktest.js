@@ -882,7 +882,7 @@ describe('handler',()=>{
             }).promise().then(()=>done());
         });
         beforeEach(()=>{
-            event = {resource: '/google_signin', headers:{}, requestContext:{stage: 'v1'},domainName: 'backend.mythrowaway.net'};
+            event = {resource: '/google_signin', headers:{}, requestContext:{domainName: 'backend.mythrowaway.net',stage: 'v1'}};
         });
         it('セッションあり', async()=>{
             event.headers = {
@@ -961,7 +961,10 @@ describe('handler',()=>{
             event.resource = '/signin';
             event.headers = {};
             event.requestContext = {stage: 'test'};
-            event.domainName = 'backend.mythrowaway.net';
+            event.requestContext = {
+                domainName: 'backend.mythrowaway.net',
+                stage: 'v1'
+            }
         })
         it('セッションあり,プリセットあり,amazon',async()=>{
             event.queryStringParameters = {access_token: 'access-token', service: 'amazon'};
