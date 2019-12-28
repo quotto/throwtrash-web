@@ -542,11 +542,11 @@ exports.handler = async function(event,context) {
        return oauth_request(event.queryStringParameters, session, new_session_flg);
    } else if(event.resource === '/google_signin') {
        if(session) {
-           return google_signin(session, event.domainName, event.requestContext.stage);
+           return google_signin(session, event.requestContext.domainName, event.requestContext.stage);
        }
    } else if(event.resource === '/signin') {
        if(session) {
-           return signin(event.queryStringParameters,session,event.domainName,event.requestContext.stage);
+           return signin(event.queryStringParameters,session,event.requestContext.domainName,event.requestContext.stage);
        }
    } else if(event.resource === '/signout') {
        if(session) {
