@@ -16,6 +16,26 @@
                 "schedule": "1種類のゴミに3つまでスケジュールを登録することができます。"
             }
         },
+        "BarMenu": {
+            "usage": "使い方",
+            "policy": "プライバシーポリシー",
+            "contact": "お問い合わせ",
+            "logout": "ログアウト",
+            "loginas": "%s さんとしてログインしています"
+        },
+        "SigninDialog": {
+            "login": "ログイン",
+            "aboutlogin": "お持ちのAmazonまたはGoogleアカウントでログインすることで登録したスケジュールを簡単に修正することができます。",
+            "close": "閉じる"
+        },
+        "TopAppBar": {
+            "title": "今日のゴミ出し"
+        },
+        "ErrorDIalog": {
+            "message": "お手数ですが%sよりエラーの発生状況をご連絡願います。開発者にて確認次第対応いたします。",
+            "formname": "お問い合わせフォーム",
+            "close": "閉じる"
+        },
         "ScheduleList":{
             "error":{
                 "registrationfailed":{

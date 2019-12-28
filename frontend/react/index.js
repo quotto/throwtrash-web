@@ -14,9 +14,9 @@ let store = createStore(TrashScheduleApp);
 
 class LangProvider extends React.Component {
     render(){
-        // const lang = this.props.match.params.lang;
-        const lang = 'ja';
-        i18next.changeLanguage(lang);
+        const lang = navigator.language || navigator.browserLanguage || navigator.userLanguage || 'ja-JP';
+        console.log(lang);
+        i18next.changeLanguage(lang.substr(0,2));
         return(
             <App />
         );
@@ -37,9 +37,7 @@ if(navigator.cookieEnabled) {
 if(render_flg) {
     render(
         <Provider store={store}>
-            <BrowserRouter>
-                <LangProvider />
-            </BrowserRouter>
+            <LangProvider />
         </Provider>,
         document.getElementById('root')
     );

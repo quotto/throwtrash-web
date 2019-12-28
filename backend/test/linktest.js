@@ -564,12 +564,12 @@ describe('backend test', ()=>{
             // eslint-disable-next-line no-unused-vars
             requestAmazonProfile.set(async(access_token)=>{return {id: 'amazon-xxxxx',name: 'テスト'}});
             // eslint-disable-next-line no-unused-vars
-            requestGoogleProfile.set(async(code)=>{return {id: 'google-xxxxx',name: 'テスト2'}});
+            requestGoogleProfile.set(async(code,domain,stage)=>{return {id: 'google-xxxxx',name: 'テスト2'}});
         })
         it('amazon-登録がないユーザー', async()=>{
-            // パラメータはqueryStringParametersとセッション情報
+            // パラメータはqueryStringParameters,セッション情報,ドメイン,APIステージ
             // セッション情報のチェックは呼び出し元で設定するため必ず存在する
-            const response = await signin({access_token: '12345', service: 'amazon'},{id:'test001',version: 7});
+            const response = await signin({access_token: '12345', service: 'amazon'},{id:'test001',version: 7},'backend.mythrowaway.net','v1');
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
             await documentClient.get({
@@ -586,7 +586,7 @@ describe('backend test', ()=>{
             });
         });
         it('google-登録済ユーザー', async()=>{
-            const response = await signin({ code: '12345', state: 'google-state-value',service: 'google' },{id:'test002',version: 7,googleState: 'google-state-value'});
+            const response = await signin({ code: '12345', state: 'google-state-value',service: 'google' },{id:'test002',version: 7,googleState: 'google-state-value'},'backend.mythrowaway.net','v1');
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
             await documentClient.get({
@@ -634,9 +634,9 @@ describe('backend test', ()=>{
         it('正常リクエスト', async()=>{
             process.env.GOOGLE_CLIENT_ID='clientId';
             process.env.BackendURI='https://backend.net';
-            // パラメータはセッション情報,リクエストパス中のステージ
+            // パラメータはセッション情報,ドメイン名,リクエストパス中のステージ
             // セッションは呼び出し元でチェックするので必ずセッション情報設定される
-            const response = await google_signin({ id: 'test001' },'v7');
+            const response = await google_signin({ id: 'test001' },'backend.mythrowaway.net','v7');
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location, `https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.mythrowaway.net/v7/signin?service=google&state=${test_state}&login_hint=mythrowaway.net@gmail.com&nonce=${test_state}`);
             assert.equal(response.headers['Cache-Control'], 'no-store');
@@ -882,7 +882,7 @@ describe('handler',()=>{
             }).promise().then(()=>done());
         });
         beforeEach(()=>{
-            event = {resource: '/google_signin', headers:{}, requestContext:{stage: 'v1'}};
+            event = {resource: '/google_signin', headers:{}, requestContext:{domainName: 'backend.mythrowaway.net',stage: 'v1'}};
         });
         it('セッションあり', async()=>{
             event.headers = {
@@ -927,7 +927,7 @@ describe('handler',()=>{
             // eslint-disable-next-line no-unused-vars
             requestAmazonProfile.set(async(access_token)=>{return {id: signin_id_001,name: 'テスト'}});
             // eslint-disable-next-line no-unused-vars
-            requestGoogleProfile.set(async(code)=>{return {id: signin_id_002,name: 'テスト2'}});
+            requestGoogleProfile.set(async(code,domain,stage)=>{return {id: signin_id_002,name: 'テスト2'}});
             documentClient.batchWrite({
                 RequestItems: {
                     ThrowTrashSession: [
@@ -961,6 +961,10 @@ describe('handler',()=>{
             event.resource = '/signin';
             event.headers = {};
             event.requestContext = {stage: 'test'};
+            event.requestContext = {
+                domainName: 'backend.mythrowaway.net',
+                stage: 'v1'
+            }
         })
         it('セッションあり,プリセットあり,amazon',async()=>{
             event.queryStringParameters = {access_token: 'access-token', service: 'amazon'};
