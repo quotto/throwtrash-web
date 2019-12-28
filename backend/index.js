@@ -13,7 +13,6 @@ firebase_admin.initializeApp({
 const firestore = firebase_admin.firestore();
 
 const URL_ACCOUNT_LINK = 'https://accountlink.mythrowaway.net';
-const URL_BACKEND = 'https://backend.mythrowaway.net';
 
 /**
  * 隔週スケジュールの開始日（今週の日曜日 または 来週の日曜日）を求める 
@@ -200,7 +199,7 @@ const requestAmazonProfile = (access_token)=>{
     });
 }
 
-const requestGoogleProfile = (code,stage)=>{
+const requestGoogleProfile = (code,domain,stage)=>{
     const options = {
         uri: 'https://oauth2.googleapis.com/token',
         method: 'POST',
@@ -208,7 +207,7 @@ const requestGoogleProfile = (code,stage)=>{
             code: code,
             client_id: process.env.GOOGLE_CLIENT_ID,
             client_secret: process.env.GOOGLE_CLIENT_SECRET,
-            redirect_uri: `${URL_BACKEND}/${stage}/signin?service=google`,
+            redirect_uri: `https://${domain}/${stage}/signin?service=google`,
             grant_type: 'authorization_code'
         },
         json: true
@@ -426,14 +425,14 @@ const signout = async(session)=>{
     }
 }
 
-const signin = async(params,session,stage)=>{
+const signin = async(params,session,domain,stage)=>{
     let service_request = null;
     if (params.service === 'amazon' && params.access_token && session) {
         service_request = requestAmazonProfile(params.access_token);
     } else if(params.service === 'google' 
                 && params.code && params.state 
                 && session && params.state === session.googleState) {
-        service_request = requestGoogleProfile(params.code,stage);
+        service_request = requestGoogleProfile(params.code,domain,stage);
     }  else {
         console.error('invalid parameter',params,session);
         return UserError;
@@ -495,14 +494,14 @@ const oauth_request = async (params,session,new_flg)=> {
     return UserError;
 };
 
-const google_signin = async(session,stage)=>{
+const google_signin = async(session,domain,stage)=>{
     const endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
     const google_state = generateState(16);
     const option = {
         client_id: process.env.GOOGLE_CLIENT_ID,
         response_type:'code',
         scope:'openid profile',
-        redirect_uri:`${URL_BACKEND}/${stage}/signin?service=google`,
+        redirect_uri:`https://${domain}/${stage}/signin?service=google`,
         state: google_state,
         login_hint: 'mythrowaway.net@gmail.com',
         nonce: generateState(16)
@@ -543,11 +542,11 @@ exports.handler = async function(event,context) {
        return oauth_request(event.queryStringParameters, session, new_session_flg);
    } else if(event.resource === '/google_signin') {
        if(session) {
-           return google_signin(session, event.requestContext.stage);
+           return google_signin(session, event.domainName, event.requestContext.stage);
        }
    } else if(event.resource === '/signin') {
        if(session) {
-           return signin(event.queryStringParameters,session,event.requestContext.stage);
+           return signin(event.queryStringParameters,session,event.domainName,event.requestContext.stage);
        }
    } else if(event.resource === '/signout') {
        if(session) {
