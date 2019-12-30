@@ -27,6 +27,24 @@ class StubModule {
 const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
 const URL_ACCOUNT_LINK = 'https://accountlink.mythrowaway.net';
 
+describe('toHash', ()=>{
+    const toHash = index.__get__('toHash');
+    it('Sha256によるハッシュ化',()=>{
+        const result = toHash('aaaaabbbbcccccdddddeeeeffff');
+        assert.equal(result.length,64); //256bit/4bit
+    });
+    it('同じ文字列は何回やっても同じ',()=>{
+        const result1 = toHash('aaaaabbbbcccccdddddeeeeffff');
+        const result2 = toHash('aaaaabbbbcccccdddddeeeeffff');
+        assert.equal(result1,result2);
+    });
+    it('異なる文字列では異なる結果',()=>{
+        const result1 = toHash('aaaaabbbbcccccdddddeeeeffff');
+        const result2 = toHash('daaaabbbbcccccdddddeeeeffff');
+        assert.notEqual(result1,result2);
+    })
+});
+
 describe('extract session',()=>{
     const extractSessionId = index.__get__('extractSessionId');
     it('通常パターン', ()=>{

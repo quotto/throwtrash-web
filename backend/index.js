@@ -2,6 +2,7 @@ const AWS = require('aws-sdk');
 const firebase_admin = require('firebase-admin');
 const rp = require('request-promise');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const common_check = require('./common_check');
 
 const MAX_AGE=3600;
@@ -14,6 +15,9 @@ const firestore = firebase_admin.firestore();
 
 const URL_ACCOUNT_LINK = 'https://accountlink.mythrowaway.net';
 
+const toHash = (value) =>{
+    return crypto.createHash('sha256').update(value).digest('hex');
+}
 /**
  * 隔週スケジュールの開始日（今週の日曜日 または 来週の日曜日）を求める 
  * @param {int} weektype : 0:今週,1:来週
@@ -441,11 +445,11 @@ const signin = async(params,session,domain,stage)=>{
     const user_info = await service_request;
     if(user_info) {
         session.userInfo = {
-            signinId: user_info.id,
+            signinId: toHash(user_info.id),
             name: user_info.name,
             signinService: params.service
         };
-        const user_data = await getDataBySigninId(user_info.id);
+        const user_data = await getDataBySigninId(session.userInfo.signinId);
         if (user_data) {
             if(user_data.id) {
                 session.userInfo.id = user_data.id;
