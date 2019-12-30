@@ -558,7 +558,7 @@ describe('backend test', ()=>{
                 Item: {
                     id: 'test002',
                     description: JSON.stringify(registed_data),
-                    signinId: googleId,
+                    signinId: toHash(googleId),
                     signinService: 'google'
                 }
             }).promise().then(()=>done());
@@ -612,7 +612,7 @@ describe('backend test', ()=>{
         });
         after((done)=>{
             documentClient.delete({
-                TableName: TBL_ThrowTrashSession,
+                TableName: TBL_TrashSchedule,
                 Key: {
                     id: 'test002'
                 }
@@ -952,7 +952,7 @@ describe('handler',()=>{
                             PutRequest: {
                                 Item:{
                                     id: schedule_id_001,
-                                    signinId: signin_id_001,
+                                    signinId: toHash(signin_id_001),
                                     signinService: 'amazon',
                                     description: JSON.stringify(test_data_001)
                                 }
