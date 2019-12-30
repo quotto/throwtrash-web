@@ -15,7 +15,7 @@ class TrashSchedule extends React.Component {
         let trashTag = [];
         for(let i=0; i < this.props.trashes.length; i++) {
             trashTag.push(
-                <Grid container justify='center' spacing={24} style={{marginBottom:'10px'}} key={`trash${i}`}>
+                <Grid container justify='center' spacing={0} style={{marginBottom:'10px'}} key={`trash${i}`}>
                     <Hidden xsDown>
                         <Grid item sm={5} style={{display: 'inline-flex',flexDirection: 'row-reverse',alignItems: 'center'}}>
                             <Button color='secondary' onClick={()=>this.props.onClick(i)}>{this.props.t('TrashSchedule.button.delete')}</Button>

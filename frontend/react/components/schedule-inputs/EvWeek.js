@@ -10,6 +10,9 @@ const styles = (theme)=>({
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'flex-end',
+        [theme.breakpoints.up('sm')] : {
+            width: '60%',
+        },
         [theme.breakpoints.down('xs')]: {
             flexDirection: 'column',
             alignItems:'flex-start'
@@ -84,7 +87,6 @@ class EvWeek extends React.Component {
                         {WeekDayList(this.props)}
                     </Select>
                 </FormControl>
-                {/* <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'start' }}> */}
                 <ToggleFormControl>
                     <FormHelperText style={{ margin: '0 0 8px 0' }}>
                         {this.props.t('TrashSchedule.select.evweek.helper')}
@@ -117,7 +119,6 @@ class EvWeek extends React.Component {
                         </StyleToggleButton>
                     </ToggleButtonGroup>
                 </ToggleFormControl>
-                {/* </div> */}
             </div>
         );
     }
