@@ -1,4 +1,3 @@
-.vscode/launch.json
 frontend/node_modules
 backend/certs
 backend/config.json
@@ -6,3 +5,5 @@ backend/node_modules
 backend/serviceAccountKey.json
 backend/package-template.yml
 frontend/dist
+api/src/node_modules
+api/package-template.yml
