@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: The AWS CloudFormation template for BSE Workflow
+Parameters:
+  RUNLEVEL:
+    Type: "String"
+    Default: "DEBUG"
+  APISTAGE:
+    Type: "String"
+    Default: "test"
+Resources:
+  LambdaExecPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: "dynamodb:*"
+            Resource:
+              - !GetAtt ActivationTable.Arn
+              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/TrashSchedule"
+      PolicyName: !Sub "throwtrash-api-policy-${AWS::Region}"
+      Roles:
+        - !Ref LambdaExecRole
+    DeletionPolicy: Retain
+  LambdaExecRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      RoleName: !Sub "throwtrash-api-lambda-role-${AWS::Region}"
+    DeletionPolicy: Retain
+  ActivationTable:
+    Type: "AWS::Serverless::SimpleTable"
+    Properties:
+      PrimaryKey:
+        Name: "code"
+        Type: String
+      TableName: ThrowTrashActivation
+    DeletionPolicy: Retain
+  LambdaFunction:
+    Type: "AWS::Serverless::Function"
+    DeletionPolicy: Retain
+    Properties:
+      CodeUri: src
+      FunctionName: "ThrowTrashMobileApi"
+      Handler: index.handler
+      Role: !GetAtt LambdaExecRole.Arn
+      Runtime: nodejs12.x
+      AutoPublishAlias: !Ref APISTAGE
+      Timeout: 30
+      Environment:
+        Variables:
+          DB_REGION: !Sub "${AWS::Region}"
+          RUNLEVEL: !Ref RUNLEVEL
+      Events:
+        Sync:
+          Type: Api
+          Properties:
+            Path: "/sync"
+            Method: "GET"
+            RestApiId: !Ref Api
+            RequestParameters:
+              - method.request.querystring.id:
+                  Required: true
+        PublishCode:
+          Type: Api
+          Properties:
+            Path: "/publish_activation_code"
+            Method: "GET"
+            RestApiId: !Ref Api
+            RequestParameters:
+              - method.request.querystring.id:
+                  Required: true
+        Register:
+          Type: Api
+          Properties:
+            Path: "/register"
+            Method: "POST"
+            RestApiId: !Ref Api
+        Update:
+          Type: Api
+          Properties:
+            Path: "/update"
+            Method: "POST"
+            RestApiId: !Ref Api
+  Api:
+    Type: "AWS::Serverless::Api"
+    DeletionPolicy: Retain
+    Properties:
+      Name: "ThrowTrashMobileApi"
+      StageName: !Ref APISTAGE
+      Variables: 
+        Alias: "development"

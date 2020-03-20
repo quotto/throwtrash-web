@@ -77,6 +77,29 @@ jobs:
           name: backend link test
           command: npm run linktest
           working_directory: backend
+  api-test:
+    docker:
+      - image: circleci/node:12.0.0
+    steps:
+      - set-stage-env
+      - checkout
+      - restore_cache:
+          keys:
+            - npm-deps-{{ .Branch }}-{{ checksum "api/src/package-lock.json"}}
+            - npm-deps-{{ .Branch }}
+            - npm-deps-
+      - run:
+          name: install
+          command: npm install
+          working_directory: api/src
+      - save_cache:
+          key: npm-deps-{{ .Branch }}-{{ checksum "api/src/package-lock.json"}}
+          paths:
+            - api/src/node_modules
+      - run:
+          name: api unit test
+          command: npm run test
+          working_directory: api/src
   frontend-build:
     docker:
       - image: circleci/node:10.1.0
@@ -116,6 +139,7 @@ jobs:
       - restore_cache:
           keys:
             - npm-deps-{{ .Branch }}-{{ checksum "backend/package-lock.json"}}
+            - npm-deps-{{ .Branch }}-{{ checksum "api/src/package-lock.json"}}
       - run:
           name: backend deploy
           command: |
@@ -126,6 +150,11 @@ jobs:
             fi
             aws cloudformation package --template-file backend/template.yml --output-template-file backend/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
             aws cloudformation deploy --template-file backend/package-template.yml --stack-name throwtrash-backend-stack --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
+      - run:
+          name: api deploy
+          command: |
+            aws cloudformation package --template-file api/template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
+            aws cloudformation deploy --template-file api/src/package-template.yml --stack-name throwtrash-mobile-api-stack --parameter-overrides RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
 workflows:
   version: 2
   test_and_deploy:
