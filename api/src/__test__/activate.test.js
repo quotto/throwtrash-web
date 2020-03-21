@@ -33,11 +33,11 @@ class mockClass {
     get(params) {
         return {
             promise: async () => {
-                if(params.Key.id === "code001") {
-                    return { Item: { id: params.Key.id, user_id: "id001" } };
-                } else if(params.Key.id === "code002") {
+                if(params.Key.code === "code001") {
+                    return { Item: { code: params.Key.code, user_id: "id001" } };
+                } else if(params.Key.code === "code002") {
                     return {}
-                } else if(params.Key.id === "code003") {
+                } else if(params.Key.code === "code003") {
                     throw new Error("DB Get Error");
                 }
             }

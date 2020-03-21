@@ -7,7 +7,7 @@ module.exports = async(params)=>{
         const result = await documentClient.get({
             TableName: property.ACTIVATE_TABLE_NAME,
             Key: {
-                id: params.code
+                code: params.code
             }
         }).promise();
         if(result.Item) {

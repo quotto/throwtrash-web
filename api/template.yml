@@ -95,6 +95,15 @@ Resources:
             Path: "/update"
             Method: "POST"
             RestApiId: !Ref Api
+        Activate:
+          Type: Api
+          Properties:
+            Path: "/activate"
+            Method: "GET"
+            RestApiId: !Ref Api
+            RequestParameters:
+              - method.request.querystring.code:
+                  Required: true
   Api:
     Type: "AWS::Serverless::Api"
     DeletionPolicy: Retain
