@@ -42,12 +42,21 @@ Resources:
       RoleName: !Sub "throwtrash-api-lambda-role-${AWS::Region}"
     DeletionPolicy: Retain
   ActivationTable:
-    Type: "AWS::Serverless::SimpleTable"
+    Type: "AWS::DynamoDB::Table"
     Properties:
-      PrimaryKey:
-        Name: "code"
-        Type: String
-      TableName: ThrowTrashActivation
+      AttributeDefinitions:
+        -
+          AttributeName: "code" 
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "code"
+          KeyType: HASH
+      TableName: TrashActivation
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
     DeletionPolicy: Retain
   LambdaFunction:
     Type: "AWS::Serverless::Function"

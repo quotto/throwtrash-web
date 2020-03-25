@@ -35,11 +35,13 @@ module.exports = async(params)=>{
        }).promise();
        if(result.Item) {
            const code = await generateActivationCode();
+           const ttl = new Date().getTime() + (5 * 60 * 1000);
            await documentClient.put({
                TableName: property.ACTIVATE_TABLE_NAME,
                Item: {
                    code: code,
-                   user_id: params.id
+                   user_id: params.id,
+                   TTL: ttl
                }
            }).promise();
            return {statusCode: 200, body: JSON.stringify({code: code})};
