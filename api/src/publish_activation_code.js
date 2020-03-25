@@ -35,7 +35,7 @@ module.exports = async(params)=>{
        }).promise();
        if(result.Item) {
            const code = await generateActivationCode();
-           const ttl = new Date().getTime() + (5 * 60 * 1000);
+           const ttl = Math.ceil(new Date().getTime()/1000 + (5 * 60));
            await documentClient.put({
                TableName: property.ACTIVATE_TABLE_NAME,
                Item: {
