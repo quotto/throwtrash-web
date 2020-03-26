@@ -51,7 +51,7 @@ describe("publish_activation_code",()=>{
         const result = await publish_activation_code({ id: "id001" });
         const body = JSON.parse(result.body);
         expect(result.statusCode).toBe(200);
-        expect(body.code.length).toBe(5);
+        expect(body.code.length).toBe(10);
     });
     it("ID Not Found",async()=>{
         const result = await publish_activation_code({ id: "id003" });
