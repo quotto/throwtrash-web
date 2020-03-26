@@ -6,7 +6,7 @@ const generateActivationCode = async()=>{
     let limit = 0;
     while(limit < 5) {
         const code = [];
-        for(let i=0; i<5; i++) {
+        for(let i=0; i<10; i++) {
             code.push(Math.random()*9|0);
         }
         const activation_code = code.join("");

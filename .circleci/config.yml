@@ -122,6 +122,21 @@ jobs:
           paths:
             - frontend
             - backend
+            - api
+      - run:
+          name: check deploy target
+          command: |
+            export PATH=${CIRCLE_WORKING_DIRECTORY}/.circleci;$PATH
+            if isChanged "frontend"; then
+              echo "export DEPLOY_FRONTEND=1" >> $BASH_ENV
+            fi
+            if isChanged "backend"; then
+              echo "export DEPLOY_BACKEND=1" >> $BASH_ENV
+            fi
+            if isChanged "api"; then
+              echo "export DEPLOY_API=1" >> $BASH_ENV
+            fi
+
   deploy:
     executor: aws-cli/default
     steps:
@@ -130,26 +145,18 @@ jobs:
           at: .
       - aws-cli/install
       - run:
-          name: init
-          command: |
-            echo 'export PATH=$PATH:${CIRCLE_WORKING_DIRECTORY}/.circleci' >> $BASH_ENV
-      - run:
           name: frontend deploy
           command: |
-            if isChanged "frontend"; then
+            if $DEPLOY_FRONTEND; then
               aws s3 sync frontend/dist s3://throwtrash
               if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
                 aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /v${FRONTEND_VERSION}/*
               fi
             fi
-      - restore_cache:
-          keys:
-            - npm-deps-{{ .Branch }}-{{ checksum "backend/package-lock.json"}}
-            - npm-deps-{{ .Branch }}-{{ checksum "api/src/package-lock.json"}}
       - run:
           name: backend deploy
           command: |
-            if isChanged "backend"; then
+            if $DEPLOY_BACKEND; then
               if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
                 echo ${GCP_PRODUCTION_CREDENTIALS} > backend/serviceAccountKey.json
               else
@@ -161,7 +168,7 @@ jobs:
       - run:
           name: api deploy
           command: |
-            if isChanged "api"; then
+            if $DEPLOY_API; then
               aws cloudformation package --template-file api/template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
               aws cloudformation deploy --template-file api/src/package-template.yml --stack-name throwtrash-mobile-api-stack --parameter-overrides RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
             fi
@@ -179,10 +186,15 @@ workflows:
           filters:
             branches:
               ignore: master
+      - api-test:
+          filters:
+            branches:
+              ignore: master
       - frontend-build:
           requires:
             - frontend-test
             - backend-test
+            - api-test
           filters:
             branches:
               ignore: master
