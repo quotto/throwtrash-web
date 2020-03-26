@@ -126,16 +126,17 @@ jobs:
       - run:
           name: check deploy target
           command: |
-            export PATH=${CIRCLE_WORKING_DIRECTORY}/.circleci;$PATH
-            if isChanged "frontend"; then
+            chmod +x ./.circleci/isChanged
+            if ./.circleci/isChanged "frontend"; then
               echo "export DEPLOY_FRONTEND=1" >> $BASH_ENV
             fi
-            if isChanged "backend"; then
+            if ./.circleci/isChanged "backend"; then
               echo "export DEPLOY_BACKEND=1" >> $BASH_ENV
             fi
-            if isChanged "api"; then
+            if ./.circleci/isChanged "api"; then
               echo "export DEPLOY_API=1" >> $BASH_ENV
             fi
+          working_directory: .circleci
 
   deploy:
     executor: aws-cli/default
