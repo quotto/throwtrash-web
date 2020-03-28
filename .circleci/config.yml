@@ -175,7 +175,7 @@ jobs:
           command: |
             if $DEPLOY_API; then
               aws cloudformation package --template-file api/template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
-              aws cloudformation deploy --template-file api/src/package-template.yml --stack-name throwtrash-mobile-api-stack --parameter-overrides RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
+              aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-api-stack --parameter-overrides RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
             fi
 workflows:
   version: 2

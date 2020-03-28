@@ -485,7 +485,7 @@ describe('backend test', ()=>{
         });
     });
 
-    describe('backend signout',()=>{
+    describe('signout',()=>{
         before((done)=>{
             process.env.DB_REGION = 'us-west-2';
             documentClient.put({
@@ -532,13 +532,10 @@ describe('backend test', ()=>{
             }).promise().then(()=>done());
         });
     })
-    describe('backend signin', ()=>{
+    describe('signin', ()=>{
         const signin = index.__get__('signin');
         const requestAmazonProfile = new StubModule(index, 'requestAmazonProfile');
         const requestGoogleProfile = new StubModule(index, 'requestGoogleProfile');
-        const toHash = index.__get__('toHash');
-        const amazonId = 'amazon-xxxxx';
-        const googleId = 'google-xxxxx';
 
         const registed_data = [
             {
@@ -550,7 +547,6 @@ describe('backend test', ()=>{
                 ]
             }
         ];
-
         before((done)=>{
             process.env.DB_REGION = 'us-west-2';
             documentClient.put({
@@ -558,7 +554,7 @@ describe('backend test', ()=>{
                 Item: {
                     id: 'test002',
                     description: JSON.stringify(registed_data),
-                    signinId: toHash(googleId),
+                    signinId: 'google-xxxxx',
                     signinService: 'google'
                 }
             }).promise().then(()=>done());
@@ -566,9 +562,9 @@ describe('backend test', ()=>{
         beforeEach(()=>{
             // 外部サービス依存の部分はモックを使う
             // eslint-disable-next-line no-unused-vars
-            requestAmazonProfile.set(async(access_token)=>{return {id: amazonId,name: 'テスト'}});
+            requestAmazonProfile.set(async(access_token)=>{return {id: 'amazon-xxxxx',name: 'テスト'}});
             // eslint-disable-next-line no-unused-vars
-            requestGoogleProfile.set(async(code,domain,stage)=>{return {id: googleId,name: 'テスト2'}});
+            requestGoogleProfile.set(async(code,domain,stage)=>{return {id: 'google-xxxxx',name: 'テスト2'}});
         })
         it('amazon-登録がないユーザー', async()=>{
             // パラメータはqueryStringParameters,セッション情報,ドメイン,APIステージ
@@ -583,7 +579,7 @@ describe('backend test', ()=>{
                 }
             }).promise().then(data=>{
                 console.log(data);
-                assert.equal(data.Item.userInfo.signinId, toHash(amazonId));
+                assert.equal(data.Item.userInfo.signinId, 'amazon-xxxxx');
                 assert.equal(data.Item.userInfo.name, 'テスト');
                 assert.equal(data.Item.userInfo.signinService, 'amazon');
                 assert.deepEqual(data.Item.userInfo.preset,[]);
@@ -600,7 +596,7 @@ describe('backend test', ()=>{
                 }
             }).promise().then(data=>{
                 assert.equal(data.Item.userInfo.id, 'test002');
-                assert.equal(data.Item.userInfo.signinId, toHash(googleId));
+                assert.equal(data.Item.userInfo.signinId, 'google-xxxxx');
                 assert.equal(data.Item.userInfo.name, 'テスト2');
                 assert.equal(data.Item.userInfo.signinService, 'google');
                 assert.equal(JSON.stringify(data.Item.userInfo.preset), JSON.stringify(registed_data));
@@ -612,7 +608,7 @@ describe('backend test', ()=>{
         });
         after((done)=>{
             documentClient.delete({
-                TableName: TBL_TrashSchedule,
+                TableName: TBL_ThrowTrashSession,
                 Key: {
                     id: 'test002'
                 }
@@ -916,7 +912,7 @@ describe('handler',()=>{
             }).promise().then(()=>done());
         });
     });
-    describe('handler signin', ()=>{
+    describe('handler /signin', ()=>{
         let event = {};
         const session_id_001 = 'signin_session_id_001';
         const session_id_002 = 'signin_session_id_002';
@@ -926,7 +922,6 @@ describe('handler',()=>{
         const test_data_001 = [{type: 'bottole',schedules:[{type: 'month', value: '13'}]}];
         const requestAmazonProfile = new StubModule(index, 'requestAmazonProfile');
         const requestGoogleProfile = new StubModule(index, 'requestGoogleProfile');
-        const toHash = index.__get__('toHash');
         before((done)=>{
             // 外部サービス依存の部分はモックを使う
             // eslint-disable-next-line no-unused-vars
@@ -952,7 +947,7 @@ describe('handler',()=>{
                             PutRequest: {
                                 Item:{
                                     id: schedule_id_001,
-                                    signinId: toHash(signin_id_001),
+                                    signinId: signin_id_001,
                                     signinService: 'amazon',
                                     description: JSON.stringify(test_data_001)
                                 }
@@ -986,7 +981,7 @@ describe('handler',()=>{
                     data.Item.userInfo,
                     {
                         name: 'テスト',
-                        signinId: toHash(signin_id_001),
+                        signinId: signin_id_001,
                         signinService: 'amazon',
                         id: schedule_id_001,
                         preset: test_data_001
@@ -1009,7 +1004,7 @@ describe('handler',()=>{
                     data.Item.userInfo,
                     {
                         name: 'テスト2',
-                        signinId: toHash(signin_id_002),
+                        signinId: signin_id_002,
                         signinService: 'google',
                         preset: []
                     }
@@ -1135,7 +1130,7 @@ describe('handler',()=>{
             }).promise().then(()=>done());
         });
     });
-    describe('handler regist',()=>{
+    describe('handler /regist',()=>{
         let event = {};
         const session_id_001 = 'regist_session_id_001';
         const session_id_002 = 'regist_session_id_002';
