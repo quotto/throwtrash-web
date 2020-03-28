@@ -89,7 +89,7 @@ class Schedules extends React.Component {
         const ScheduleTags = [];
         for(let i=0; i<3; i++) {
             ScheduleTags.push(
-                <Grid container spacing={24} key={i.toString()}>
+                <Grid container spacing={0} key={i.toString()}>
                     <Hidden key={`Hidden${i}`} xsDown><Grid item sm={5} /></Hidden>
                     <Hidden smUp><Grid item xs={1} /></Hidden>
                     <Grid item sm={7} xs={10} key={`Grid${i}`} className={this.props.classes.TrashSchedule}>
