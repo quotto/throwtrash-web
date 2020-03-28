@@ -1,13 +1,13 @@
 #!/bin/sh
 
-if [ "${CIRCLE_BRANCH}" = "master" ]; then
+if [ "${CIRCLE_BRANCH}" = "deploy" ]; then
   # masterはマージコミットなどの場合なので一つ前と比較する
   DIFF_TARGET="HEAD^ HEAD"
 else
   DIFF_TARGET="origin/master"
 fi
 
-DIFF_FILES=(`git diff HEAD^ HEAD --name-only --relative=${1}`)
+DIFF_FILES=`git diff HEAD^ HEAD --name-only --relative=${1}`
 
 if [ ${#DIFF_FILES[@]} -eq 0 ]; then
   exit 1
