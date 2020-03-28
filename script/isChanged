@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ "${CIRCLE_BRANCH}" = "master" ]; then
   # masterはマージコミットなどの場合なので一つ前と比較する
