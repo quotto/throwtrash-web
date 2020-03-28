@@ -123,21 +123,25 @@ jobs:
             - frontend
             - backend
             - api
-      - run:
-          name: check deploy target
-          command: |
-            chmod +x ./.circleci/isChanged
-            if ./.circleci/isChanged "frontend"; then
-              echo "export DEPLOY_FRONTEND=1" >> $BASH_ENV
-            fi
-            if ./.circleci/isChanged "backend"; then
-              echo "export DEPLOY_BACKEND=1" >> $BASH_ENV
-            fi
-            if ./.circleci/isChanged "api"; then
-              echo "export DEPLOY_API=1" >> $BASH_ENV
-            fi
-          working_directory: .circleci
-
+  deploy-target-check:
+      docker:
+        - image: alpine/git:latest
+      steps:
+        - checkout
+        - run:
+            name: check deploy target
+            command: |
+              WD=`eval "echo ${CIRCLE_WORKING_DIRECTORY}"`
+              export PATH="$WD/script:$PATH"
+              if isChanged "frontend"; then
+                echo "export DEPLOY_FRONTEND=1" >> $BASH_ENV
+              fi
+              if isChanged "backend"; then
+                echo "export DEPLOY_BACKEND=1" >> $BASH_ENV
+              fi
+              if isChanged "api"; then
+                echo "export DEPLOY_API=1" >> $BASH_ENV
+              fi
   deploy:
     executor: aws-cli/default
     steps:
@@ -194,14 +198,16 @@ workflows:
       - frontend-build:
           requires:
             - frontend-test
-            - backend-test
-            - api-test
           filters:
             branches:
               ignore: master
+      - deploy-target-check
       - deploy:
           requires:
             - frontend-build
+            - backend-test
+            - api-test
+            - deploy-target-check
           filters:
             branches:
               ignore: master
