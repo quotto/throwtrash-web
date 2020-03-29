@@ -6,7 +6,9 @@ if [ "${CIRCLE_BRANCH}" = "deploy" ]; then
 else
   DIFF_TARGET="origin/master"
 fi
-DIFF_FILES=`git diff ${DIFF_TARGET} --name-only --relative=${1}`
+
+# sed の -z オプションはGNU版Linuxのオプション
+DIFF_FILES=(`git diff ${DIFF_TARGET} --name-only --relative=${1} | sed -z 's/\n/ /g'`)
 
 if [ ${#DIFF_FILES[@]} -eq 0 ]; then
   exit 1

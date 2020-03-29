@@ -117,11 +117,17 @@ jobs:
           name: build
           command: npm run build -- --env.version=${FRONTEND_VERSION} --env.apistage=${API_STAGE} --env.apihost=${API_HOST}
           working_directory: frontend
+      - persist_to_workspace:
+          root: frontend
+          paths:
+            - dist
   deploy:
     executor: aws-cli/default
     steps:
       - set-stage-env
       - checkout
+      - attach_workspace:
+          at: frontend
       - restore_cache:
           keys:
             - npm-deps-{{ .Branch }}-{{ checksum "api/src/package-lock.json"}}
