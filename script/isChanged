@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ "${CIRCLE_BRANCH}" = "deploy" ]; then
   # masterはマージコミットなどの場合なので一つ前と比較する

@@ -117,43 +117,37 @@ jobs:
           name: build
           command: npm run build -- --env.version=${FRONTEND_VERSION} --env.apistage=${API_STAGE} --env.apihost=${API_HOST}
           working_directory: frontend
-      - persist_to_workspace:
-          root:  .
-          paths:
-            - frontend
-            - backend
-            - api
-  deploy-target-check:
-      docker:
-        - image: alpine/git:latest
-      steps:
-        - checkout
-        - run:
-            name: check deploy target
-            command: |
-              WD=`eval "echo ${CIRCLE_WORKING_DIRECTORY}"`
-              chmod +x $WD/script/isChanged
-              export PATH="$WD/script:$PATH"
-              if isChanged "frontend"; then
-                echo "export DEPLOY_FRONTEND=1" >> $BASH_ENV
-              fi
-              if isChanged "backend"; then
-                echo "export DEPLOY_BACKEND=1" >> $BASH_ENV
-              fi
-              if isChanged "api"; then
-                echo "export DEPLOY_API=1" >> $BASH_ENV
-              fi
   deploy:
     executor: aws-cli/default
     steps:
       - set-stage-env
-      - attach_workspace:
-          at: .
+      - checkout
+      - restore_cache:
+          keys:
+            - npm-deps-{{ .Branch }}-{{ checksum "api/src/package-lock.json"}}
+            - npm-deps-{{ .Branch }}
+            - npm-deps-
+      - restore_cache:
+          keys:
+            - npm-deps-{{ .Branch }}-{{ checksum "backend/package-lock.json"}}
+            - npm-deps-{{ .Branch }}
+            - npm-deps-
+      - restore_cache:
+          keys:
+            - npm-deps-{{ .Branch }}-{{ checksum "frontend/package-lock.json"}}
+            - npm-deps-{{ .Branch }}
+            - npm-deps-
       - aws-cli/install
+      - run:
+          name: set-script
+          command: |
+            WD=`eval "echo ${CIRCLE_WORKING_DIRECTORY}"`
+            chmod +x $WD/script/isChanged
+            echo "export PATH=$WD/script:$PATH" >> $BASH_ENV
       - run:
           name: frontend deploy
           command: |
-            if [ $DEPLOY_FRONTEND ]; then
+            if isChanged "frontend"; then
               aws s3 sync frontend/dist s3://throwtrash
               if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
                 aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /v${FRONTEND_VERSION}/*
@@ -162,7 +156,7 @@ jobs:
       - run:
           name: backend deploy
           command: |
-            if [ $DEPLOY_BACKEND ]; then
+            if isChanged "backend"; then
               if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
                 echo ${GCP_PRODUCTION_CREDENTIALS} > backend/serviceAccountKey.json
               else
@@ -174,7 +168,7 @@ jobs:
       - run:
           name: api deploy
           command: |
-            if [ $DEPLOY_API ]; then
+            if isChanged "api"; then
               aws cloudformation package --template-file api/template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
               aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-api-stack --parameter-overrides RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
             fi
@@ -202,13 +196,11 @@ workflows:
           filters:
             branches:
               ignore: master
-      - deploy-target-check
       - deploy:
           requires:
             - frontend-build
             - backend-test
             - api-test
-            - deploy-target-check
           filters:
             branches:
               ignore: master
