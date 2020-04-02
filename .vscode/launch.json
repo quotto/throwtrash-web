@@ -55,15 +55,31 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Mocha Backend",
-            "program": "${workspaceFolder}/backend/node_modules/mocha/bin/_mocha",
+            "name": "Mocha Backend Unit",
+            "program": "${workspaceFolder}/backend/src/node_modules/mocha/bin/_mocha",
             "args": [
                 "-u",
                 "bdd",
                 "--timeout",
                 "999999",
                 "--colors",
-                "${workspaceFolder}/backend/test/linktest",
+                "${workspaceFolder}/backend/src/test/test",
+                "--timeout 5000ms --grep 'handler /signin'"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Mocha Backend Link",
+            "program": "${workspaceFolder}/backend/src/node_modules/mocha/bin/_mocha",
+            "args": [
+                "-u",
+                "bdd",
+                "--timeout",
+                "999999",
+                "--colors",
+                "${workspaceFolder}/backend/src/test/linktest",
                 "--timeout 5000ms --grep 'handler /signin'"
             ],
             "internalConsoleOptions": "openOnSessionStart",
