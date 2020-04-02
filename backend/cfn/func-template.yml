@@ -9,65 +9,27 @@ Parameters:
     Type: "String"
   GOOGLECLIENTSECRET:
     Type: "String"
-  APISTAGE:
+  STAGE:
     Type: "String"
-    Default: "test"
+    Default: "dev"
+  CERTIFICATE:
+    Type: "String"
+  DBREGION:
+    Type: "String"
 Resources:
-  LambdaExecPolicy:
-    Type: "AWS::IAM::Policy"
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          -
-            Effect: "Allow"
-            Action: "dynamodb:*"
-            Resource:
-              - !GetAtt SessionTable.Arn
-              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/TrashSchedule"
-              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/TrashSchedule/index/signinId-index"
-      PolicyName: !Sub "throwtrash-backend-policy-${AWS::Region}"
-      Roles:
-        - !Ref LambdaExecRole
-    DeletionPolicy: Retain
-  LambdaExecRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          -
-            Effect: "Allow"
-            Principal:
-              Service:
-                - "lambda.amazonaws.com"
-            Action: "sts:AssumeRole"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-      RoleName: !Sub "throwtrash-backend-lambda-role-${AWS::Region}"
-    DeletionPolicy: Retain
-  SessionTable:
-    Type: "AWS::Serverless::SimpleTable"
-    Properties:
-      PrimaryKey:
-        Name: "id"
-        Type: String
-      TableName: ThrowTrashSession
-    DeletionPolicy: Retain
   LambdaFunction:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
     Properties:
-      CodeUri: .
-      FunctionName: ThrowTrashBackend
+      CodeUri: src/
+      FunctionName: !Sub "throwtrash-backend-${STAGE}"
       Handler: index.handler
-      Role: !GetAtt LambdaExecRole.Arn
+      Role: !ImportValue  throwtrash-backend-exec-role"
       Runtime: nodejs12.x
-      AutoPublishAlias: !Ref APISTAGE
       Timeout: 30
       Environment:
         Variables:
-          DB_REGION: !Sub "${AWS::Region}"
+          DB_REGION: !Ref DBREGION
           RUNLEVEL: !Ref RUNLEVEL
           GOOGLE_CLIENT_ID: !Ref GOOGLECLIENTID
           GOOGLE_CLIENT_SECRET: !Ref GOOGLECLIENTSECRET
@@ -130,12 +92,16 @@ Resources:
     Type: "AWS::Serverless::Api"
     DeletionPolicy: Retain
     Properties:
-      Name: "ThrowTrashBackendApi"
-      StageName: !Ref APISTAGE
-      Variables: 
-        Alias: "development"
+      Name: !Sub "throwtrash-backend-${STAGE}"
+      StageName: !Ref STAGE
       Cors:
         AllowMethods: "'GET,POST'"
         AllowOrigin: "'https://accountlink.mythrowaway.net'"
         AllowHeaders: "'Content-Type'"
         AllowCredentials: true
+      Domain:
+        BasePath:
+          - !Ref STAGE
+        CertificateArn: !Ref CERTIFICATE
+        EndpointConfiguration: EDGE
+        DomainName: backend.mythrowaway.net

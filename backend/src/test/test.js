@@ -265,7 +265,6 @@ describe('user_info', ()=>{
 
 describe('regist', () => {
     const regist = index.__get__('regist');
-    const stub = sinon.stub(require('../common_check.js'), 'exist_error');
     const registData = new StubModule(index, 'registData');
     const deleteSession = new StubModule(index, 'deleteSession');
     const publishId = new StubModule(index, 'publishId');
@@ -276,7 +275,6 @@ describe('regist', () => {
         // eslint-disable-next-line no-unused-vars
         deleteSession.set(async (sessionId) => { return true });
         publishId.set(async () => { return 'new-id' });
-        stub.returns(false);
         // パラメータはリクエストパラメータ（登録データ）とセッション情報
         // セッションIDは呼び出し前に採番されるため、セッション情報は必ず存在する
         const response = await regist({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
@@ -287,7 +285,6 @@ describe('regist', () => {
         assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
     });
     it('登録データに誤りがある', async () => {
-        stub.returns(true);
         // パラメータはリクエストパラメータ（登録データ）とセッション情報
         const response = await regist({ data: [] },
             { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' }
@@ -301,10 +298,9 @@ describe('regist', () => {
         const response = await regist({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
             { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' });
         assert.equal(response.statusCode, 500);
-        assert.equal(response.body, 'Registration Failed');
+        assert.equal(response.body, 'Failed to publish id');
     });
     afterEach(() => {
-        stub.restore();
         registData.restore();
         deleteSession.restore();
         publishId.restore();

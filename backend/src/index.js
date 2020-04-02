@@ -2,7 +2,8 @@ const AWS = require('aws-sdk');
 const firebase_admin = require('firebase-admin');
 const rp = require('request-promise');
 const jwt = require('jsonwebtoken');
-const common_check = require('./common_check');
+const common = require('trash-common');
+const property = require('./property.js');
 
 const MAX_AGE=3600;
 const SESSIONID_NAME='throwaway-session';
@@ -74,7 +75,7 @@ const getSession = async(sessionId) => {
         Key: {
             id: sessionId
         },
-        TableName: 'ThrowTrashSession'
+        TableName: property.SESSION_TABLE
     }
     return documentClient.get(params).promise().then(async(data)=>{
         if(data.Item) {
@@ -85,7 +86,7 @@ const getSession = async(sessionId) => {
             } else {
                 console.warn(`session ${sessionId} is expired`);
                 await documentClient.delete({
-                    TableName: 'ThrowTrashSession',
+                    TableName: property.SESSION_TABLE,
                     Key:{id: sessionId}
                 }).promise();
             }
@@ -132,7 +133,7 @@ const publishSession = async()=>{
     }
     console.info('publish new session:',new_session);
     return documentClient.put({
-        TableName: 'ThrowTrashSession',
+        TableName: property.SESSION_TABLE,
         Item: new_session,
         ConditionExpression: 'attribute_not_exists(id)'
     }).promise().then(()=>{
@@ -161,7 +162,7 @@ const UserError = {
 const getDataBySigninId = async(signinId)=>{
     console.debug('get data by signinId:'+signinId);
     return documentClient.query({
-        TableName: 'TrashSchedule',
+        TableName: property.SCHEDULE_TABLE,
         IndexName: 'signinId-index',
         ExpressionAttributeNames: { '#i': 'signinId' } ,
         ExpressionAttributeValues: { ':val': signinId },
@@ -228,7 +229,7 @@ const requestGoogleProfile = (code,domain,stage)=>{
 const saveSession = async(session)=>{
     console.debug('save session',session);
     return documentClient.put({
-        TableName: 'ThrowTrashSession',
+        TableName: property.SESSION_TABLE,
         Item: session
     }).promise().then(()=>{
         return true;
@@ -240,7 +241,7 @@ const saveSession = async(session)=>{
 
 const deleteSession = async(sessionId)=>{
     return documentClient.delete({
-        TableName: 'ThrowTrashSession',
+        TableName: property.SESSION_TABLE,
         Key:{
             id: sessionId
         }
@@ -260,7 +261,7 @@ const publishId = async()=>{
         user_id = generateId('-');
         try {
             const result = await documentClient.get({
-                TableName: 'TrashSchedule',
+                TableName: property.SCHEDULE_TABLE,
                 Key: {
                     id: user_id
                 }
@@ -282,7 +283,7 @@ const publishId = async()=>{
 
 const registData = async(item, regist_data) =>{
     const params = {
-        TableName: 'TrashSchedule',
+        TableName: property.SCHEDULE_TABLE,
         Item: item
     };
     console.debug('regist parameter:', params);
@@ -312,7 +313,7 @@ const registData = async(item, regist_data) =>{
 const regist = async(body,session)=>{
     console.info(`Regist request from ${session.id}`);
     console.debug('Regist Data:',JSON.stringify(body));
-    if(!body || !body.data || common_check.exist_error(body.data)) {
+    if(!body || !common.checkTrashes(body.data)) {
         console.error(`platform: ${session.platform}`);
         return {
             statusCode: 400,
@@ -572,6 +573,10 @@ exports.handler = async function(event,context) {
            statusCode: 400,
            body: 'Invalid Session'
        };
+   } else if(event.resource === '/request_accesstoken') {
+        console.log("request_accesstoken")
+   } else if(event.resource === 'complete_accountlink') {
+        console.log("complete accountlink");
    }
    return UserError;
 };

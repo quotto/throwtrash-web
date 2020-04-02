@@ -8,16 +8,14 @@ commands:
       - run:
           command: |
             if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
-              echo "export AWS_DEFAULT_REGION=${AWS_PRODUCTION_REGION}" >> $BASH_ENV
               echo "export API_HOST=backend.mythrowaway.net" >> $BASH_ENV
               echo "export RUNLEVEL=INFO" >> $BASH_ENV
+              echo "export DBREGION=ap-northeast-1" >> $BASH_ENV
             else
-              echo "export AWS_DEFAULT_REGION=${AWS_DEVELOPMENT_REGION}" >> $BASH_ENV
               echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
-              echo "export API_STAGE=test" >> $BASH_ENV
-              echo "export API_HOST=test-backend.mythrowaway.net" >> $BASH_ENV
+              echo "export STAGE=dev" >> $BASH_ENV
               echo "export FRONTEND_VERSION=0" >> $BASH_ENV
-              echo "export BACKEND_ALIAS=test" >> $BASH_ENV
+              echo "export DBREGION=us-west-2" >> $BASH_ENV
             fi
 
 jobs:
@@ -52,7 +50,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - npm-deps-{{ .Branch }}-{{ checksum "backend/package-lock.json"}}
+            - npm-deps-{{ .Branch }}-{{ checksum "backend/src/package-lock.json"}}
             - npm-deps-{{ .Branch }}
             - npm-deps-
       - run:
@@ -60,23 +58,23 @@ jobs:
           command: npm install
           working_directory: backend
       - save_cache:
-          key: npm-deps-{{ .Branch }}-{{ checksum "backend/package-lock.json"}}
+          key: npm-deps-{{ .Branch }}-{{ checksum "backend/src/package-lock.json"}}
           paths:
-            - backend/node_modules
+            - backend/src/node_modules
       - run:
           name: set GCP Credentials
           command: |
             echo ${GCP_TEST_CREDENTIALS} > ./serviceAccountKey.json
             echo "export GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json" >> $BASH_ENV
-          working_directory: backend
+          working_directory: backend/src
       - run:
           name: backend unit test
           command: npm run test
-          working_directory: backend
+          working_directory: backend/src
       - run:
           name: backend link test
           command: npm run linktest
-          working_directory: backend
+          working_directory: backend/src
   api-test:
     docker:
       - image: circleci/node:12.0.0
@@ -164,12 +162,13 @@ jobs:
           command: |
             if isChanged "backend"; then
               if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
-                echo ${GCP_PRODUCTION_CREDENTIALS} > backend/serviceAccountKey.json
+                echo ${GCP_PRODUCTION_CREDENTIALS} > backend/src/serviceAccountKey.json
               else
-                echo ${GCP_TEST_CREDENTIALS} > backend/serviceAccountKey.json
+                echo ${GCP_TEST_CREDENTIALS} > backend/src/serviceAccountKey.json
               fi
-              aws cloudformation package --template-file backend/template.yml --output-template-file backend/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
-              aws cloudformation deploy --template-file backend/package-template.yml --stack-name throwtrash-backend-stack --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
+              aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --region ${DBREGION}
+              aws cloudformation package --template-file backend/cfn/template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
+              aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${STAGE} --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} STAGE=${STAGE} DBREGION=${DBREGION} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
             fi
       - run:
           name: api deploy

@@ -16,7 +16,8 @@
     "eslint": "^6.7.2",
     "mocha": "^6.2.2",
     "rewire": "^4.0.1",
-    "sinon": "^7.5.0"
+    "sinon": "^7.5.0",
+    "trash-common": "git+https://github.com/quotto/throwtrash-common-module.git"
   },
   "dependencies": {
     "aws-sdk": "^2.585.0",
