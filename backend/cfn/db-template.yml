@@ -36,15 +36,21 @@ Resources:
       RoleName: !Sub "throwtrash-backend-lambda-exec-role-${AWS::Region}"
     DeletionPolicy: Retain
   SessionTable:
-    Type: "AWS::Serverless::SimpleTable"
+    Type: "AWS::DynamoDB::Table"
     Properties:
-      PrimaryKey:
-        Name: "id"
-        Type: String
+      AttributeDefinitions:
+        -
+          AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "id"
+          KeyType: HASH
       TableName: throwtrash-backend-session
       TimeToLiveSpecification:
         AttributeName: EXPIRED
         Enabled: true
+      BillingMode: PAY_PER_REQUEST
     DeletionPolicy: Retain
 Outputs:
   ExecRole:
