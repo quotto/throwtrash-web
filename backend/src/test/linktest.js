@@ -7,15 +7,11 @@ const index = rewire('../index.js');
 const assert = require('assert');
 const AWS = require('aws-sdk');
 const firebase_admin = require('firebase-admin');
+const property = require('../property.js');
 
 const documentClient = new AWS.DynamoDB.DocumentClient({region: 'us-west-2'});
-// firebase_admin.initializeApp({
-//     credential: firebase_admin.credential.applicationDefault()
-// });
 const firestore = firebase_admin.firestore();
 
-const TBL_ThrowTrashSession = 'ThrowTrashSession';
-const TBL_TrashSchedule = 'TrashSchedule';
 
 const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
 const URL_ACCOUNT_LINK = 'https://accountlink.mythrowaway.net';
@@ -50,7 +46,7 @@ describe('getDataBySigninId',()=>{
     before((done)=>{
         process.env.DB_REGION='us-west-2';
         documentClient.put({
-            TableName: TBL_TrashSchedule,
+            TableName: property.SCHEDULE_TABLE,
             Item: testdata
         }).promise().then(()=>done());
     })
@@ -64,7 +60,7 @@ describe('getDataBySigninId',()=>{
     });
     after((done)=>{
         documentClient.delete({
-            TableName: TBL_TrashSchedule,
+            TableName: property.SCHEDULE_TABLE,
             Key: {
                 id: 'test-001'
             }
@@ -79,7 +75,7 @@ describe('saveSession',()=>{
     before((done)=>{
         process.env.DB_REGION = 'us-west-2';
         documentClient.put({
-            TableName: TBL_ThrowTrashSession,
+            TableName: property.SESSION_TABLE,
             Item: {
                 id: 'session002',
                 expire: 3600,
@@ -98,7 +94,7 @@ describe('saveSession',()=>{
         assert.ok(result);
 
         documentClient.get({
-            TableName: TBL_ThrowTrashSession,
+            TableName: property.SESSION_TABLE,
             Key: {
                 id: 'session001'
             }
@@ -111,7 +107,7 @@ describe('saveSession',()=>{
         const result = await saveSession(session_data);
         assert.ok(result);
         await documentClient.get({
-            TableName: TBL_ThrowTrashSession,
+            TableName: property.SESSION_TABLE,
             Key: {
                 id: 'session002'
             }
@@ -122,7 +118,7 @@ describe('saveSession',()=>{
     });
     after((done)=>{
         documentClient.delete({
-            TableName: TBL_ThrowTrashSession,
+            TableName: property.SESSION_TABLE,
             Key: {
                 id: 'session002'
             }
@@ -136,7 +132,7 @@ describe('deleteSession',()=>{
     before((done)=>{
         process.env.DB_REGION = 'us-west-2';
         documentClient.put({
-            TableName: TBL_ThrowTrashSession,
+            TableName: property.SESSION_TABLE,
             Item:{
                 id: 'test002',
                 expire: 3600
@@ -156,7 +152,7 @@ describe('deleteSession',()=>{
         assert.ok(result);
 
         await documentClient.get({
-            TableName: TBL_ThrowTrashSession,
+            TableName: property.SESSION_TABLE,
             Key:{
                 id: 'test002'
             }
@@ -165,7 +161,7 @@ describe('deleteSession',()=>{
     });
     after((done)=>{
         documentClient.delete({
-            TableName: TBL_ThrowTrashSession,
+            TableName: property.SESSION_TABLE,
             Key:{
                 id: 'test002'
             }
@@ -179,7 +175,7 @@ describe('publishId',()=>{
     before((done)=>{
         process.env.DB_REGION = 'us-west-2';
         documentClient.put({
-            TableName: TBL_TrashSchedule,
+            TableName: property.SCHEDULE_TABLE,
             Item: {
                 id: duplicate_id
             }
@@ -202,7 +198,7 @@ describe('publishId',()=>{
     });
     after((done)=>{
         documentClient.delete({
-            TableName: TBL_TrashSchedule,
+            TableName: property.SCHEDULE_TABLE,
             Key: {
                 id: duplicate_id
             }
@@ -219,7 +215,7 @@ describe('getSession', ()=>{
         process.env.DB_REGION = 'us-west-2';
         documentClient.batchWrite({
             RequestItems:{
-                ThrowTrashSession: [
+                "throwtrash-backend-session": [
                     {
                         PutRequest:{
                             Item:{id: session_id_001,expire: DEFAULT_EXPIRE}
@@ -245,7 +241,7 @@ describe('getSession', ()=>{
         assert.equal(session, null);
         // 有効期限切れのセッションは削除されていること
         documentClient.get({
-            TableName: TBL_ThrowTrashSession,
+            TableName: property.SESSION_TABLE,
             Key:{id: session_id_002}
         }).promise().then((data)=>{assert.equal(data.Item, undefined)});
     });
@@ -257,7 +253,7 @@ describe('getSession', ()=>{
     after((done)=>{
         documentClient.batchWrite({
             RequestItems:{
-                ThrowTrashSession: [
+                "throwtrash-backend-session": [
                     {
                         DeleteRequest:{
                             Key:{id: session_id_001}
@@ -278,12 +274,12 @@ describe('publishSession',()=>{
         const session = await publishSession();
         assert.equal(session.id.length,32);
         await documentClient.get({
-            TableName: TBL_ThrowTrashSession,
+            TableName: property.SESSION_TABLE,
             Key:{id: session.id}
         }).promise().then(async(data)=>{
             assert.equal(data.Item.id, session.id)
             await documentClient.delete({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key:{id: session.id}
             }).promise();
         });
@@ -303,7 +299,7 @@ describe('backend test', ()=>{
         before((done)=>{
             documentClient.batchWrite({
                 RequestItems: {
-                    ThrowTrashSession: [
+                    "throwtrash-backend-session": [
                         {
                             PutRequest: {
                                 Item:{id: session_id_001}
@@ -352,13 +348,13 @@ describe('backend test', ()=>{
                 assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
                 assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
                 await documentClient.get({
-                    TableName: TBL_TrashSchedule,
+                    TableName: property.SCHEDULE_TABLE,
                     Key:{id: schedule_id_001}
                 }).promise().then(async(data)=>{
                     assert.deepEqual(JSON.parse(data.Item.description),test_regist_data);
                     assert.equal(data.Item.platform, 'amazon');
                     await documentClient.get({
-                        TableName: TBL_ThrowTrashSession,
+                        TableName: property.SESSION_TABLE,
                         Key:{id: session_id_001}
                     }).promise().then(data=>{
                         // 正常に登録した場合はセッションが削除されていること
@@ -389,7 +385,7 @@ describe('backend test', ()=>{
                 assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
                 assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
                 await documentClient.get({
-                    TableName: TBL_TrashSchedule,
+                    TableName: property.SCHEDULE_TABLE,
                     Key:{id: schedule_id_002}
                 }).promise().then(async(data)=>{
                     assert.deepEqual(JSON.parse(data.Item.description),test_regist_data);
@@ -397,7 +393,7 @@ describe('backend test', ()=>{
                     assert.equal(data.Item.signinService, 'amazon');
                     assert.equal(data.Item.platform, 'amazon');
                     await documentClient.get({
-                        TableName: TBL_ThrowTrashSession,
+                        TableName: property.SESSION_TABLE,
                         Key:{id: session_id_002}
                     }).promise().then(data=>{
                         // 正常に登録した場合はセッションが削除されていること
@@ -425,7 +421,7 @@ describe('backend test', ()=>{
             assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
             assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
             await documentClient.get({
-                TableName: TBL_TrashSchedule,
+                TableName: property.SCHEDULE_TABLE,
                     Key:{id: schedule_id_003}
             }).promise().then(async (data) => {
                 assert.deepEqual(JSON.parse(data.Item.description), test_regist_data);
@@ -433,7 +429,7 @@ describe('backend test', ()=>{
                 assert.equal(data.Item.signinService, 'google');
                 assert.equal(data.Item.platform, 'google');
                 await documentClient.get({
-                    TableName: TBL_ThrowTrashSession,
+                    TableName: property.SESSION_TABLE,
                     Key: { id: session_id_003 }
                 }).promise().then(async(data) => {
                     // 正常に登録した場合はセッションが削除されていること
@@ -489,7 +485,7 @@ describe('backend test', ()=>{
         before((done)=>{
             process.env.DB_REGION = 'us-west-2';
             documentClient.put({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Item: {
                     id: 'sessionId',
                     userInfo: {
@@ -510,7 +506,7 @@ describe('backend test', ()=>{
             assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
 
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key:{id: 'sessionId'}
             }).promise().then(data=>{
                 assert.equal(data.Item.userInfo, undefined);
@@ -527,7 +523,7 @@ describe('backend test', ()=>{
         });
         after((done)=>{
             documentClient.delete({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key:{id: 'sessionId'}
             }).promise().then(()=>done());
         });
@@ -550,7 +546,7 @@ describe('backend test', ()=>{
         before((done)=>{
             process.env.DB_REGION = 'us-west-2';
             documentClient.put({
-                TableName: TBL_TrashSchedule,
+                TableName: property.SCHEDULE_TABLE,
                 Item: {
                     id: 'test002',
                     description: JSON.stringify(registed_data),
@@ -573,7 +569,7 @@ describe('backend test', ()=>{
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key:{
                     id: 'test001'
                 }
@@ -590,7 +586,7 @@ describe('backend test', ()=>{
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key: {
                     id: 'test002'
                 }
@@ -608,7 +604,7 @@ describe('backend test', ()=>{
         });
         after((done)=>{
             documentClient.delete({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key: {
                     id: 'test002'
                 }
@@ -624,7 +620,7 @@ describe('backend test', ()=>{
             // eslint-disable-next-line no-unused-vars
             generateState.set((length)=>{return test_state});
             documentClient.put({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Item: {
                     id: 'test001',
                     expire: 1234567789
@@ -641,7 +637,7 @@ describe('backend test', ()=>{
             assert.equal(response.headers.Location, `https://accounts.google.com/o/oauth2/v2/auth?client_id=clientId&response_type=code&scope=openid profile&redirect_uri=https://backend.mythrowaway.net/v7/signin?service=google&state=${test_state}&login_hint=mythrowaway.net@gmail.com&nonce=${test_state}`);
             assert.equal(response.headers['Cache-Control'], 'no-store');
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key: {
                     id: 'test001'
                 }
@@ -652,7 +648,7 @@ describe('backend test', ()=>{
         after((done)=>{
             generateState.restore();
             documentClient.delete({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key: {
                     id: 'test001'
                 }
@@ -680,7 +676,7 @@ describe('backend test', ()=>{
             assert.equal(headers['Set-Cookie'],'throwaway-session=test001;max-age=3600;');
 
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key:{
                     id: 'test001'
                 }
@@ -707,7 +703,7 @@ describe('backend test', ()=>{
             assert.equal(headers['Set-Cookie'],undefined);
 
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key:{
                     id: 'test002'
                 }
@@ -724,7 +720,7 @@ describe('backend test', ()=>{
         after((done)=>{
             documentClient.batchWrite({
                 RequestItems:{
-                    ThrowTrashSession: [
+                    "throwtrash-backend-session": [
                         {
                             DeleteRequest:{Key:{id: 'test001'}}
                         },
@@ -745,7 +741,7 @@ describe('handler',()=>{
     before((done)=>{
         documentClient.batchWrite({
             RequestItems: {
-                ThrowTrashSession: [
+                "throwtrash-backend-session": [
                     {
                         PutRequest: {
                             Item: {
@@ -786,12 +782,12 @@ describe('handler',()=>{
             assert.equal(response.headers['Set-Cookie'].indexOf('throwaway-session='), 0);
             const sessionId = extractSessionId(response.headers['Set-Cookie']);
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key: {id: sessionId}
             }).promise().then(async(data)=>{
                 assert.equal(data.Item.id, sessionId);
                 await documentClient.delete({
-                    TableName: TBL_ThrowTrashSession,
+                    TableName: property.SESSION_TABLE,
                     Key: {id: sessionId}
                 }).promise();
             });
@@ -814,7 +810,7 @@ describe('handler',()=>{
             assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
             assert.equal(response.headers['Set-Cookie'], undefined);
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key: {id: session_id_001}
             }).promise().then(async(data)=>{
                 assert.equal(data.Item.id, session_id_001);
@@ -839,7 +835,7 @@ describe('handler',()=>{
             assert.ok(response.headers['Set-Cookie']);
             // 有効期限切れのセッションIDは削除されていること
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key: {id: session_id_002}
             }).promise().then(async(data)=>{
                 assert.equal(data.Item, undefined);
@@ -859,7 +855,7 @@ describe('handler',()=>{
     after((done)=>{
         documentClient.batchWrite({
             RequestItems: {
-                ThrowTrashSession: [
+                "throwtrash-backend-session": [
                     {
                         DeleteRequest: {
                             Key: {id: session_id_001}
@@ -877,7 +873,7 @@ describe('handler',()=>{
             process.env.GOOGLE_CLIENT_ID = 'test-google-client-id';
             generateState.set(()=>{return 'test-generated-state'});
             documentClient.put({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Item:{id: session_id_001, expire: DEFAULT_EXPIRE}
             }).promise().then(()=>done());
         });
@@ -892,7 +888,7 @@ describe('handler',()=>{
             assert.equal(response.statusCode, 301);
             assert.equal(response.headers.Location,`https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&response_type=code&scope=openid profile&redirect_uri=https://backend.mythrowaway.net/v1/signin?service=google&state=test-generated-state&login_hint=mythrowaway.net@gmail.com&nonce=test-generated-state`);
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key:{id: session_id_001}
             }).promise().then(data=>{
                 assert.equal(data.Item.googleState, 'test-generated-state');
@@ -907,7 +903,7 @@ describe('handler',()=>{
         after((done)=>{
             generateState.restore();
             documentClient.delete({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key:{id: session_id_001}
             }).promise().then(()=>done());
         });
@@ -930,7 +926,7 @@ describe('handler',()=>{
             requestGoogleProfile.set(async(code,domain,stage)=>{return {id: signin_id_002,name: 'テスト2'}});
             documentClient.batchWrite({
                 RequestItems: {
-                    ThrowTrashSession: [
+                    "throwtrash-backend-session": [
                         {
                             PutRequest:{
                                 Item:{id: session_id_001, expire: DEFAULT_EXPIRE, version: 7}
@@ -974,7 +970,7 @@ describe('handler',()=>{
             assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`);
             assert.equal(response.headers['Cache-Control'], 'no-store');
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key: {id: session_id_001}
             }).promise().then(data=>{
                 assert.deepEqual(
@@ -997,7 +993,7 @@ describe('handler',()=>{
             assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`);
             assert.equal(response.headers['Cache-Control'], 'no-store');
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key: {id: session_id_002}
             }).promise().then(data=>{
                 assert.deepEqual(
@@ -1022,7 +1018,7 @@ describe('handler',()=>{
             requestGoogleProfile.restore();
             documentClient.batchWrite({
                 RequestItems: {
-                    ThrowTrashSession: [
+                    "throwtrash-backend-session": [
                         {
                             DeleteRequest:{
                                 Key:{id: session_id_001}
@@ -1052,7 +1048,7 @@ describe('handler',()=>{
         before((done)=>{
             documentClient.batchWrite({
                 RequestItems: {
-                    ThrowTrashSession: [
+                    "throwtrash-backend-session": [
                         {
                             PutRequest: {
                                 Item: {
@@ -1091,7 +1087,7 @@ describe('handler',()=>{
             assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
             assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
             await documentClient.get({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key: {id: session_id_001}
             }).promise().then(data=>{
                 assert.equal(data.Item.id, session_id_001);
@@ -1114,7 +1110,7 @@ describe('handler',()=>{
         after((done)=>{
             documentClient.batchWrite({
                 RequestItems: {
-                    ThrowTrashSession: [
+                    "throwtrash-backend-session": [
                         {
                             DeleteRequest: {
                                     Key:{id: session_id_001}
@@ -1150,7 +1146,7 @@ describe('handler',()=>{
         before((done)=>{
             documentClient.batchWrite({
                 RequestItems: {
-                    ThrowTrashSession:[
+                    "throwtrash-backend-session":[
                         {
                             PutRequest: {
                                 Item: {
@@ -1261,13 +1257,13 @@ describe('handler',()=>{
                 assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
                 assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
                 await documentClient.get({
-                    TableName: TBL_TrashSchedule,
+                    TableName: property.SCHEDULE_TABLE,
                     Key: {id: schedule_id_001}
                 }).promise().then(async(data)=>{
                     // データは最適化（adjustData）されて登録される
                     assert.deepEqual(JSON.parse(data.Item.description), [{type: 'bottole',schedules:[{type: 'month', value: '13'}]}]);
                     await documentClient.get({
-                        TableName: TBL_ThrowTrashSession,
+                        TableName: property.SESSION_TABLE,
                         Key: {id: schedule_id_001}
                     }).promise().then(data=>{
                         assert.equal(data.Item, undefined);
@@ -1289,12 +1285,12 @@ describe('handler',()=>{
                 assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
                 assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
                 await documentClient.get({
-                    TableName: TBL_TrashSchedule,
+                    TableName: property.SCHEDULE_TABLE,
                     Key: {id: schedule_id_002}
                 }).promise().then(async(data)=>{
                     assert.deepEqual(JSON.parse(data.Item.description), test_data_002);
                     await documentClient.get({
-                        TableName: TBL_ThrowTrashSession,
+                        TableName: property.SESSION_TABLE,
                         Key: {id: schedule_id_002}
                     }).promise().then(data=>{
                         assert.equal(data.Item, undefined);
@@ -1314,12 +1310,12 @@ describe('handler',()=>{
                 assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
                 assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
                 await documentClient.get({
-                    TableName: TBL_TrashSchedule,
+                    TableName: property.SCHEDULE_TABLE,
                     Key: {id: schedule_id_003}
                 }).promise().then(async(data)=>{
                     assert.deepEqual(JSON.parse(data.Item.description), test_data_003);
                     await documentClient.get({
-                        TableName: TBL_ThrowTrashSession,
+                        TableName: property.SESSION_TABLE,
                         Key: {id: schedule_id_003}
                     }).promise().then(async(data)=>{
                         assert.equal(data.Item, undefined);
@@ -1365,7 +1361,7 @@ describe('handler',()=>{
             remove_list.push(
                 documentClient.batchWrite({
                     RequestItems: {
-                        ThrowTrashSession: [
+                        "throwtrash-backend-session": [
                             {
                                 DeleteRequest: {
                                     Key: { id: session_id_004 }
@@ -1403,7 +1399,7 @@ describe('handler',()=>{
         let event = {};
         before((done)=>{
             documentClient.put({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Item: {
                     id: session_id_001,
                     expire: DEFAULT_EXPIRE,
@@ -1445,7 +1441,7 @@ describe('handler',()=>{
         });
         after((done)=>{
             documentClient.delete({
-                TableName: TBL_ThrowTrashSession,
+                TableName: property.SESSION_TABLE,
                 Key:{id: session_id_001}
             }).promise().then(()=>done());
         });

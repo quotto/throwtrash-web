@@ -298,7 +298,7 @@ describe('regist', () => {
         const response = await regist({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
             { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' });
         assert.equal(response.statusCode, 500);
-        assert.equal(response.body, 'Failed to publish id');
+        assert.equal(response.body, 'Registration Failed');
     });
     afterEach(() => {
         registData.restore();

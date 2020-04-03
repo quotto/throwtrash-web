@@ -12,8 +12,6 @@ Parameters:
   STAGE:
     Type: "String"
     Default: "dev"
-  CERTIFICATE:
-    Type: "String"
   DBREGION:
     Type: "String"
 Resources:
@@ -21,10 +19,10 @@ Resources:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
     Properties:
-      CodeUri: src/
+      CodeUri: ../src/
       FunctionName: !Sub "throwtrash-backend-${STAGE}"
       Handler: index.handler
-      Role: !ImportValue  throwtrash-backend-exec-role"
+      Role: !ImportValue  throwtrash-backend-exec-role
       Runtime: nodejs12.x
       Timeout: 30
       Environment:
@@ -99,9 +97,7 @@ Resources:
         AllowOrigin: "'https://accountlink.mythrowaway.net'"
         AllowHeaders: "'Content-Type'"
         AllowCredentials: true
-      Domain:
-        BasePath:
-          - !Ref STAGE
-        CertificateArn: !Ref CERTIFICATE
-        EndpointConfiguration: EDGE
-        DomainName: backend.mythrowaway.net
+  LambdaVersion:
+    Type: "AWS::Lambda::Version"
+    Properties:
+      FunctionName: !GetAtt LambdaFunction.Arn

@@ -8,7 +8,6 @@ commands:
       - run:
           command: |
             if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
-              echo "export API_HOST=backend.mythrowaway.net" >> $BASH_ENV
               echo "export RUNLEVEL=INFO" >> $BASH_ENV
               echo "export DBREGION=ap-northeast-1" >> $BASH_ENV
             else
@@ -113,7 +112,7 @@ jobs:
           working_directory: frontend
       - run:
           name: build
-          command: npm run build -- --env.version=${FRONTEND_VERSION} --env.apistage=${API_STAGE} --env.apihost=${API_HOST}
+          command: npm run build -- --env.version=${FRONTEND_VERSION} --env.apistage=${STAGE}
           working_directory: frontend
       - persist_to_workspace:
           root: frontend
@@ -166,16 +165,16 @@ jobs:
               else
                 echo ${GCP_TEST_CREDENTIALS} > backend/src/serviceAccountKey.json
               fi
-              aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --region ${DBREGION}
-              aws cloudformation package --template-file backend/cfn/template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
-              aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${STAGE} --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} STAGE=${STAGE} DBREGION=${DBREGION} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
+              aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --parameters-overrides DBREGION=${DBREGION} --no-fail-on-empty-changeset
+              aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
+              aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${STAGE} --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} STAGE=${STAGE} DBREGION=${DBREGION} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
             fi
       - run:
           name: api deploy
           command: |
             if isChanged "api"; then
               aws cloudformation package --template-file api/template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
-              aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-api-stack --parameter-overrides RUNLEVEL=${RUNLEVEL} APISTAGE=${API_STAGE} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
+              aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-api-stack --parameter-overrides RUNLEVEL=${RUNLEVEL} APISTAGE=${STAGE} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM
             fi
 workflows:
   version: 2
