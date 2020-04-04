@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const common = require('trash-common');
 const property = require('./property.js');
 
-const MAX_AGE=3600;
+const MAX_AGE=3600; // 60分 * 60秒
 const SESSIONID_NAME='throwaway-session';
 const documentClient = new AWS.DynamoDB.DocumentClient({region: process.env.DB_REGION});
 firebase_admin.initializeApp({
@@ -78,20 +78,7 @@ const getSession = async(sessionId) => {
         TableName: property.SESSION_TABLE
     }
     return documentClient.get(params).promise().then(async(data)=>{
-        if(data.Item) {
-            const expire = data.Item.expire;
-            const now = new Date().getTime();
-            if(expire >= now) {
-                return data.Item;
-            } else {
-                console.warn(`session ${sessionId} is expired`);
-                await documentClient.delete({
-                    TableName: property.SESSION_TABLE,
-                    Key:{id: sessionId}
-                }).promise();
-            }
-        }
-        return null;
+        return data.Item;
     }).catch(error=>{
         console.error('Failed getSession.');
         console.error(error);
@@ -129,7 +116,7 @@ const generateId = (separator='')=>{
 const publishSession = async()=>{
     const new_session =  {
             id: generateId(),
-            expire: (new Date()).getTime()+(MAX_AGE*1000)
+            expire: Math.ceil((new Date()).getTime()/1000)+MAX_AGE
     }
     console.info('publish new session:',new_session);
     return documentClient.put({

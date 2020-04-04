@@ -235,20 +235,10 @@ describe('getSession', ()=>{
         const session = await getSession(session_id_001);
         assert.deepEqual(session, {id: session_id_001,expire: DEFAULT_EXPIRE});
     });
-    it('有効期限切れ',async()=>{
-        //有効期限切れであればnull
-        const session = await getSession(session_id_002);
-        assert.equal(session, null);
-        // 有効期限切れのセッションは削除されていること
-        documentClient.get({
-            TableName: property.SESSION_TABLE,
-            Key:{id: session_id_002}
-        }).promise().then((data)=>{assert.equal(data.Item, undefined)});
-    });
     it('sessionIdナシ',async()=>{
         //セッションIDが無ければnull
         const session = await getSession(session_id_003);
-        assert.equal(session, null);
+        assert.equal(session, undefined);
     });
     after((done)=>{
         documentClient.batchWrite({
@@ -814,31 +804,6 @@ describe('handler',()=>{
                 Key: {id: session_id_001}
             }).promise().then(async(data)=>{
                 assert.equal(data.Item.id, session_id_001);
-            });
-        });
-        it('セッションの有効期限切れ',async()=>{
-            const response = await handler({
-                    resource: '/oauth_request',
-                    queryStringParameters: {
-                        state: '12345',
-                        client_id: 'alexa-skill',
-                        redirect_uri: 'https://xxxxx.com',
-                        version: 7,
-                        platform: 'amazon'
-                    },
-                    headers: {
-                        Cookie: `throwaway-session=${session_id_002}; max-age=3600;`
-                    }
-                });
-            assert.equal(response.statusCode, 301);
-            assert.equal(response.headers.Location, `${URL_ACCOUNT_LINK}/v7/index.html`)
-            assert.ok(response.headers['Set-Cookie']);
-            // 有効期限切れのセッションIDは削除されていること
-            await documentClient.get({
-                TableName: property.SESSION_TABLE,
-                Key: {id: session_id_002}
-            }).promise().then(async(data)=>{
-                assert.equal(data.Item, undefined);
             });
         });
         it('パラメータなし',async()=>{
