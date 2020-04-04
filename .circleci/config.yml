@@ -132,7 +132,7 @@ jobs:
             - npm-deps-
       - restore_cache:
           keys:
-            - npm-deps-{{ .Branch }}-{{ checksum "backend/package-lock.json"}}
+            - npm-deps-{{ .Branch }}-{{ checksum "backend/src/package-lock.json"}}
             - npm-deps-{{ .Branch }}
             - npm-deps-
       - restore_cache:
