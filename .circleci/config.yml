@@ -165,7 +165,7 @@ jobs:
               else
                 echo ${GCP_TEST_CREDENTIALS} > backend/src/serviceAccountKey.json
               fi
-              aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --parameter-overrides DBREGION=${DBREGION} --no-fail-on-empty-changeset
+              aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
               aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
               aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${STAGE} --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} STAGE=${STAGE} DBREGION=${DBREGION} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
             fi
@@ -173,9 +173,9 @@ jobs:
           name: api deploy
           command: |
             if isChanged "api"; then
-              aws cloudformation deploy --template-file api/db-template.yml --stack-name throwtrash-backend-db --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --parameter-overrides DBREGION=${DBREGION} --no-fail-on-empty-changeset
+              aws cloudformation deploy --template-file api/db-template.yml --stack-name throwtrash-mobile-db --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
               aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
-              aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-api-stack --parameter-overrides RUNLEVEL=${RUNLEVEL} STAGE=${STAGE} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+              aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${STAGE} --parameter-overrides RUNLEVEL=${RUNLEVEL} STAGE=${STAGE} DBREGION=${DBREGION} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
             fi
 workflows:
   version: 2

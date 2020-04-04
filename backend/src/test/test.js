@@ -93,23 +93,6 @@ describe('getSession', ()=>{
             sandbox.restore();
         }
     });
-    it('有効期限切れ',async()=>{
-        sandbox.stub(AWS.DynamoDB.DocumentClient.prototype, 'get').returns({
-            promise: async () => {
-                return {Item:{id:'hogehoge',expire: 1575796317300}}
-            }
-        });
-        const stub = sinon.stub(Date.prototype,'getTime');
-        stub.returns(1675796317300);
-        try {
-            //有効期限切れであればnull
-            const session = await getSession('hogehoge');
-            assert.equal(session, null);
-        } finally {
-            stub.restore();
-            sandbox.restore();
-        }
-    });
     it('有効期限と同じ',async()=>{
         const stub = sinon.stub(Date.prototype,'getTime');
         stub.returns(1575796317300);
@@ -137,9 +120,9 @@ describe('getSession', ()=>{
             }
         });
         try {
-            //指定のsessionIdで見つからない場合はnull
+            //指定のsessionIdで見つからない場合はundefined
             const session = await getSession('hogehoge');
-            assert.equal(session, null);
+            assert.equal(session, undefined);
         } finally {
             stub.restore();
             sandbox.restore();

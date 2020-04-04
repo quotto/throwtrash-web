@@ -48,7 +48,7 @@ Resources:
           KeyType: HASH
       TableName: throwtrash-backend-session
       TimeToLiveSpecification:
-        AttributeName: EXPIRED
+        AttributeName: expire
         Enabled: true
       BillingMode: PAY_PER_REQUEST
     DeletionPolicy: Retain
