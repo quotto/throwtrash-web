@@ -278,8 +278,21 @@ describe('regist', () => {
             { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' });
         assert.equal(response.statusCode, 200);
     });
+    it('bodyがnullのためエラー', async () => {
+        const response = await regist(null,
+            { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' }
+        );
+        assert.equal(response.statusCode, 400);
+        assert.equal(response.body, 'Bad Data');
+    });
+    it('bodyがundefinedのためエラー', async () => {
+        const response = await regist(undefined,
+            { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' }
+        );
+        assert.equal(response.statusCode, 400);
+        assert.equal(response.body, 'Bad Data');
+    });
     it('登録データが空のためエラー', async () => {
-        // パラメータはリクエストパラメータ（登録データ）とセッション情報
         const response = await regist({ data: [] },
             { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' }
         );
@@ -287,7 +300,6 @@ describe('regist', () => {
         assert.equal(response.body, 'Bad Data');
     });
     it('登録データ配列に要素を持たないデータがある', async () => {
-        // パラメータはリクエストパラメータ（登録データ）とセッション情報
         const response = await regist({ data: [{}] },
             { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' }
         );
