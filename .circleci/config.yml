@@ -55,7 +55,7 @@ jobs:
       - run:
           name: install
           command: npm install
-          working_directory: backend
+          working_directory: backend/src
       - save_cache:
           key: npm-deps-{{ .Branch }}-{{ checksum "backend/src/package-lock.json"}}
           paths:
