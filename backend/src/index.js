@@ -304,6 +304,14 @@ const registData = async(item, regist_data) =>{
 const regist = async(body,session)=>{
     console.info(`Regist request from ${session.id}`);
     console.debug('Regist Data:',JSON.stringify(body));
+
+    if(!body) {
+        return {
+            statusCode: 400,
+            body: 'Bad Data'
+        }
+    }
+
     const regist_data = adjustData(body.data, body.offset);
     if(!common.checkTrashes(regist_data)) {
         console.error(`platform: ${session.platform}`);
@@ -569,6 +577,7 @@ exports.handler = async function(event,context) {
        };
    } else if(event.resource === '/authorization_code') {
        console.log('authorization_code');
+       return authorization_code(event);
    }else if(event.resource === '/request_accesstoken') {
         console.log("request_accesstoken")
    } else if(event.resource === '/complete_accountlink') {
