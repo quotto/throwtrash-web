@@ -30,32 +30,36 @@ const calculateStartDate = (weektype, offset) => {
 
 const adjustData = (input_data, offset) => {
     let regist_data = [];
-    input_data.forEach((trash)=>{
-        let regist_trash = {
-            type: trash.type
-        };
-        if(trash.type === 'other') {
-            regist_trash.trash_val = trash.trash_val;
-        }
-
-        let trash_schedules = [];
-        trash.schedules.forEach((schedule)=>{
-            let regist_schedule = {
-                type: schedule.type,
-                value: schedule.value
+    try {
+        input_data.forEach((trash)=>{
+            let regist_trash = {
+                type: trash.type
             };
-            if(regist_schedule.type && regist_schedule.type != 'none' && regist_schedule.value) {
-                if(regist_schedule.type === 'evweek') {
-                    const weektype = regist_schedule.value.start==='thisweek' ? 0 : 1;
-                    const start_date = calculateStartDate(weektype, offset);
-                    regist_schedule.value.start = start_date;
-                }
-                trash_schedules.push(regist_schedule);
+            if(trash.type === 'other') {
+                regist_trash.trash_val = trash.trash_val;
             }
+
+            let trash_schedules = [];
+            trash.schedules.forEach((schedule)=>{
+                let regist_schedule = {
+                    type: schedule.type,
+                    value: schedule.value
+                };
+                if(regist_schedule.type && regist_schedule.type != 'none' && regist_schedule.value) {
+                    if(regist_schedule.type === 'evweek') {
+                        const weektype = regist_schedule.value.start==='thisweek' ? 0 : 1;
+                        const start_date = calculateStartDate(weektype, offset);
+                        regist_schedule.value.start = start_date;
+                    }
+                    trash_schedules.push(regist_schedule);
+                }
+            });
+            regist_trash.schedules = trash_schedules;
+            regist_data.push(regist_trash);
         });
-        regist_trash.schedules = trash_schedules;
-        regist_data.push(regist_trash);
-    });
+    } catch(err) {
+        console.error("adjust error:" + err);
+    }
     return regist_data;
 }
 
@@ -563,10 +567,11 @@ exports.handler = async function(event,context) {
            statusCode: 400,
            body: 'Invalid Session'
        };
-   } else if(event.resource === '/request_accesstoken') {
+   } else if(event.resource === '/authorization_code') {
+       console.log('authorization_code');
+   }else if(event.resource === '/request_accesstoken') {
         console.log("request_accesstoken")
-       return request_accesstoken()
-   } else if(event.resource === 'complete_accountlink') {
+   } else if(event.resource === '/complete_accountlink') {
         console.log("complete accountlink");
    }
    return UserError;
