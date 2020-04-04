@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Description: The AWS CloudFormation template for BSE Workflow
+Parameters:
+  SessionTableName:
+    Type: "String"
+    Default: "throwtrash-backend-session"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -12,7 +16,7 @@ Resources:
             Effect: "Allow"
             Action: "dynamodb:*"
             Resource:
-              - !GetAtt SessionTable.Arn
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${SessionTableName}"
               - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule"
               - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule/index/signinId-index"
       PolicyName: !Sub "throwtrash-backend-lambda-policy-${AWS::Region}"
@@ -46,7 +50,7 @@ Resources:
         -
           AttributeName: "id"
           KeyType: HASH
-      TableName: throwtrash-backend-session
+      TableName: !Ref SessionTableName
       TimeToLiveSpecification:
         AttributeName: expire
         Enabled: true
