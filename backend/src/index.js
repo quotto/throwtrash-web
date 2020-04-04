@@ -300,7 +300,8 @@ const registData = async(item, regist_data) =>{
 const regist = async(body,session)=>{
     console.info(`Regist request from ${session.id}`);
     console.debug('Regist Data:',JSON.stringify(body));
-    if(!body || !common.checkTrashes(body.data)) {
+    const regist_data = adjustData(body.data, body.offset);
+    if(!common.checkTrashes(regist_data)) {
         console.error(`platform: ${session.platform}`);
         return {
             statusCode: 400,
@@ -309,8 +310,6 @@ const regist = async(body,session)=>{
     }
 
     // 検証した登録データをセッションに格納
-    const regist_data = adjustData(body.data, body.offset);
-
     if(session && session.state && session.client_id && session.redirect_uri) {
         const item = {};
         if(session.userInfo) {
@@ -428,17 +427,21 @@ const signin = async(params,session,domain,stage)=>{
 
     const user_info = await service_request;
     if(user_info) {
-        session.userInfo = {
-            signinId: user_info.id,
-            name: user_info.name,
-            signinService: params.service
-        };
         const user_data = await getDataBySigninId(user_info.id);
         if (user_data) {
+            // eslint-disable-next-line require-atomic-updates
+            session.userInfo = {
+                signinId: user_info.id,
+                name: user_info.name,
+                signinService: params.service
+            };
             if(user_data.id) {
+                // eslint-disable-next-line require-atomic-updates
                 session.userInfo.id = user_data.id;
+                // eslint-disable-next-line require-atomic-updates
                 session.userInfo.preset = JSON.parse(user_data.description);
             } else {
+                // eslint-disable-next-line require-atomic-updates
                 session.userInfo.preset = [];
             }
 
@@ -562,6 +565,7 @@ exports.handler = async function(event,context) {
        };
    } else if(event.resource === '/request_accesstoken') {
         console.log("request_accesstoken")
+       return request_accesstoken()
    } else if(event.resource === 'complete_accountlink') {
         console.log("complete accountlink");
    }

@@ -267,7 +267,18 @@ describe('regist', () => {
         assert.equal(response.headers['Access-Control-Allow-Origin'], URL_ACCOUNT_LINK);
         assert.equal(response.headers['Access-Control-Allow-Credentials'], true);
     });
-    it('登録データに誤りがある', async () => {
+    it('一つ以上のスケジュール登録があれば正常', async () => {
+        // eslint-disable-next-line no-unused-vars
+        registData.set(async (item, regist_data) => { return true });
+        // eslint-disable-next-line no-unused-vars
+        deleteSession.set(async (sessionId) => { return true });
+        publishId.set(async () => { return 'new-id' });
+        // type:noneのスケジュールはadjustDataによって正常化(削除)される
+        const response = await regist({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' },{ "type": "none", "value": "" }, { "type": "none", "value": "" }] }] },
+            { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' });
+        assert.equal(response.statusCode, 200);
+    });
+    it('登録データが空のためエラー', async () => {
         // パラメータはリクエストパラメータ（登録データ）とセッション情報
         const response = await regist({ data: [] },
             { id: 'sessionId', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon' }
