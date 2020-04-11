@@ -86,6 +86,12 @@ Resources:
             Path: "/regist"
             Method: "POST"
             RestApiId: !Ref Api
+        RequestAccessToken:
+          Type: Api
+          Properties:
+            Path: "/request_accesstoken"
+            Method: "POST"
+            RestApiId: !Ref Api
   Api:
     Type: "AWS::Serverless::Api"
     DeletionPolicy: Retain
@@ -97,6 +103,12 @@ Resources:
         AllowOrigin: "'https://accountlink.mythrowaway.net'"
         AllowHeaders: "'Content-Type'"
         AllowCredentials: true
+      MethodSettings:
+        -
+          LoggingLevel: "INFO"
+          HttpMethod: "*"
+          ResourcePath: "/+"
+          DataTraceEnabled: true
   LambdaVersion:
     Type: "AWS::Lambda::Version"
     Properties:
