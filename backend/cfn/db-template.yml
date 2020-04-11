@@ -5,6 +5,15 @@ Parameters:
   SessionTableName:
     Type: "String"
     Default: "throwtrash-backend-session"
+  AuthorizationTableName:
+    Type: "String"
+    Default: "throwtrash-backend-authorization"
+  AccessTokenTableName:
+    Type: "String"
+    Default: "throwtrash-backend-accesstoken"
+  RefreshTokenTableName:
+    Type: "String"
+    Default: "throwtrash-backend-refreshtoken"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -16,6 +25,9 @@ Resources:
             Effect: "Allow"
             Action: "dynamodb:*"
             Resource:
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${RefreshTokenTableName}"
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${AccessTokenTableName}"
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${AuthorizationTableName}"
               - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${SessionTableName}"
               - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule"
               - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule/index/signinId-index"
@@ -53,6 +65,57 @@ Resources:
       TableName: !Ref SessionTableName
       TimeToLiveSpecification:
         AttributeName: expire
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+    DeletionPolicy: Retain
+  AuthroizationTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "code"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "code"
+          KeyType: HASH
+      TableName: !Ref AuthorizationTableName
+      TimeToLiveSpecification:
+        AttributeName: expires_in
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+    DeletionPolicy: Retain
+  AceessTokenTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "access_token"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "access_token"
+          KeyType: HASH
+      TableName: !Ref AccessTokenTableName
+      TimeToLiveSpecification:
+        AttributeName: expires_in
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+    DeletionPolicy: Retain
+  RefreshTokenTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "refresh_token"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "refresh_token"
+          KeyType: HASH
+      TableName: !Ref RefreshTokenTableName
+      TimeToLiveSpecification:
+        AttributeName: expires_in
         Enabled: true
       BillingMode: PAY_PER_REQUEST
     DeletionPolicy: Retain
