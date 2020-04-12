@@ -254,3 +254,120 @@ describe('publishSession',()=>{
         });
     });
 });
+
+describe("putAuthorizationCode",()=>{
+    it("正常登録",async(done)=>{
+        const result = await db.putAuthorizationCode("id0001","alexa-skill","https://example.com/skill");
+
+        console.log(JSON.stringify(result));
+        await documentClient.get({
+            TableName: property.AUTHORIZE_TABLE,
+            Key: {
+                code: result.code
+            }
+        }).promise().then((data)=>{
+            expect(data.Item.code).toBe(result.code);
+            expect(data.Item.client_id).toBe("alexa-skill");
+            expect(data.Item.redirect_uri).toBe("https://example.com/skill");
+            expect(data.Item.user_id).toBe("id0001");
+        });
+
+        documentClient.delete({
+            TableName: property.AUTHORIZE_TABLE,
+            Key: {
+                code: result.code
+            }
+        }).promise().then(()=>{
+            done();
+        })
+    });
+});
+
+describe("getAuthorizationCode",()=>{
+    beforeAll(async(done)=>{
+        documentClient.put({
+            TableName: property.AUTHORIZE_TABLE,
+            Item: {
+                code: "1234567",
+                client_id: "alexa-skill",
+                user_id: "id001",
+                redirect_uri: "https://example.com/skill",
+                expires_in: Math.ceil(Date.now()/1000)+5*60
+            }
+        }).promise().then(()=>{done()})
+    });
+    it("存在するデータ",async()=>{
+        const result = await db.getAuthorizationCode("1234567");
+        console.log(JSON.stringify(result));
+        expect(result.code).toBe("1234567");
+        expect(result.client_id).toBe("alexa-skill");
+        expect(result.user_id).toBe("id001");
+        expect(result.redirect_uri).toBe("https://example.com/skill");
+    });
+    it("存在しないデータ",async()=>{
+        const result = await db.getAuthorizationCode("9999999");
+        expect(result).toBeUndefined();
+    });
+    afterAll(async(done)=>{
+        documentClient.delete({
+            TableName: property.AUTHORIZE_TABLE,
+            Key: {
+                code: "1234567"
+            }
+        }).promise().then(()=>done());
+    });
+});
+
+describe("putAccessToken",()=>{
+    it("正常登録",async(done)=>{
+        const result = await db.putAccessToken("id0001","alexa-skill");
+        console.log(JSON.stringify(result));
+        expect(result.access_token).toBeDefined();
+
+        await documentClient.get({
+            TableName: property.TOKEN_TABLE,
+            Key: {
+                access_token: result.access_token
+            }
+        }).promise().then((data)=>{
+            expect(data.Item.access_token).toBe(result.access_token);
+            expect(data.Item.user_id).toBe("id0001");
+            expect(data.Item.client_id).toBe("alexa-skill");
+        });
+
+        // テスト後はデータ削除
+        documentClient.delete({
+            TableName: property.TOKEN_TABLE,
+            Key: {
+                access_token: result.access_token
+            }
+        }).promise().then(()=>done());
+    });
+});
+
+describe("putRefreshToken",()=>{
+    it("正常登録",async(done)=>{
+        const result = await db.putRefreshToken("id0001","alexa-skill");
+        console.log(JSON.stringify(result));
+        expect(result.refresh_token).toBeDefined();
+
+        await documentClient.get({
+            TableName: property.REFRESH_TABLE,
+            Key: {
+                refresh_token: result.refresh_token
+            }
+        }).promise().then((data)=>{
+            expect(data.Item.refresh_token).toBe(result.refresh_token);
+            expect(data.Item.user_id).toBe("id0001");
+            expect(data.Item.client_id).toBe("alexa-skill");
+        });
+
+        // テスト後はデータ削除
+        documentClient.delete({
+            TableName: property.REFRESH_TABLE,
+            Key: {
+                refresh_token: result.refresh_token
+            }
+        }).promise().then(()=>done());
+    });
+});
