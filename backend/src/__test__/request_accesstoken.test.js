@@ -1,6 +1,7 @@
 const property = require("../property");
 class mockClass {
-    constructor(config){}
+    // eslint-disable-next-line no-unused-vars
+    constructor(_config){}
     get(params) {
         return {
             promise: async() => {
@@ -46,7 +47,8 @@ jest.mock("aws-sdk",()=>(
 ));
 jest.mock("trash-common",()=>(
     {
-        generateRandomCode: (length)=>{
+        // eslint-disable-next-line no-unused-vars
+        generateRandomCode: (_length)=>{
             return "abcdefg12345";
         }
     }
