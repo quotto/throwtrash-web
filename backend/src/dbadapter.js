@@ -8,6 +8,59 @@ firebase_admin.initializeApp({
 });
 const firestore = firebase_admin.firestore();
 
+const putAccessToken = async(user_id,client_id)=>{
+    let limit = 0;
+    while(limit < 5) {
+        const accessToken = {
+                access_token: common.generateRandomCode(20),
+                expires_in: Date.now() + 7 * 24 * 60 * 60 * 1000
+        };
+        try {
+            await documentClient.put({
+                TableName: property.TOKEN_TABLE,
+                Item: {
+                    access_token: accessToken.access_token,
+                    expires_in: Math.ceil(accessToken.expires_in/1000),
+                    user_id: user_id,
+                    client_id: client_id
+                },
+                ConditionExpression: "attribute_not_exists(access_token)"
+            }).promise();
+            return accessToken;
+        } catch(err) {
+            console.warn(err);
+        }
+        limit++;
+    }
+    throw new Error("Put Access Token Failed.");
+}
+
+const putRefreshToken = async(user_id,client_id)=>{
+    let limit = 0;
+    while(limit < 5) {
+        const refreshToken = {
+            refresh_token: common.generateRandomCode(20),
+            expires_in: Date.now() + 30 * 24 * 60 * 60,
+        };
+        try {
+            await documentClient.put({
+                TableName: property.REFRESH_TABLE,
+                Item: {
+                    refresh_token: refreshToken.refresh_token,
+                    expires_in: Math.ceil(refreshToken.expires_in/1000),
+                    user_id: user_id,
+                    client_id: client_id
+                },
+                ConditionExpression: "attribute_not_exists(refresh_token)"
+            }).promise();
+            return refreshToken;
+        } catch(err) {
+            console.warn(err);
+        }
+        limit++;
+    }
+    throw new Error("Put Refresh Token Failed.");
+}
 const saveSession = async (session) => {
     session.expire = Math.ceil(Date.now()/1000) + property.SESSION_MAX_AGE;
     console.debug("save session", session);
@@ -50,6 +103,16 @@ const deleteSession = async(sessionId)=>{
         }
     }).promise();
     return true;
+}
+
+const getAuthorizationCode = async(code)=>{
+    const result = await documentClient.get({
+        TableName: property.AUTHORIZE_TABLE,
+        Key: {
+            code: code
+        }
+    }).promise();
+    return result.Item;
 }
 
 const putAuthorizationCode = async(user_id,client_id,redirect_uri)=>{
@@ -163,8 +226,11 @@ module.exports = {
     getDataBySigninId: getDataBySigninId,
     deleteSession: deleteSession,
     putTrashSchedule: putTrashSchedule,
+    getAuthorizationCode: getAuthorizationCode,
     putAuthorizationCode: putAuthorizationCode,
     publishId: publishId,
     getSession: getSession,
-    publishSession: publishSession
+    publishSession: publishSession,
+    putAccessToken: putAccessToken,
+    putRefreshToken: putRefreshToken
 }
