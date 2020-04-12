@@ -50,7 +50,7 @@ jest.mock("aws-sdk", () => (
 ));
 const common = require("trash-common");
 const mockId = "1234567891";
-jest.spyOn(common, "generateId").mockImplementation(()=>mockId);
+jest.spyOn(common, "generateUUID").mockImplementation((separator)=>mockId);
 const register = require("../register.js");
 
 describe("register.js",()=>{

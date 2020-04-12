@@ -6,7 +6,7 @@ module.exports = async(data)=> {
     const documentClient = new AWS.DynamoDB.DocumentClient({region:process.env.DB_REGION});
 
     try {
-        const id = common.generateId("-");
+        const id = common.generateUUID("-");
 
         // dataフォーマットチェックに成功したら登録する
         if(common.checkTrashes(JSON.parse(data.description))) {
