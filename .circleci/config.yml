@@ -165,7 +165,7 @@ jobs:
               # lambdaでは1980年以前のタイムスタンプを持つファイルをzipできないためざっくりと1981年以前のファイル日時を更新する
               YEAR_DIFF=$(expr `date +%Y` - 1981)
               DATE_DIFF=$(expr $YEAR_DIFF \* 365)
-              find backend/src/node_modules -daystart -mtime +$DATE_DIFF -exec touch{};
+              find backend/src/node_modules -daystart -mtime +$DATE_DIFF -exec touch {} \;
 
               aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
               aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
