@@ -35,41 +35,86 @@ jest.mock("request-promise", () => (async (params) => {
     }
 }));
 
+const mockResult = []
+const mockData = [
+    [
+        {type: "burn",schedules:[{type: "weekday",value: "1"}]}
+    ]
+]
+jest.mock("../dbadapter")
+const db = require("../dbadapter");
+db.getDataBySigninId.mockImplementation(async (signinId) => {
+    if (signinId === "signinid-error") {
+        throw new Error("Test Exception");
+    }else if(signinId === "amazon-xxxxx") {
 
-jest.mock("../dbadapter", () => (
-    {
-        getDataBySigninId: async (signinId) => {
-            if (signinId === "signinid-error") {
-                throw new Error("Test Exception");
-            }
-            return { id: signinId, description: "{}" };
-        },
-        saveSession: async (_session) => {
-            return true;
-        }
+        return {id: "id001", description: JSON.stringify(mockData[0],null,2)}
+    } else if(signinId === "google-xxxxx") {
+        return {id: "id002", description: JSON.stringify(mockData[0],null,2)}
     }
-))
+    return {};
+});
+db.saveSession.mockImplementation(async (session) => {
+    mockResult[session.id] = session;
+    return true;
+});
 const signin = require("../signin");
 
 describe('signin', () => {
     beforeEach(() => {
         signin.__set__({
             requestAmazonProfile:async (_access_token) => { return { id: 'amazon-xxxxx', name: 'テスト' }},
-            requestGoogleProfile:async (_code,_domain,_stage) => { return { id: 'google-xxxxx', name: 'テスト' }}
+            requestGoogleProfile:async (_code,_domain,_stage) => { 
+                if(_code === "12345") {
+                    return { id: 'google-xxxxx', name: 'テスト' }
+                } else {
+                    return {id: "google-yyyyy", name: "テスト2"}
+                }
+            }
         });
     });
     it('amazon', async () => {
         // パラメータはqueryStringParameters,ドメイン名,APIステージ
-        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id', version: 7 }, 'backend.mythrowaway.net', 'dev');
+        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id001', version: 7 }, 'backend.mythrowaway.net', 'dev');
         expect(response.statusCode).toBe(301);
         expect(response.headers.Location).toBe('https://accountlink.mythrowaway.net/v7/index.html')
         expect(response.headers['Cache-Control']).toBe('no-store');
+
+        // 保存されたセッション
+        const session = mockResult["session-id001"];
+        expect(session.userInfo.id).toBe("id001");
+        expect(JSON.stringify(session.userInfo.preset)).toBe(JSON.stringify(mockData[0]));
+        expect(session.userInfo.signinId).toBe("amazon-xxxxx");
+        expect(session.userInfo.name).toBe("テスト");
+        expect(session.userInfo.signinService).toBe("amazon");
     });
     it('google', async () => {
-        const response = await signin({ code: '12345', state: 'google-state-value', service: 'google' }, { id: 'session-id', version: 7, googleState: 'google-state-value' },'backend.mythrowaway.net', 'test');
+        const response = await signin({ code: '12345', state: 'google-state-value', service: 'google' }, { id: 'session-id002', version: 7, googleState: 'google-state-value' },'backend.mythrowaway.net', 'test');
         expect(response.statusCode).toBe(301);
         expect(response.headers.Location).toBe('https://accountlink.mythrowaway.net/v7/index.html');
         expect(response.headers['Cache-Control']).toBe('no-store');
+
+        // 保存されたセッション
+        const session = mockResult["session-id002"];
+        expect(session.userInfo.id).toBe("id002");
+        expect(JSON.stringify(session.userInfo.preset)).toBe(JSON.stringify(mockData[0]));
+        expect(session.userInfo.signinId).toBe("google-xxxxx");
+        expect(session.userInfo.name).toBe("テスト");
+        expect(session.userInfo.signinService).toBe("google");
+    })
+    it('まだ登録したことがない（idなし）', async () => {
+        const response = await signin({ code: '5678', state: 'google-state-value', service: 'google' }, { id: 'session-id003', version: 7, googleState: 'google-state-value' },'backend.mythrowaway.net', 'test');
+        expect(response.statusCode).toBe(301);
+        expect(response.headers.Location).toBe('https://accountlink.mythrowaway.net/v7/index.html');
+        expect(response.headers['Cache-Control']).toBe('no-store');
+
+        // 保存されたセッション
+        const session = mockResult["session-id003"];
+        expect(session.userInfo.id).toBeUndefined();
+        expect(JSON.stringify(session.userInfo.preset)).toBe("[]");
+        expect(session.userInfo.signinId).toBe("google-yyyyy");
+        expect(session.userInfo.name).toBe("テスト2");
+        expect(session.userInfo.signinService).toBe("google");
     })
     it('規定外のサービス', async () => {
         const response = await signin({ code: '12345', service: 'another' }, { id: 'session-id', version: 7 }, 'backend.mythrowaway.net','test');

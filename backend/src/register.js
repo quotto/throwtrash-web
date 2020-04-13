@@ -75,7 +75,7 @@ module.exports = async(body,session)=>{
 
         try {
             if(!item.id) {
-                item.user_id = await db.publishId();
+                item.id = await db.publishId();
             }
             
             // データ登録
