@@ -270,6 +270,10 @@ describe("putAuthorizationCode",()=>{
             expect(data.Item.client_id).toBe("alexa-skill");
             expect(data.Item.redirect_uri).toBe("https://example.com/skill");
             expect(data.Item.user_id).toBe("id0001");
+            // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
+            const expire = Date.now() + (5 * 60 * 1000);
+            expect(data.Item.expires_in).toBeLessThan(Math.ceil(expire/1000)+10);
+            expect(data.Item.expires_in).toBeGreaterThan(Math.ceil(expire/1000)-10);
         });
 
         documentClient.delete({
@@ -333,6 +337,10 @@ describe("putAccessToken",()=>{
             expect(data.Item.access_token).toBe(result.access_token);
             expect(data.Item.user_id).toBe("id0001");
             expect(data.Item.client_id).toBe("alexa-skill");
+            // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
+            const expire = Date.now() + (7 * 24 * 60 * 60 * 1000); 
+            expect(data.Item.expires_in).toBeLessThan(Math.ceil(expire/1000)+10);
+            expect(data.Item.expires_in).toBeGreaterThan(Math.ceil(expire/1000)-10);
         });
 
         // テスト後はデータ削除
@@ -360,6 +368,10 @@ describe("putRefreshToken",()=>{
             expect(data.Item.refresh_token).toBe(result.refresh_token);
             expect(data.Item.user_id).toBe("id0001");
             expect(data.Item.client_id).toBe("alexa-skill");
+            // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
+            const expire = Date.now() + (30 * 24 * 60 * 60 * 1000);
+            expect(data.Item.expires_in).toBeLessThan(Math.ceil(expire/1000)+10);
+            expect(data.Item.expires_in).toBeGreaterThan(Math.ceil(expire/1000)-10);
         });
 
         // テスト後はデータ削除
