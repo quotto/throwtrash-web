@@ -84,7 +84,7 @@ module.exports = async(body,session)=>{
             await db.putTrashSchedule(item, regist_data);
 
             // authorization codeを発行しid（access_tokenとセットで保存する,期限は5分）
-            const authorizationCode = await db.putAuthorizationCode(item.user_id, session.client_id, session.redirect_uri);
+            const authorizationCode = await db.putAuthorizationCode(item.id, session.client_id, session.redirect_uri);
 
             // セッションを削除する
             await db.deleteSession(session.id);

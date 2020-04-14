@@ -2,25 +2,27 @@
 const property = require("../property");
 
 // データ登録系処理の結果確認のための入れ物
-const mockResult = {};
+const mockScheduleResult = {};
+const mockAuthResult = {};
 jest.mock("../dbadapter");
 const db = require("../dbadapter");
 db.publishId.mockImplementation(async()=>{return "id001"});
 db.putTrashSchedule.mockImplementation(async(item)=>{
-            mockResult[item.id] = item;
+            mockScheduleResult[item.id] = item;
             return true;
         });
 db.deleteSession.mockImplementation(async(_sessionid)=>{return true});
 db.putAuthorizationCode.mockImplementation(async(user_id,client_id,redirect_uri)=>{
-            return {
-                code: "12345",
-                user_id: "id001",
-                client_id: "alexa-skill",
-                redirect_uri: "https://xxx.com",
-                expiresin: 123456789
-            }
-        }
-);
+    const result = {
+        code: "12345",
+        user_id: user_id,
+        client_id: client_id,
+        redirect_uri: redirect_uri,
+        expires_in: 123456789
+    }
+    mockAuthResult[result.code] = result;
+    return result;
+});
 const register = require("../register");
 describe('register', () => {
     it('正常なリクエスト', async () => {
@@ -34,9 +36,16 @@ describe('register', () => {
         expect(response.headers['Access-Control-Allow-Credentials']).toBe(true);
 
         // TrashScheduleに登録されたデータの確認
-        expect(mockResult["id001"].id).toBe("id001");
-        expect(mockResult["id001"].platform).toBe("amazon");
-        expect(mockResult["id001"].description).toBe(JSON.stringify([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }], null, 2) );
+        expect(mockScheduleResult["id001"].id).toBe("id001");
+        expect(mockScheduleResult["id001"].platform).toBe("amazon");
+        expect(mockScheduleResult["id001"].description).toBe(JSON.stringify([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }], null, 2) );
+
+        // AuthorizationCodeに登録されたデータの確認
+        const auth = mockAuthResult["12345"];
+        expect(auth.user_id).toBe("id001");
+        expect(auth.client_id).toBe("alexa-skill");
+        expect(auth.redirect_uri).toBe("https://xxxx.com");
+        expect(auth.expires_in).toBe(123456789);
     });
     it('サインイン済み,id無し', async () => {
         const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
@@ -52,11 +61,18 @@ describe('register', () => {
         expect(response.headers['Access-Control-Allow-Credentials']).toBe(true);
 
         // TrashScheduleに登録されたデータの確認
-        expect(mockResult["id001"].id).toBe("id001");
-        expect(mockResult["id001"].platform).toBe("amazon");
-        expect(mockResult["id001"].description).toBe(JSON.stringify([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }],null,2));
-        expect(mockResult["id001"].signinId).toBe("signinId002");
-        expect(mockResult["id001"].signinService).toBe("google");
+        expect(mockScheduleResult["id001"].id).toBe("id001");
+        expect(mockScheduleResult["id001"].platform).toBe("amazon");
+        expect(mockScheduleResult["id001"].description).toBe(JSON.stringify([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }],null,2));
+        expect(mockScheduleResult["id001"].signinId).toBe("signinId002");
+        expect(mockScheduleResult["id001"].signinService).toBe("google");
+
+        // AuthorizationCodeに登録されたデータの確認
+        const auth = mockAuthResult["12345"];
+        expect(auth.user_id).toBe("id001");
+        expect(auth.client_id).toBe("alexa-skill");
+        expect(auth.redirect_uri).toBe("https://xxxx.com");
+        expect(auth.expires_in).toBe(123456789);
     });
     it('サインイン済み,idあり', async () => {
         const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
@@ -73,11 +89,18 @@ describe('register', () => {
         expect(response.headers['Access-Control-Allow-Credentials']).toBe(true);
 
         // TrashScheduleに登録されたデータの確認
-        expect(mockResult["id003"].id).toBe("id003");
-        expect(mockResult["id003"].platform).toBe("amazon");
-        expect(mockResult["id003"].description).toBe(JSON.stringify([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }],null,2));
-        expect(mockResult["id003"].signinId).toBe("signinId002");
-        expect(mockResult["id003"].signinService).toBe("google");
+        expect(mockScheduleResult["id003"].id).toBe("id003");
+        expect(mockScheduleResult["id003"].platform).toBe("amazon");
+        expect(mockScheduleResult["id003"].description).toBe(JSON.stringify([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }],null,2));
+        expect(mockScheduleResult["id003"].signinId).toBe("signinId002");
+        expect(mockScheduleResult["id003"].signinService).toBe("google");
+
+        // AuthorizationCodeに登録されたデータの確認
+        const auth = mockAuthResult["12345"];
+        expect(auth.user_id).toBe("id003");
+        expect(auth.client_id).toBe("alexa-skill");
+        expect(auth.redirect_uri).toBe("https://xxxx.com");
+        expect(auth.expires_in).toBe(123456789);
     });
     it("bodyがnull",async()=>{
         const register = require("../register");

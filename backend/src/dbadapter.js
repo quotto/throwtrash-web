@@ -40,7 +40,7 @@ const putRefreshToken = async(user_id,client_id)=>{
     while(limit < 5) {
         const refreshToken = {
             refresh_token: common.generateRandomCode(20),
-            expires_in: Date.now() + 30 * 24 * 60 * 60,
+            expires_in: Date.now() + 30 * 24 * 60 * 60 * 1000,
         };
         try {
             await documentClient.put({
