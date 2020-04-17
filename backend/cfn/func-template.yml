@@ -20,6 +20,8 @@ Parameters:
     Type: "String"
   ALEXAUSERCLIENTID:
     Type: "String"
+  ALEXAUSERSECRET:
+    Type: "String"
   ALEXASKILLID:
     Type: "String"
 Resources:
@@ -44,6 +46,7 @@ Resources:
           ALEXA_CLIENT_ID: !Ref ALEXACLIENTID
           ALEXA_CLIENT_SECRET: !Ref ALEXACLIENTSECRET
           ALEXA_USER_CLIENT_ID: !Ref ALEXAUSERCLIENTID
+          ALEXA_USER_SECRET: !Ref ALEXAUSERSECRET
           ALEXA_SKILL_ID: !Ref ALEXASKILLID
       Events:
         OAuthRequest:

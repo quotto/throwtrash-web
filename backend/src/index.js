@@ -81,7 +81,7 @@ exports.handler = async function(event,context) {
        } else {
            params = JSON.parse(event.body);
        }
-       return await request_accesstoken(params);
+       return await request_accesstoken(params, event.headers.Authorization);
    } else if (event.resource === "/start_link") {
         // アカウントリンクURLの通知
         if(!session) {

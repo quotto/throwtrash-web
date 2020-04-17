@@ -1,13 +1,14 @@
 const db = require("./dbadapter");
 
-module.exports = async (params) => {
+module.exports = async (params,authorization) => {
     console.debug(JSON.stringify(params));
     if (params.grant_type === "authorization_code") {
         try {
             const authorizationCode = await db.getAuthorizationCode(params.code);
             if (authorizationCode &&
                 params.client_id === authorizationCode.client_id &&
-                decodeURIComponent(params.redirect_uri) === authorizationCode.redirect_uri){
+                decodeURIComponent(params.redirect_uri) === authorizationCode.redirect_uri &&
+                authorization === "Basic " + Buffer.from(`${process.env.ALEXA_USER_CLIENT_ID}:${process.env.ALEXA_USER_SECRET}`).toString("base64")){
                     // アクセストークンの登録
                     const accessToken = await db.putAccessToken(authorizationCode.user_id, params.client_id);
 

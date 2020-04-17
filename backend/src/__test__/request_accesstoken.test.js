@@ -51,6 +51,10 @@ jest.mock("../dbadapter", () => (
 ));
 const request_accesstoken = require("../request_accesstoken.js");
 describe("request_accesstoken",()=>{
+    const authorization = "Basic YWxleGEtc2tpbGw6OGg2cEd4SGRXaDhy"; //alexa-skill:8h6pGxHdWh8r
+    process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
+    process.env.ALEXA_USER_SECRET = "8h6pGxHdWh8r";
+
     it("正常なリクエスト",async()=>{
        const params = {
            code: "12345",
@@ -58,7 +62,7 @@ describe("request_accesstoken",()=>{
            client_id: "alexa-skill",
            redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX"
        }
-       const result = await request_accesstoken(params);
+       const result = await request_accesstoken(params,authorization);
        console.log(result);
        expect(result.statusCode).toBe(200);
 
@@ -76,7 +80,7 @@ describe("request_accesstoken",()=>{
 
     });
     it("Authorization Code 取得エラー",async()=>{
-        const result = await request_accesstoken({grant_type: "authorization_code",code: "99999"});
+        const result = await request_accesstoken({grant_type: "authorization_code",code: "99999"},authorization);
         expect(result.statusCode).toBe(500);
     });
     it("AccessToken登録エラー",async()=>{
@@ -86,7 +90,7 @@ describe("request_accesstoken",()=>{
            client_id: "alexa-skill",
            redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX"
        }
-       const result = await request_accesstoken(params);
+       const result = await request_accesstoken(params,authorization);
        console.log(result);
        expect(result.statusCode).toBe(500);
     });
@@ -97,13 +101,13 @@ describe("request_accesstoken",()=>{
            client_id: "alexa-skill",
            redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX"
        }
-       const result = await request_accesstoken(params);
+       const result = await request_accesstoken(params,authorization);
        console.log(result);
        expect(result.statusCode).toBe(500);
     });
     describe("パラメータエラー",()=>{
         it("grant_typeが一致しない",async()=>{
-            const result = await  request_accesstoken({grant_type: "error"});
+            const result = await  request_accesstoken({grant_type: "error"},authorization);
             expect(result.statusCode).toBe(400);
         });
         it("client_idが一致しない",async()=>{
@@ -113,7 +117,7 @@ describe("request_accesstoken",()=>{
                 client_id: "invalid-client",
                 redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX"
             }
-            const result = await  request_accesstoken(params);
+            const result = await  request_accesstoken(params,authorization);
             expect(result.statusCode).toBe(400);
         });
         it("redirect_uriが一致しない",async()=>{
@@ -123,7 +127,17 @@ describe("request_accesstoken",()=>{
                 client_id: "alexa-skill",
                 redirect_uri: "invalid-uri"
             }
-            const result = await  request_accesstoken(params);
+            const result = await  request_accesstoken(params,authorization);
+            expect(result.statusCode).toBe(400);
+        });
+        it("Auhtorizationヘッダエラー",async()=>{
+            const params = {
+                code: "12345",
+                grant_type: "authorization_code",
+                client_id: "alexa-skill",
+                redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX"
+            }
+            const result = await  request_accesstoken(params,"Basic abcdefg");
             expect(result.statusCode).toBe(400);
         });
     });
