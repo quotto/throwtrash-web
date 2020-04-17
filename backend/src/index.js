@@ -8,6 +8,8 @@ const signout = require("./signout");
 const signin = require("./signin");
 const oauth_request = require("./oauth_request");
 const google_signin = require("./google_signin");
+const start_link = require("./start_link");
+const exchange_amazon_code = require("./exchange_amazon_code");
 
 const extractSessionId = (cookie)=>{
     if(cookie) {
@@ -24,8 +26,8 @@ const extractSessionId = (cookie)=>{
 };
 
 exports.handler = async function(event,context) {
-    console.log(event);
-    console.log(context);
+    console.debug(event);
+    console.debug(context);
     let session = null;
     let sessionId = extractSessionId(event.headers.Cookie);
     console.debug("get sessionId in cookie:",sessionId);
@@ -68,21 +70,27 @@ exports.handler = async function(event,context) {
            statusCode: 400,
            body: "Invalid Session"
        };
-   }else if(event.resource === "/request_accesstoken") {
-        // 認可コードを受け取りアクセストークンを発行する
-        console.log("request_accesstoken")
-        let params = {};
-        if(event.headers["Content-Type"]==="application/x-www-form-urlencoded") {
-            event.body.split("&").forEach(value=>{
-                const keyValue = value.split("=");
-                params[keyValue[0]] = keyValue[1];
-            })
-        } else {
-            params = JSON.parse(event.body);
+   } else if (event.resource === "/request_accesstoken") {
+       // 認可コードを受け取りアクセストークンを発行する
+       let params = {};
+       if (event.headers["Content-Type"] === "application/x-www-form-urlencoded") {
+           event.body.split("&").forEach(value => {
+               const keyValue = value.split("=");
+               params[keyValue[0]] = keyValue[1];
+           })
+       } else {
+           params = JSON.parse(event.body);
+       }
+       return await request_accesstoken(params);
+   } else if (event.resource === "/start_link") {
+        // アカウントリンクURLの通知
+        if(!session) {
+            session = await db.publishSession();
         }
-        return await request_accesstoken(params);
-   } else if(event.resource === "/complete_accountlink") {
-        console.log("complete accountlink");
-   }
+        return await start_link(event.queryStringParameters, session);
+    }
+    else if(event.resource === "/exchange_amazon_code") {
+        return await exchange_amazon_code(event.queryStringParameters,session);
+    }
    return error_def.UserError;
 };

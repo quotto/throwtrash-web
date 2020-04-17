@@ -14,6 +14,14 @@ Parameters:
     Default: "dev"
   DBREGION:
     Type: "String"
+  ALEXACLIENTID:
+    Type: "String"
+  ALEXACLIENTSECRET:
+    Type: "String"
+  ALEXAUSERCLIENTID:
+    Type: "String"
+  ALEXASKILLID:
+    Type: "String"
 Resources:
   LambdaFunction:
     Type: "AWS::Serverless::Function"
@@ -32,6 +40,11 @@ Resources:
           GOOGLE_CLIENT_ID: !Ref GOOGLECLIENTID
           GOOGLE_CLIENT_SECRET: !Ref GOOGLECLIENTSECRET
           GOOGLE_APPLICATION_CREDENTIALS: "/var/task/serviceAccountKey.json"
+          STAGE: !Ref STAGE
+          ALEXA_CLIENT_ID: !Ref ALEXACLIENTID
+          ALEXA_CLIENT_SECRET: !Ref ALEXACLIENTSECRET
+          ALEXA_USER_CLIENT_ID: !Ref ALEXAUSERCLIENTID
+          ALEXA_SKILL_ID: !Ref ALEXASKILLID
       Events:
         OAuthRequest:
           Type: Api
@@ -92,6 +105,28 @@ Resources:
             Path: "/request_accesstoken"
             Method: "POST"
             RestApiId: !Ref Api
+        StartLink:
+          Type: Api
+          Properties:
+            Path: "/start_link"
+            Method: "GET"
+            RestApiId: !Ref Api
+            RequestParameters:
+              - method.request.querystring.platform:
+                  Required: true
+        ExchangeAmazonCode:
+          Type: Api
+          Properties:
+            Path: "/exchange_amazon_code"
+            Method: "GET"
+            RestApiId: !Ref Api
+            RequestParameters:
+              - method.request.querystring.state:
+                  Required: true
+              - method.request.querystring.code:
+                  Required: true
+              - method.request.querystring.scope:
+                  Required: true
   Api:
     Type: "AWS::Serverless::Api"
     DeletionPolicy: Retain
