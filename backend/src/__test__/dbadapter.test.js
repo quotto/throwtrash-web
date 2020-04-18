@@ -3,9 +3,10 @@
 /**
  * DBアクセス等すべて実装済みで実施する
  */
-process.env.DB_REGION = 'us-west-2';
-const AWS = require('aws-sdk');
-const property = require('../property.js');
+process.env.DB_REGION = "us-west-2";
+const AWS = require("aws-sdk");
+const property = require("../property.js");
+const crypto = require("crypto");
 
 const documentClient = new AWS.DynamoDB.DocumentClient({region: 'us-west-2'});
 
@@ -326,13 +327,13 @@ describe("putAccessToken",()=>{
         console.log(JSON.stringify(result));
         expect(result.access_token).toBeDefined();
 
+        const hashKey = crypto.createHash("sha512").update(result.access_token).digest("hex");
         await documentClient.get({
             TableName: property.TOKEN_TABLE,
             Key: {
-                access_token: result.access_token
+                access_token: hashKey
             }
         }).promise().then((data)=>{
-            expect(data.Item.access_token).toBe(result.access_token);
             expect(data.Item.user_id).toBe("id0001");
             expect(data.Item.client_id).toBe("alexa-skill");
             // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
@@ -345,7 +346,7 @@ describe("putAccessToken",()=>{
         await documentClient.delete({
             TableName: property.TOKEN_TABLE,
             Key: {
-                access_token: result.access_token
+                access_token: hashKey
             }
         }).promise();
     });
@@ -357,13 +358,14 @@ describe("putRefreshToken",()=>{
         console.log(JSON.stringify(result));
         expect(result.refresh_token).toBeDefined();
 
+        const hashKey = crypto.createHash("sha512").update(result.refresh_token).digest("hex");
         await documentClient.get({
             TableName: property.REFRESH_TABLE,
             Key: {
-                refresh_token: result.refresh_token
+                refresh_token: hashKey 
             }
         }).promise().then((data)=>{
-            expect(data.Item.refresh_token).toBe(result.refresh_token);
+            expect(data.Item.refresh_token).toBe(hashKey);
             expect(data.Item.user_id).toBe("id0001");
             expect(data.Item.client_id).toBe("alexa-skill");
             // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
@@ -376,7 +378,7 @@ describe("putRefreshToken",()=>{
        await documentClient.delete({
             TableName: property.REFRESH_TABLE,
             Key: {
-                refresh_token: result.refresh_token
+                refresh_token: hashKey
             }
         }).promise();
     });

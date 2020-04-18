@@ -7,6 +7,11 @@ firebase_admin.initializeApp({
     credential: firebase_admin.credential.applicationDefault()
 });
 const firestore = firebase_admin.firestore();
+const crypto = require("crypto");
+
+const toHash = (value) => {
+    return crypto.createHash("sha512").update(value).digest("hex");
+}
 
 const putAccessToken = async(user_id,client_id)=>{
     let limit = 0;
@@ -19,7 +24,7 @@ const putAccessToken = async(user_id,client_id)=>{
             await documentClient.put({
                 TableName: property.TOKEN_TABLE,
                 Item: {
-                    access_token: accessToken.access_token,
+                    access_token: toHash(accessToken.access_token),
                     expires_in: Math.ceil(accessToken.expires_in/1000),
                     user_id: user_id,
                     client_id: client_id
@@ -46,7 +51,7 @@ const putRefreshToken = async(user_id,client_id)=>{
             await documentClient.put({
                 TableName: property.REFRESH_TABLE,
                 Item: {
-                    refresh_token: refreshToken.refresh_token,
+                    refresh_token: toHash(refreshToken.refresh_token),
                     expires_in: Math.ceil(refreshToken.expires_in/1000),
                     user_id: user_id,
                     client_id: client_id
