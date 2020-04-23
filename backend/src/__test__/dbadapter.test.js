@@ -258,7 +258,7 @@ describe('publishSession',()=>{
 
 describe("putAuthorizationCode",()=>{
     it("正常登録",async()=>{
-        const result = await db.putAuthorizationCode("id0001","alexa-skill","https://example.com/skill");
+        const result = await db.putAuthorizationCode("id0001","alexa-skill","https://example.com/skill",300);
 
         console.log(JSON.stringify(result));
         await documentClient.get({
@@ -272,9 +272,9 @@ describe("putAuthorizationCode",()=>{
             expect(data.Item.redirect_uri).toBe("https://example.com/skill");
             expect(data.Item.user_id).toBe("id0001");
             // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
-            const expire = Date.now() + (5 * 60 * 1000);
-            expect(data.Item.expires_in).toBeLessThan(Math.ceil(expire/1000)+10);
-            expect(data.Item.expires_in).toBeGreaterThan(Math.ceil(expire/1000)-10);
+            const expire = Math.ceil(Date.now()/1000) +300;
+            expect(data.Item.expires_in).toBeLessThan(expire+10);
+            expect(data.Item.expires_in).toBeGreaterThan(expire-10);
         });
 
         await documentClient.delete({
@@ -300,7 +300,7 @@ describe("getAuthorizationCode",()=>{
         }).promise();
     });
     it("存在するデータ",async()=>{
-        const result = await db.getAuthorizationCode("1234567");
+        const result = await db.getAuthorizationCode("1234567",300);
         console.log(JSON.stringify(result));
         expect(result.code).toBe("1234567");
         expect(result.client_id).toBe("alexa-skill");
@@ -308,7 +308,7 @@ describe("getAuthorizationCode",()=>{
         expect(result.redirect_uri).toBe("https://example.com/skill");
     });
     it("存在しないデータ",async()=>{
-        const result = await db.getAuthorizationCode("9999999");
+        const result = await db.getAuthorizationCode("9999999",300);
         expect(result).toBeUndefined();
     });
     afterAll(async()=>{
@@ -323,11 +323,11 @@ describe("getAuthorizationCode",()=>{
 
 describe("putAccessToken",()=>{
     it("正常登録",async()=>{
-        const result = await db.putAccessToken("id0001","alexa-skill");
-        console.log(JSON.stringify(result));
-        expect(result.access_token).toBeDefined();
+        const access_token = await db.putAccessToken("id0001","alexa-skill",300);
+        console.log(JSON.stringify(access_token));
+        expect(access_token).toBeDefined();
 
-        const hashKey = crypto.createHash("sha512").update(result.access_token).digest("hex");
+        const hashKey = crypto.createHash("sha512").update(access_token).digest("hex");
         await documentClient.get({
             TableName: property.TOKEN_TABLE,
             Key: {
@@ -337,9 +337,9 @@ describe("putAccessToken",()=>{
             expect(data.Item.user_id).toBe("id0001");
             expect(data.Item.client_id).toBe("alexa-skill");
             // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
-            const expire = Date.now() + (7 * 24 * 60 * 60 * 1000); 
-            expect(data.Item.expires_in).toBeLessThan(Math.ceil(expire/1000)+10);
-            expect(data.Item.expires_in).toBeGreaterThan(Math.ceil(expire/1000)-10);
+            const expire = Math.ceil(Date.now()/1000) + 300; 
+            expect(data.Item.expires_in).toBeLessThan(expire+10);
+            expect(data.Item.expires_in).toBeGreaterThan(expire-10);
         });
 
         // テスト後はデータ削除
@@ -354,11 +354,11 @@ describe("putAccessToken",()=>{
 
 describe("putRefreshToken",()=>{
     it("正常登録",async()=>{
-        const result = await db.putRefreshToken("id0001","alexa-skill");
-        console.log(JSON.stringify(result));
-        expect(result.refresh_token).toBeDefined();
+        const refresh_token = await db.putRefreshToken("id0001","alexa-skill",300);
+        console.log(refresh_token);
+        expect(refresh_token).toBeDefined();
 
-        const hashKey = crypto.createHash("sha512").update(result.refresh_token).digest("hex");
+        const hashKey = crypto.createHash("sha512").update(refresh_token).digest("hex");
         await documentClient.get({
             TableName: property.REFRESH_TABLE,
             Key: {
@@ -369,9 +369,9 @@ describe("putRefreshToken",()=>{
             expect(data.Item.user_id).toBe("id0001");
             expect(data.Item.client_id).toBe("alexa-skill");
             // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
-            const expire = Date.now() + (30 * 24 * 60 * 60 * 1000);
-            expect(data.Item.expires_in).toBeLessThan(Math.ceil(expire/1000)+10);
-            expect(data.Item.expires_in).toBeGreaterThan(Math.ceil(expire/1000)-10);
+            const expire = Math.ceil(Date.now()/1000) +  300;
+            expect(data.Item.expires_in).toBeLessThan(expire+10);
+            expect(data.Item.expires_in).toBeGreaterThan(expire-10);
         });
 
         // テスト後はデータ削除
@@ -379,6 +379,41 @@ describe("putRefreshToken",()=>{
             TableName: property.REFRESH_TABLE,
             Key: {
                 refresh_token: hashKey
+            }
+        }).promise();
+    });
+});
+
+describe("getRefreshToken", ()=> {
+    const expires_in = Math.ceil(Date.now()/1000)+5*60;
+    const cryptedToken = crypto.createHash("sha512").update("refreshtoken001").digest("hex")
+    beforeAll(async()=>{
+        await documentClient.put({
+            TableName: property.REFRESH_TABLE,
+            Item: {
+                refresh_token: cryptedToken,
+                client_id: "alexa-skill",
+                user_id: "id001",
+                expires_in: expires_in
+            }
+        }).promise();
+    });
+    it("正常取得", async()=>{
+        const result = await db.getRefreshToken("refreshtoken001");
+        expect(result.refresh_token).toBe(cryptedToken);
+        expect(result.expires_in).toBe(expires_in);
+        expect(result.user_id).toBe("id001");
+        expect(result.client_id).toBe("alexa-skill");
+    });
+    it("存在しないデータ", async()=>{
+        const result = await db.getRefreshToken("not_exist_refreshtoken");
+        expect(result).toBeUndefined();
+    });
+    afterAll(async()=>{
+        await documentClient.delete({
+            TableName: property.REFRESH_TABLE,
+            Key: {
+                refresh_token: cryptedToken
             }
         }).promise();
     });

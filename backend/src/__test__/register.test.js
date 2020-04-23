@@ -1,6 +1,9 @@
 /* eslint-disable no-unused-vars */
 const property = require("../property");
 
+const todayMillis = Date.UTC(2020,4,20,12,0,0,0);
+Date.now = jest.fn().mockReturnValue(todayMillis);
+
 // データ登録系処理の結果確認のための入れ物
 const mockScheduleResult = {};
 const mockAuthResult = {};
@@ -12,17 +15,18 @@ db.putTrashSchedule.mockImplementation(async(item)=>{
             return true;
         });
 db.deleteSession.mockImplementation(async(_sessionid)=>{return true});
-db.putAuthorizationCode.mockImplementation(async(user_id,client_id,redirect_uri)=>{
+db.putAuthorizationCode.mockImplementation(async(user_id,client_id,redirect_uri,expire)=>{
     const result = {
         code: "12345",
         user_id: user_id,
         client_id: client_id,
         redirect_uri: redirect_uri,
-        expires_in: 123456789
+        expires_in: Math.ceil(todayMillis/1000) + expire
     }
     mockAuthResult[result.code] = result;
     return result;
 });
+
 const register = require("../register");
 describe('register', () => {
     it('正常なリクエスト', async () => {
@@ -45,7 +49,7 @@ describe('register', () => {
         expect(auth.user_id).toBe("id001");
         expect(auth.client_id).toBe("alexa-skill");
         expect(auth.redirect_uri).toBe("https://xxxx.com");
-        expect(auth.expires_in).toBe(123456789);
+        expect(auth.expires_in).toBe(Math.ceil(todayMillis/1000)+300);
     });
     it('サインイン済み,id無し', async () => {
         const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
@@ -72,7 +76,7 @@ describe('register', () => {
         expect(auth.user_id).toBe("id001");
         expect(auth.client_id).toBe("alexa-skill");
         expect(auth.redirect_uri).toBe("https://xxxx.com");
-        expect(auth.expires_in).toBe(123456789);
+        expect(auth.expires_in).toBe(Math.ceil(todayMillis/1000)+300);
     });
     it('サインイン済み,idあり', async () => {
         const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
@@ -100,7 +104,7 @@ describe('register', () => {
         expect(auth.user_id).toBe("id003");
         expect(auth.client_id).toBe("alexa-skill");
         expect(auth.redirect_uri).toBe("https://xxxx.com");
-        expect(auth.expires_in).toBe(123456789);
+        expect(auth.expires_in).toBe(Math.ceil(todayMillis/1000)+300);
     });
     it("bodyがnull",async()=>{
         const register = require("../register");
