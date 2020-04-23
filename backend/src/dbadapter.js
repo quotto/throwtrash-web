@@ -13,24 +13,33 @@ const toHash = (value) => {
     return crypto.createHash("sha512").update(value).digest("hex");
 }
 
-const putAccessToken = async(user_id,client_id)=>{
+const getRefreshToken = async(refresh_token)=> {
+    const result = await documentClient.get({
+        TableName: property.REFRESH_TABLE,
+        Key: {
+            refresh_token: toHash(refresh_token)
+        }
+    }).promise();
+    console.debug("Get RefreshToken:" + JSON.stringify(result));
+    return result.Item;
+}
+
+const putAccessToken = async(user_id,client_id,expires_in)=>{
     let limit = 0;
     while(limit < 5) {
-        const accessToken = {
-                access_token: common.generateRandomCode(20),
-                expires_in: Date.now() + 7 * 24 * 60 * 60 * 1000
-        };
+        const accessToken = common.generateRandomCode(20);
         try {
             await documentClient.put({
                 TableName: property.TOKEN_TABLE,
                 Item: {
-                    access_token: toHash(accessToken.access_token),
-                    expires_in: Math.ceil(accessToken.expires_in/1000),
+                    access_token: toHash(accessToken),
+                    expires_in: Math.ceil((Date.now()/1000))+expires_in,
                     user_id: user_id,
                     client_id: client_id
                 },
                 ConditionExpression: "attribute_not_exists(access_token)"
             }).promise();
+            console.debug(`Put AccessToken:${accessToken}`);
             return accessToken;
         } catch(err) {
             console.warn(err);
@@ -40,24 +49,22 @@ const putAccessToken = async(user_id,client_id)=>{
     throw new Error("Put Access Token Failed.");
 }
 
-const putRefreshToken = async(user_id,client_id)=>{
+const putRefreshToken = async(user_id,client_id,expires_in)=>{
     let limit = 0;
     while(limit < 5) {
-        const refreshToken = {
-            refresh_token: common.generateRandomCode(20),
-            expires_in: Date.now() + 30 * 24 * 60 * 60 * 1000,
-        };
+        const refreshToken = common.generateRandomCode(20);
         try {
             await documentClient.put({
                 TableName: property.REFRESH_TABLE,
                 Item: {
-                    refresh_token: toHash(refreshToken.refresh_token),
-                    expires_in: Math.ceil(refreshToken.expires_in/1000),
+                    refresh_token: toHash(refreshToken),
+                    expires_in: Math.ceil(Date.now()/1000) + expires_in,
                     user_id: user_id,
                     client_id: client_id
                 },
                 ConditionExpression: "attribute_not_exists(refresh_token)"
             }).promise();
+            console.debug(`Put RefreshToken:${refreshToken}`);
             return refreshToken;
         } catch(err) {
             console.warn(err);
@@ -120,7 +127,7 @@ const getAuthorizationCode = async(code)=>{
     return result.Item;
 }
 
-const putAuthorizationCode = async(user_id,client_id,redirect_uri)=>{
+const putAuthorizationCode = async(user_id,client_id,redirect_uri,expires_in)=>{
     let limit = 0;
     while(limit < 5) {
         const codeItem = {
@@ -128,7 +135,7 @@ const putAuthorizationCode = async(user_id,client_id,redirect_uri)=>{
             user_id: user_id,
             client_id: client_id,
             redirect_uri: redirect_uri,
-            expires_in: Math.ceil(Date.now() / 1000 + 5 * 60)
+            expires_in: Math.ceil(Date.now() / 1000 + expires_in)
         };
         try {
             await documentClient.put({
@@ -237,5 +244,6 @@ module.exports = {
     getSession: getSession,
     publishSession: publishSession,
     putAccessToken: putAccessToken,
-    putRefreshToken: putRefreshToken
+    putRefreshToken: putRefreshToken,
+    getRefreshToken: getRefreshToken
 }
