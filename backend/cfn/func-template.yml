@@ -120,7 +120,7 @@ Resources:
         ExchangeAmazonCode:
           Type: Api
           Properties:
-            Path: "/exchange_amazon_code"
+            Path: "/enable_skill"
             Method: "GET"
             RestApiId: !Ref Api
             RequestParameters:

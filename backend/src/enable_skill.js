@@ -15,7 +15,7 @@ module.exports = async(params,session) => {
             code: params.code,
             client_id: process.env.ALEXA_CLIENT_ID,
             client_secret: process.env.ALEXA_CLIENT_SECRET,
-            redirect_uri: `https://backend.mythrowaway.net/${process.env.STAGE}/exchange_amazon_code`
+            redirect_uri: `https://backend.mythrowaway.net/${process.env.STAGE}/enable_skill`
         },
         method: "POST",
         json: true
@@ -34,8 +34,8 @@ module.exports = async(params,session) => {
         });
 
         // authorization codeを発行する
-        const accessTokenRedirectUri = `https://backend.mythrowaway.net/${process.env.STAGE}/exchange_amazon_code`;
-        const authorizationCode = await db.putAuthorizationCode(session.user_id, process.env.ALEXA_USER_CLIENT_ID,accessTokenRedirectUri);
+        const accessTokenRedirectUri = `https://backend.mythrowaway.net/${process.env.STAGE}/enable_skill`;
+        const authorizationCode = await db.putAuthorizationCode(session.user_id, process.env.ALEXA_USER_CLIENT_ID,accessTokenRedirectUri,300);
 
         const skillStage = process.env.STAGE === "dev" ? "development" : "live";
         const enableSkillOptions = {
