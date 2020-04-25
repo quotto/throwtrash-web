@@ -38,6 +38,7 @@ describe('register', () => {
         expect(response.body).toBe('https://xxxx.com?state=state-value&code=12345');
         expect(response.headers['Access-Control-Allow-Origin']).toBe(property.URL_ACCOUNT_LINK);
         expect(response.headers['Access-Control-Allow-Credentials']).toBe(true);
+        expect(response.headers['Cache-Control']).toBe("no-store");
 
         // TrashScheduleに登録されたデータの確認
         expect(mockScheduleResult["id001"].id).toBe("id001");
@@ -63,6 +64,7 @@ describe('register', () => {
         expect(response.body).toBe('https://xxxx.com?state=state-value&code=12345');
         expect(response.headers['Access-Control-Allow-Origin']).toBe(property.URL_ACCOUNT_LINK);
         expect(response.headers['Access-Control-Allow-Credentials']).toBe(true);
+        expect(response.headers['Cache-Control']).toBe("no-store");
 
         // TrashScheduleに登録されたデータの確認
         expect(mockScheduleResult["id001"].id).toBe("id001");
@@ -91,6 +93,7 @@ describe('register', () => {
         expect(response.body).toBe('https://xxxx.com?state=state-value&code=12345');
         expect(response.headers['Access-Control-Allow-Origin']).toBe(property.URL_ACCOUNT_LINK);
         expect(response.headers['Access-Control-Allow-Credentials']).toBe(true);
+        expect(response.headers['Cache-Control']).toBe("no-store");
 
         // TrashScheduleに登録されたデータの確認
         expect(mockScheduleResult["id003"].id).toBe("id003");

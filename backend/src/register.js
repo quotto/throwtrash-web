@@ -96,7 +96,8 @@ module.exports = async(body,session)=>{
                 body: redirect_url,
                 headers: {
                     "Access-Control-Allow-Origin": property.URL_ACCOUNT_LINK,
-                    "Access-Control-Allow-Credentials": true
+                    "Access-Control-Allow-Credentials": true,
+                    "Cache-Control": "no-store"
                 }
             }
         } catch(err) {

@@ -17,7 +17,8 @@ module.exports = async(params,session) => {
             statusCode: 301,
             headers: {
                 Location: loginUrl,
-                "Set-Cookie": `${property.SESSIONID_NAME}=${session.id};max-age=${property.SESSION_MAX_AGE};`
+                "Set-Cookie": `${property.SESSIONID_NAME}=${session.id};max-age=${property.SESSION_MAX_AGE};`,
+                "Cache-Control": "no-store"
             }
         }
     }
