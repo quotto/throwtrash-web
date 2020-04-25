@@ -9,7 +9,7 @@ const signin = require("./signin");
 const oauth_request = require("./oauth_request");
 const google_signin = require("./google_signin");
 const start_link = require("./start_link");
-const exchange_amazon_code = require("./exchange_amazon_code");
+const enable_skill = require("./enable_skill");
 
 const extractSessionId = (cookie)=>{
     if(cookie) {
@@ -89,8 +89,8 @@ exports.handler = async function(event,context) {
         }
         return await start_link(event.queryStringParameters, session);
     }
-    else if(event.resource === "/exchange_amazon_code") {
-        return await exchange_amazon_code(event.queryStringParameters,session);
+    else if(event.resource === "/enable_skill") {
+        return await enable_skill(event.queryStringParameters,session);
     }
    return error_def.UserError;
 };

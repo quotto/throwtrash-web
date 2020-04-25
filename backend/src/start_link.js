@@ -11,12 +11,12 @@ module.exports = async(params,session) => {
         // platformに応じてAlexaログインURLを返す
         let loginUrl = "";
         if (params.platform === "android") {
-            loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&redirect_uri=https://backend.mythrowaway.net/${process.env.STAGE}/exchange_amazon_code&state=${session.state}`
+            loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&redirect_uri=https://backend.mythrowaway.net/${process.env.STAGE}/enable_skill&state=${session.state}`
         }
         return {
-            statusCode: 200,
-            body: loginUrl,
+            statusCode: 301,
             headers: {
+                Location: loginUrl,
                 "Set-Cookie": `${property.SESSIONID_NAME}=${session.id};max-age=${property.SESSION_MAX_AGE};`
             }
         }
