@@ -87,7 +87,7 @@ module.exports = async(params,session,domain,stage)=>{
             return {
                 statusCode: 301,
                 headers: {
-                    Location: `https://accountlink.mythrowaway.net/v${session.version}/index.html`,
+                    Location: `https://accountlink.mythrowaway.net/${stage}/index.html`,
                     "Cache-Control": "no-store"
                 }
             }

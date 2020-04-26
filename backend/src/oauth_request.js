@@ -3,19 +3,18 @@ const property = require("./property");
 const error_def = require("./error_def");
 
 
-module.exports = async (params,session,new_flg)=> {
-    if(params && params.state && params.client_id && params.redirect_uri && params.version && params.platform) {
+module.exports = async (params,session,new_flg,stage)=> {
+    if(params && params.state && params.client_id && params.redirect_uri && params.platform && stage) {
         session.state = params.state;
         session.client_id = params.client_id;
         session.redirect_uri = params.redirect_uri;
-        session.version = params.version;
         session.platform = params.platform;
 
         if(await db.saveSession(session)) {
             const response =  {
                 statusCode: 301,
                 headers: {
-                    Location: `https://accountlink.mythrowaway.net/v${params.version}/index.html`
+                    Location: `https://accountlink.mythrowaway.net/${stage}/index.html`
                 }
             };
             if(new_flg) {
