@@ -108,7 +108,7 @@ jobs:
           working_directory: frontend
       - run:
           name: build
-          command: npm run build -- --env.version=${FRONTEND_VERSION} --env.apistage=${STAGE}
+          command: npm run build -- --env.apistage=${STAGE}
           working_directory: frontend
       - persist_to_workspace:
           root: frontend
@@ -147,7 +147,8 @@ jobs:
           name: frontend deploy
           command: |
             if isChanged "frontend"; then
-              aws s3 sync frontend/dist s3://throwtrash
+              aws s3 sync frontend/dist/${STAGE} s3://throwtrash/${STAGE}
+              # 本番デプロイ時はデプロイステージのキャッシュをクリア
               if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
                 aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /${STAGE}/*
               fi
