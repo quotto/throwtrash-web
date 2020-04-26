@@ -41,7 +41,7 @@ exports.handler = async function(event,context) {
            new_session_flg = true;
            session = await db.publishSession();
        }
-       return oauth_request(event.queryStringParameters, session, new_session_flg);
+       return oauth_request(event.queryStringParameters, session, new_session_flg, event.requestContext.stage);
    } else if(event.resource === "/google_signin") {
        if(session) {
            return google_signin(session, event.requestContext.domainName, event.requestContext.stage);

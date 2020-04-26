@@ -64,8 +64,6 @@ Resources:
                   Required: true
               - method.request.querystring.platform:
                   Required: true
-              - method.request.querystring.version:
-                  Required: true
         OAuthSignin:
           Type: Api
           Properties:
