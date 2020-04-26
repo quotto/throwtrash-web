@@ -59,7 +59,10 @@ module.exports = async(params,session) => {
 
         await db.deleteSession(session.id);
         return {
-            statusCode: 200
+            statusCode: 200,
+            body: {
+                message: "AccountLinkComplete"
+            }
         }
     } catch(err) {
         console.error(err);

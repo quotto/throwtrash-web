@@ -108,7 +108,7 @@ class SignInDialog extends React.Component {
                                 <img src='https://images-na.ssl-images-amazon.com/images/G/01/lwa/btnLWA_gold_156x32.png' alt='sign in with Amazon' />
                             </a>
                             <a href={`https://${API_HOST}/${API_STAGE}/google_signin`} className={classes.signInButton}>
-                                <img className={classes.googleButtonImg} src='/img/btn_google_signin_ja.png' alt='sign in with Google' />
+                                <img className={classes.googleButtonImg} src='img/btn_google_signin_ja.png' alt='sign in with Google' />
                             </a>
                         </div>
                         <DialogActions>
