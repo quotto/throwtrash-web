@@ -149,7 +149,7 @@ jobs:
             if isChanged "frontend"; then
               aws s3 sync frontend/dist s3://throwtrash
               if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
-                aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /v${FRONTEND_VERSION}/*
+                aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /${STAGE}/*
               fi
             fi
       - run:

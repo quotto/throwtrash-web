@@ -8,10 +8,8 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = (env)=>{
     const filename = 'bundle.js';
-    const frontend_version = (env && env.version) || '0';
-    const path = `${app_root.path}/dist/v${frontend_version}`;
+    const path = `${app_root.path}/dist/${env.stage}`;
     const api_host = 'backend.mythrowaway.net';
-    const api_stage =  (env && env.apistage) || 'test';
     return {
         entry: './react/index.js',
         output: {
@@ -44,11 +42,12 @@ module.exports = (env)=>{
                 filename: 'css/index.css'
             }),
             new webpack.DefinePlugin({
-                API_STAGE: JSON.stringify(api_stage),
+                API_STAGE: JSON.stringify(env.stage),
                 API_HOST: JSON.stringify(api_host)
             }),
             new CopyPlugin([
-                {from: 'react/index.html', to: path}
+                // {from: 'react/index.html', to: path},
+                {from: 'static', to: path}
             ]),
         ],
         optimization: {
