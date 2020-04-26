@@ -87,10 +87,10 @@ exports.handler = async function(event,context) {
         if(!session) {
             session = await db.publishSession();
         }
-        return await start_link(event.queryStringParameters, session);
+        return await start_link(event.queryStringParameters, session, event.requestContext.stage);
     }
     else if(event.resource === "/enable_skill") {
-        return await enable_skill(event.queryStringParameters,session);
+        return await enable_skill(event.queryStringParameters,session, event.requestContext.stage);
     }
    return error_def.UserError;
 };

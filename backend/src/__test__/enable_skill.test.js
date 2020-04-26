@@ -55,12 +55,12 @@ const enable_skill = require("../enable_skill");
 describe("enable_skill",()=>{
     describe("正常系",()=>{
         it("開発:正常終了",async()=>{
-            process.env.STAGE = "dev";
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-dev";
-            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001"});
+            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001"},"dev");
             
-            expect(result.statusCode).toBe(200);
+            expect(result.statusCode).toBe(301);
+            expect(result.headers.Location).toBe("https://accountlink.mythrowaway.net/dev/accountlink-complete.html");
 
             // putAuthorizationCodeの結果
             expect(mockPutAuthorizationCodeResult["id001"]).toMatchObject({
@@ -72,12 +72,12 @@ describe("enable_skill",()=>{
             });
         });
         it("本番:正常終了",async()=>{
-            process.env.STAGE = "v1";
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
-            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001"});
+            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001"},"v1");
             
-            expect(result.statusCode).toBe(200);
+            expect(result.statusCode).toBe(301);
+            expect(result.headers.Location).toBe("https://accountlink.mythrowaway.net/v1/accountlink-complete.html");
 
             // putAuthorizationCodeの結果
             expect(mockPutAuthorizationCodeResult["id001"]).toMatchObject({
@@ -91,11 +91,11 @@ describe("enable_skill",()=>{
     })
     describe("異常系",()=>{
         it("stateが一致しない",async()=>{
-            const result = await enable_skill({state: "not_match_state"}, {state: "12345"});
+            const result = await enable_skill({state: "not_match_state"}, {state: "12345"}, "v1");
             expect(result.statusCode).toBe(400);
         });
         it("DBエラー",async()=>{
-            const result = await enable_skill({state: "12345"},{state: "12345", id: "session_id002",user_id: "id002"});
+            const result = await enable_skill({state: "12345"},{state: "12345", id: "session_id002",user_id: "id002"}, "v1");
             expect(result.statusCode).toBe(500);
         });
     });
