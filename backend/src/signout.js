@@ -1,8 +1,10 @@
+const log4js = require("log4js");
+const logger = log4js.getLogger();
 const property = require("./property");
 const db = require("./dbadapter");
 module.exports = async(session)=>{
     if(session.userInfo) {
-        console.info("signout:"+session.userInfo.signinId);
+        logger.info("signout:"+session.userInfo.signinId);
         session.userInfo = undefined;
         await db.saveSession(session);
         return {
@@ -14,7 +16,7 @@ module.exports = async(session)=>{
             }
         }
     }
-    console.warn("not signed in user");
+    logger.warn("not signed in user");
     return {
         statusCode: 200,
         body: "",

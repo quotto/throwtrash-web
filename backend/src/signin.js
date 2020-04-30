@@ -1,3 +1,5 @@
+const log4js = require("log4js");
+const logger = log4js.getLogger();
 const db = require("./dbadapter");
 const rp = require("request-promise");
 const jwt = require("jsonwebtoken");
@@ -12,14 +14,14 @@ const requestAmazonProfile = (access_token)=>{
         resolveWithFullResponse: true,
         json: true
     }).then(response => {
-        console.debug("signin on amazon",JSON.stringify(response));
+        logger.debug("signin on amazon",JSON.stringify(response));
         if (response.statusCode === 200) {
             return {id: response.body.user_id, name: response.body.name};
         }
-        console.error(response);
+        logger.error(response);
         throw new Error("Signin Failed");
     }).catch(err=>{
-        console.error(err);
+        logger.error(err);
         throw new Error("Amazon Signin Failed");
     });
 }
@@ -38,15 +40,15 @@ const requestGoogleProfile = (code,domain,stage)=>{
         json: true
     };
     return rp(options).then(response=>{
-        console.debug("sign in on google:",response);
+        logger.debug("sign in on google:",response);
         if(response.id_token) {
             const decoded_token = jwt.decode(response.id_token);
             return {id: decoded_token.sub, name: decoded_token.name};
         } 
-        console.error(JSON.stringify(response));
+        logger.error(JSON.stringify(response));
         throw new Error("Signin Failed");
     }).catch(err=>{
-        console.error(err);
+        logger.error(err);
         throw new Error("Google Signin Failed");
     });
 }
@@ -60,7 +62,7 @@ module.exports = async(params,session,domain,stage)=>{
                 && session && params.state === session.googleState) {
         service_request = requestGoogleProfile(params.code,domain,stage);
     }  else {
-        console.error("invalid parameter",params,session);
+        logger.error("invalid parameter",params,session);
         return error_def.UserError;
     }
 
@@ -93,7 +95,7 @@ module.exports = async(params,session,domain,stage)=>{
             }
         }
     } catch(err) {
-        console.error(err);
+        logger.error(err);
         return error_def.ServerError;
     }
 }

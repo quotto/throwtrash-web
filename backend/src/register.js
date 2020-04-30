@@ -1,3 +1,5 @@
+const log4js = require("log4js");
+const logger = log4js.getLogger();
 const common = require("trash-common");
 const property = require("./property");
 const db = require("./dbadapter");
@@ -44,7 +46,7 @@ const adjustData = (input_data, offset) => {
             regist_data.push(regist_trash);
         });
     } catch(err) {
-        console.error("adjust error:" + err);
+        logger.error("adjust error:" + err);
     }
     return regist_data;
 }
@@ -52,12 +54,12 @@ const adjustData = (input_data, offset) => {
 module.exports = async(body,session)=>{
     // 検証した登録データをセッションに格納
     if(body && session && session.state && session.client_id && session.redirect_uri) {
-        console.info(`Regist request from ${session.id}`);
-        console.debug("Regist Data:", JSON.stringify(body));
+        logger.info(`Regist request from ${session.id}`);
+        logger.debug("Regist Data:", JSON.stringify(body));
 
         const regist_data = adjustData(body.data, body.offset);
         if (!common.checkTrashes(regist_data)) {
-            console.error(`platform: ${session.platform}`);
+            logger.error(`platform: ${session.platform}`);
             return {
                 statusCode: 400,
                 body: "Bad Data"
@@ -90,7 +92,7 @@ module.exports = async(body,session)=>{
             await db.deleteSession(session.id);
 
             const redirect_url = `${session.redirect_uri}?state=${session.state}&code=${authorizationCode.code}`;
-            console.debug("redirect to amazon auhorize service:", redirect_url);
+            logger.debug("redirect to amazon auhorize service:", redirect_url);
             return {
                 statusCode: 200,
                 body: redirect_url,
@@ -101,14 +103,14 @@ module.exports = async(body,session)=>{
                 }
             }
         } catch(err) {
-            console.error(err);
+            logger.error(err);
             return {
                 statusCode: 500,
                 body: "Registration Failed"
             }
         }
     } else {
-        console.error("invalid parameter"+
+        logger.error("invalid parameter"+
             JSON.stringify({body: body,session:session}));
         return {
             statusCode: 400,
