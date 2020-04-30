@@ -172,7 +172,7 @@ jobs:
 
               # API/Lambdaのパッケージングとデプロイ
               aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
-              aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${STAGE} --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} DBREGION=${DBREGION} ALEXAUSERCLIENTID=${ALEXA_USER_CLIENT_ID} ALEXAUSERSECRET=${ALEXA_USER_SECRET} ALEXASKILLID=${ALEXA_SKILL_ID} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+              aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${STAGE} --parameter-overrides GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} DBREGION=${DBREGION} ALEXAUSERCLIENTID=${ALEXA_USER_CLIENT_ID} ALEXAUSERSECRET=${ALEXA_USER_SECRET} GOOGLEUSERCLIENTID=${GOOGLE_USER_CLIENT_ID} GOOGLEUSERSCRET=${GOOGLE_USER_SECRET} ALEXASKILLID=${ALEXA_SKILL_ID} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
             fi
       - run:
           name: api deploy

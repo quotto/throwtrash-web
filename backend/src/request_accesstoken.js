@@ -14,7 +14,7 @@ module.exports = async (params,authorization) => {
         !(params.client_id === process.env.GOOGLE_USER_CLIENT_ID &&
             params.secret === process.env.GOOGLE_USER_SECRET)
     ) {
-        logger.error(`Invalid parameter or authorization -> params=${params},authorization=${authorization}`);
+        logger.error(`Invalid parameter or authorization -> params=${JSON.stringify(params)},authorization=${authorization}`);
         return {
             statusCode: 401
         }
