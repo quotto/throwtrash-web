@@ -22,6 +22,10 @@ Parameters:
     Type: "String"
   ALEXAUSERSECRET:
     Type: "String"
+  GOOGLEUSERCLIENTID:
+    Type: "String"
+  GOOGLEUSERSECRET:
+    Type: "String"
   ALEXASKILLID:
     Type: "String"
 Resources:
@@ -49,6 +53,13 @@ Resources:
           GOOGLE_USER_CLIENT_ID: !Ref GOOGLEUSERCLIENTID
           GOOGLE_USER_SECRET: !Ref GOOGLEUSERSECRET
           ALEXA_SKILL_ID: !Ref ALEXASKILLID
+      Tags:
+        - 
+          Key: Group
+          Value: throwtrash
+        - 
+          Key: Purpose
+          Value: WebBackend/OAuthBackend
       Events:
         OAuthRequest:
           Type: Api
@@ -134,6 +145,13 @@ Resources:
     DeletionPolicy: Retain
     Properties:
       Name: !Sub "throwtrash-backend-${STAGE}"
+      Tags:
+        - 
+          Key: Group
+          Value: throwtrash
+        - 
+          Key: Purpose
+          Value: WebBackend/OAuthBackend
       StageName: !Ref STAGE
       Cors:
         AllowMethods: "'GET,POST'"
