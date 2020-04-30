@@ -50,6 +50,13 @@ Resources:
         AttributeName: TTL
         Enabled: true
       BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: MobileBackend
     DeletionPolicy: Retain
 Outputs:
   ExecRole:
