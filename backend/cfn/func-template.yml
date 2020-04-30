@@ -54,12 +54,8 @@ Resources:
           GOOGLE_USER_SECRET: !Ref GOOGLEUSERSECRET
           ALEXA_SKILL_ID: !Ref ALEXASKILLID
       Tags:
-        - 
-          Key: Group
-          Value: throwtrash
-        - 
-          Key: Purpose
-          Value: WebBackend/OAuthBackend
+        Group: throwtrash
+        Purpose: WebBackend/OAuthBackend
       Events:
         OAuthRequest:
           Type: Api
@@ -146,12 +142,8 @@ Resources:
     Properties:
       Name: !Sub "throwtrash-backend-${STAGE}"
       Tags:
-        - 
-          Key: Group
-          Value: throwtrash
-        - 
-          Key: Purpose
-          Value: WebBackend/OAuthBackend
+        Group: throwtrash
+        Purpose: WebBackend/OAuthBackend
       StageName: !Ref STAGE
       Cors:
         AllowMethods: "'GET,POST'"

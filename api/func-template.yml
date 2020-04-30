@@ -26,12 +26,8 @@ Resources:
           DB_REGION: !Ref DBREGION
           RUNLEVEL: !Ref RUNLEVEL
       Tags:
-        -
-          Key: Group
-          Value: throwtrash
-        -
-          Key: Purpose
-          Value: MobileBackend
+        Group: throwtrash
+        Purpose: MobileBackend
       Events:
         Sync:
           Type: Api
@@ -78,10 +74,6 @@ Resources:
     Properties:
       Name: !Sub "throwtrash-mobile-api-${STAGE}"
       Tags:
-        -
-          Key: Group
-          Value: throwtrash
-        -
-          Key: Purpose
-          Value: MobileBackend
+        Group: throwtrash
+        Purpose: MobileBackend
       StageName: !Ref STAGE
