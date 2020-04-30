@@ -67,6 +67,13 @@ Resources:
         AttributeName: expire
         Enabled: true
       BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: WebBackend/OAuthBackend
     DeletionPolicy: Retain
   AuthroizationTable:
     Type: "AWS::DynamoDB::Table"
@@ -84,6 +91,13 @@ Resources:
         AttributeName: expires_in
         Enabled: true
       BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: OAuthBackend
     DeletionPolicy: Retain
   AccessTokenTable:
     Type: "AWS::DynamoDB::Table"
@@ -101,6 +115,13 @@ Resources:
         AttributeName: expires_in
         Enabled: true
       BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: OAuthBackend
     DeletionPolicy: Retain
   RefreshTokenTable:
     Type: "AWS::DynamoDB::Table"
@@ -118,6 +139,13 @@ Resources:
         AttributeName: expires_in
         Enabled: true
       BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: OAuthBackend
     DeletionPolicy: Retain
 Outputs:
   ExecRole:
