@@ -25,6 +25,13 @@ Resources:
         Variables:
           DB_REGION: !Ref DBREGION
           RUNLEVEL: !Ref RUNLEVEL
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: MobileBackend
       Events:
         Sync:
           Type: Api
@@ -70,4 +77,11 @@ Resources:
     DeletionPolicy: Retain
     Properties:
       Name: !Sub "throwtrash-mobile-api-${STAGE}"
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: MobileBackend
       StageName: !Ref STAGE
