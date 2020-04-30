@@ -1,11 +1,20 @@
+const log4js = require("log4js");
+const logger = log4js.getLogger();
+
 const db = require("./dbadapter");
 
 const ACCESS_TOKEN_EXPIRE = 7 * 24 * 60 * 60;
 const REFRESH_TOKEN_EXPIRE = 30 * 24 * 60 * 60;
 
 module.exports = async (params,authorization) => {
-    console.debug(JSON.stringify(params));
-    if(!(authorization === "Basic " + Buffer.from(`${process.env.ALEXA_USER_CLIENT_ID}:${process.env.ALEXA_USER_SECRET}`).toString("base64"))){
+    logger.debug(JSON.stringify(params));
+    logger.debug(`Authorization -> ${authorization}`);
+    if(!(params.client_id === process.env.ALEXA_USER_CLIENT_ID &&
+        authorization === "Basic " + Buffer.from(`${params.client_id}:${process.env.ALEXA_USER_SECRET}`).toString("base64")) &&
+        !(params.client_id === process.env.GOOGLE_USER_CLIENT_ID &&
+            params.secret === process.env.GOOGLE_USER_SECRET)
+    ) {
+        logger.error(`Invalid parameter or authorization -> params=${params},authorization=${authorization}`);
         return {
             statusCode: 401
         }
@@ -38,10 +47,10 @@ module.exports = async (params,authorization) => {
                         }
                     }
             } else {
-                console.error(`Invalid Parameters: db-> ${JSON.stringify(authorizationCode)},params->${JSON.stringify(params)}`);
+                logger.error(`Invalid Parameters: db-> ${JSON.stringify(authorizationCode)},params->${JSON.stringify(params)}`);
             }
         } catch(err) {
-            console.error(err);
+            logger.error(err);
             return {
                 statusCode: 500
             }
@@ -69,7 +78,7 @@ module.exports = async (params,authorization) => {
                 }
             }
         } catch(err) {
-            console.error(err);
+            logger.error(err);
             return {
                 statusCode: 500
             }

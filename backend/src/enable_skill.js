@@ -1,7 +1,9 @@
+const log4js = require("log4js");
+const logger = log4js.getLogger();
 const db = require("./dbadapter");
 const rp = require("request-promise");
 module.exports = async(params,session,stage) => {
-    console.debug(JSON.stringify(session));
+    logger.debug(JSON.stringify(session));
     if(params.state != session.state) {
         return {
             statusCode: 400
@@ -23,7 +25,7 @@ module.exports = async(params,session,stage) => {
 
     try {
         const amazonAccessToken = await rp(options);
-        console.debug(amazonAccessToken);
+        logger.debug(amazonAccessToken);
 
         const alexaEndpoint = await rp({
             uri: "https://api.amazonalexa.com/v1/alexaApiEndpoint",
@@ -55,7 +57,7 @@ module.exports = async(params,session,stage) => {
             }
         }
         const skillResponse = await rp(enableSkillOptions);
-        console.debug(skillResponse);
+        logger.debug(skillResponse);
 
         await db.deleteSession(session.id);
         return {
@@ -65,7 +67,7 @@ module.exports = async(params,session,stage) => {
             }
         }
     } catch(err) {
-        console.error(err);
+        logger.error(err);
         return {
             statusCode: 500
         }

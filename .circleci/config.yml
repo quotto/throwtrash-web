@@ -13,7 +13,6 @@ commands:
             else
               echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
               echo "export STAGE=dev" >> $BASH_ENV
-              echo "export FRONTEND_VERSION=0" >> $BASH_ENV
               echo "export DBREGION=us-west-2" >> $BASH_ENV
             fi
 

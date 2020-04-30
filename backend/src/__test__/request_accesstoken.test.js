@@ -1,5 +1,17 @@
 /* eslint-disable no-unused-vars */
-const property = require("../property");
+process.env.RUNLEVEL = "DEBUG";
+const log4js = require("log4js");
+log4js.configure({
+    appenders: {
+        out: {type: "stdout",layout: {
+            type: "pattern",
+            pattern: "[%p] %m"
+        }}
+    },
+    categories: {default: {appenders: ["out"],level: process.env.RUNLEVEL}}
+});
+const logger = log4js.getLogger();
+
 const mockDate = Date.UTC(2020,3,1,12,0,0,0);
 const mockResult = { };
 
@@ -20,6 +32,10 @@ db.getAuthorizationCode.mockImplementation(async (code) => {
         };
     } else if (code === "99999") {
         throw new Error("Get code Error");
+    } else if (code === "g0123") {
+        return {
+            code: code, user_id: "id-google-001", client_id: "google", redirect_uri: "https://alexa.amazon.co.jp/api/skill/link/XXXXXX"
+        };
     } else {
         return undefined;
     }
@@ -39,6 +55,12 @@ db.putAccessToken.mockImplementation(async (user_id, client_id, expires_in) => {
             expires_in: Math.ceil(mockDate / 1000) + expires_in
         }
         return "accesstoken004";
+    } else if(user_id === "id-google-001") {
+        mockResult["accesstoken-google-001"] = {
+            client_id: client_id,
+            expires_in: Math.ceil(mockDate / 1000) + expires_in
+        }
+        return "accesstoken-google-001";
     }
 });
 db.putRefreshToken.mockImplementation(async (user_id, client_id, expires_in) => {
@@ -56,6 +78,12 @@ db.putRefreshToken.mockImplementation(async (user_id, client_id, expires_in) => 
             expires_in: Math.ceil(mockDate/1000) + expires_in
         }
         return "new_refreshtoken004";
+    } else if (user_id === "id-google-001") {
+        mockResult["refreshtoken-google-001"] = {
+            client_id: client_id,
+            expires_in: Math.ceil(mockDate/1000) + expires_in
+        }
+        return "refreshtoken-google-001";
     }
 });
 db.getRefreshToken.mockImplementation(async(refresh_token) => {
@@ -73,18 +101,20 @@ db.getRefreshToken.mockImplementation(async(refresh_token) => {
 
 const request_accesstoken = require("../request_accesstoken.js");
 describe("request_accesstoken",()=>{
-    const authorization = "Basic YWxleGEtc2tpbGw6OGg2cEd4SGRXaDhy"; //alexa-skill:8h6pGxHdWh8r
+    const alexaAuthorization = "Basic YWxleGEtc2tpbGw6OGg2cEd4SGRXaDhy"; //alexa-skill:8h6pGxHdWh8r
     process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
     process.env.ALEXA_USER_SECRET = "8h6pGxHdWh8r";
+    process.env.GOOGLE_USER_CLIENT_ID = "google";
+    process.env.GOOGLE_USER_SECRET = "543kjfdfal";
 
-    it("grant_type=authorization_code",async()=>{
+    it("grant_type=authorization_code_alexa",async()=>{
        const params = {
            code: "12345",
            grant_type: "authorization_code",
            client_id: "alexa-skill",
            redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX"
        }
-       const result = await request_accesstoken(params,authorization);
+       const result = await request_accesstoken(params,alexaAuthorization);
        console.log(result);
        expect(result.statusCode).toBe(200);
 
@@ -101,13 +131,39 @@ describe("request_accesstoken",()=>{
        expect(mockResult["refreshtoken001"].client_id).toBe("alexa-skill");
        expect(mockResult["refreshtoken001"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
     });
-    it("grant_type=refresh_token",async()=>{
+    it("grant_type=authorization_code_google",async()=>{
+        // googleのアカウンリンク認証はパラメータにclient_id&secretが渡される
+       const params = {
+           code: "g0123",
+           grant_type: "authorization_code",
+           client_id: "google",
+           redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX",
+           secret: process.env.GOOGLE_USER_SECRET
+       }
+       const result = await request_accesstoken(params,undefined);
+       console.log(result);
+       expect(result.statusCode).toBe(200);
+
+       const body = JSON.parse(result.body);
+       expect(body.access_token).toBe("accesstoken-google-001");
+       expect(body.token_type).toBe("bearer");
+       expect(body.refresh_token).toBe("refreshtoken-google-001");
+
+       const date = new Date(body.expires_in);
+       expect(body.expires_in).toBe(7 * 24 * 60 * 60);
+
+       expect(mockResult["accesstoken-google-001"].client_id).toBe("google");
+       expect(mockResult["accesstoken-google-001"].expires_in).toBe(Math.ceil(mockDate/1000)+(7 * 24 * 60 * 60));
+       expect(mockResult["refreshtoken-google-001"].client_id).toBe("google");
+       expect(mockResult["refreshtoken-google-001"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
+    });
+    it("grant_type=refresh_token_alexa",async()=>{
        const params = {
            grant_type: "refresh_token",
            refresh_token: "refreshtoken004",
            client_id: "alexa-skill"
        }
-       const result = await request_accesstoken(params,authorization);
+       const result = await request_accesstoken(params,alexaAuthorization);
        console.log(result);
        expect(result.statusCode).toBe(200);
 
@@ -123,7 +179,8 @@ describe("request_accesstoken",()=>{
        expect(mockResult["refreshtoken004"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
     });
     it("Authorization Code 取得エラー",async()=>{
-        const result = await request_accesstoken({grant_type: "authorization_code",code: "99999"},authorization);
+        const result = await request_accesstoken(
+            {grant_type: "authorization_code",code: "99999",client_id: "alexa-skill"},alexaAuthorization);
         expect(result.statusCode).toBe(500);
     });
     it("AccessToken登録エラー",async()=>{
@@ -133,7 +190,7 @@ describe("request_accesstoken",()=>{
            client_id: "alexa-skill",
            redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX"
        }
-       const result = await request_accesstoken(params,authorization);
+       const result = await request_accesstoken(params,alexaAuthorization);
        console.log(result);
        expect(result.statusCode).toBe(500);
     });
@@ -144,7 +201,7 @@ describe("request_accesstoken",()=>{
            client_id: "alexa-skill",
            redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX"
        }
-       const result = await request_accesstoken(params,authorization);
+       const result = await request_accesstoken(params,alexaAuthorization);
        console.log(result);
        expect(result.statusCode).toBe(500);
     });
@@ -154,23 +211,35 @@ describe("request_accesstoken",()=>{
            client_id: "alexa-skill",
            refresh_token: "error_refreshtoken"
        }
-       const result = await request_accesstoken(params,authorization);
+       const result = await request_accesstoken(params,alexaAuthorization);
        console.log(result);
        expect(result.statusCode).toBe(500);
     });
     describe("パラメータエラー",()=>{
         it("grant_typeが一致しない",async()=>{
-            const result = await  request_accesstoken({grant_type: "error"},authorization);
+            const result = await  request_accesstoken(
+                {grant_type: "error", client_id: "alexa-skill"},alexaAuthorization);
             expect(result.statusCode).toBe(400);
         });
-        it("client_idが一致しない",async()=>{
+        it("client_idが一致しない(auhtorization_code)",async()=>{
             const params = {
                 code: "12345",
                 grant_type: "authorization_code",
-                client_id: "invalid-client",
-                redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX"
+                client_id: "google",
+                redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX",
+                secret: process.env.GOOGLE_USER_SECRET
             }
-            const result = await  request_accesstoken(params,authorization);
+            const result = await  request_accesstoken(params,undefined);
+            expect(result.statusCode).toBe(400);
+        });
+        it("client_idが一致しない(refresh_token)",async()=>{
+            const params = {
+                grant_type: "refresh_token",
+                code: "refreshtoken004",
+                client_id: "google",
+                secret: process.env.GOOGLE_USER_SECRET
+            }
+            const result = await  request_accesstoken(params,undefined);
             expect(result.statusCode).toBe(400);
         });
         it("redirect_uriが一致しない",async()=>{
@@ -180,25 +249,16 @@ describe("request_accesstoken",()=>{
                 client_id: "alexa-skill",
                 redirect_uri: "invalid-uri"
             }
-            const result = await  request_accesstoken(params,authorization);
-            expect(result.statusCode).toBe(400);
-        });
-        it("client_idが一致しない",async()=>{
-            const params = {
-                grant_type: "refresh_token",
-                refresh_token: "refreshtoken004",
-                client_id: "invalid-client_id"
-            }
-            const result = await  request_accesstoken(params,authorization);
+            const result = await  request_accesstoken(params,alexaAuthorization);
             expect(result.statusCode).toBe(400);
         });
         it("refresh_tokenが見つからない",async()=>{
             const params = {
                 grant_type: "refresh_token",
                 refresh_token: "not_exists_refreshtoken",
-                client_id: "invalid-client_id"
+                client_id: "alexa-skill"
             }
-            const result = await  request_accesstoken(params,authorization);
+            const result = await  request_accesstoken(params,alexaAuthorization);
             expect(result.statusCode).toBe(400);
         });
         it("Auhtorizationヘッダエラー",async()=>{

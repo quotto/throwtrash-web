@@ -1,3 +1,15 @@
+const log4js = require("log4js");
+log4js.configure({
+    appenders: {
+        out: {type: "stdout",layout: {
+            type: "pattern",
+            pattern: "[%p] %m"
+        }}
+    },
+    categories: {default: {appenders: ["out"],level: process.env.RUNLEVEL}}
+});
+const logger = log4js.getLogger();
+
 const property = require("./property");
 const error_def = require("./error_def");
 const db = require("./dbadapter");
@@ -26,14 +38,14 @@ const extractSessionId = (cookie)=>{
 };
 
 exports.handler = async function(event,context) {
-    console.debug(event);
-    console.debug(context);
+    logger.debug(event);
+    logger.debug(context);
     let session = null;
     let sessionId = extractSessionId(event.headers.Cookie);
-    console.debug("get sessionId in cookie:",sessionId);
+    logger.debug("get sessionId in cookie:",sessionId);
     if(sessionId) {
         session = await db.getSession(sessionId);
-        console.debug("get session",session);
+        logger.debug("get session",session);
     }
    if(event.resource === "/oauth_request")  {
        let new_session_flg = false;
@@ -62,7 +74,7 @@ exports.handler = async function(event,context) {
                const body = JSON.parse(event.body);
                return register(body, session);
            } catch(err){ 
-               console.error(err);
+               logger.error(err);
            }
        }
        // /registはフォームから非同期で呼ばれるためエラーの場合は400を返す
