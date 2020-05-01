@@ -138,7 +138,7 @@ describe("request_accesstoken",()=>{
            grant_type: "authorization_code",
            client_id: "google",
            redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX",
-           secret: process.env.GOOGLE_USER_SECRET
+           client_secret: process.env.GOOGLE_USER_SECRET
        }
        const result = await request_accesstoken(params,undefined);
        console.log(result);
@@ -227,7 +227,7 @@ describe("request_accesstoken",()=>{
                 grant_type: "authorization_code",
                 client_id: "google",
                 redirect_uri: "https%3A%2F%2Falexa.amazon.co.jp%2Fapi%2Fskill%2Flink%2FXXXXXX",
-                secret: process.env.GOOGLE_USER_SECRET
+                client_secret: process.env.GOOGLE_USER_SECRET
             }
             const result = await  request_accesstoken(params,undefined);
             expect(result.statusCode).toBe(400);
@@ -237,7 +237,7 @@ describe("request_accesstoken",()=>{
                 grant_type: "refresh_token",
                 code: "refreshtoken004",
                 client_id: "google",
-                secret: process.env.GOOGLE_USER_SECRET
+                client_secret: process.env.GOOGLE_USER_SECRET
             }
             const result = await  request_accesstoken(params,undefined);
             expect(result.statusCode).toBe(400);

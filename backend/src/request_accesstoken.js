@@ -12,7 +12,7 @@ module.exports = async (params,authorization) => {
     if(!(params.client_id === process.env.ALEXA_USER_CLIENT_ID &&
         authorization === "Basic " + Buffer.from(`${params.client_id}:${process.env.ALEXA_USER_SECRET}`).toString("base64")) &&
         !(params.client_id === process.env.GOOGLE_USER_CLIENT_ID &&
-            params.secret === process.env.GOOGLE_USER_SECRET)
+            params.client_secret === process.env.GOOGLE_USER_SECRET)
     ) {
         logger.error(`Invalid parameter or authorization -> params=${JSON.stringify(params)},authorization=${authorization}`);
         return {
