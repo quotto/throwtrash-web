@@ -16,7 +16,7 @@ log4js.configure({
 });
 const logger = log4js.getLogger();
 
-exports.handler = async function(event,context) {
+exports.handler = async function(event,_context) {
     logger.debug(event);
     if(event.resource === '/register') {
         // 新規登録処理
