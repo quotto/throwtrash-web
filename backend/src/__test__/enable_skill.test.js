@@ -1,3 +1,5 @@
+const log4js = require("log4js");
+log4js.configure(require("./log4js.test.config.json"));
 
 jest.mock("request-promise",()=>(async(option)=>{
     if(option.uri === "https://api.amazon.com/auth/o2/token") {

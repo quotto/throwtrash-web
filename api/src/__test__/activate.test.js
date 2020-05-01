@@ -1,3 +1,6 @@
+const log4js = require("log4js");
+log4js.configure(require("./log4js.test.config.json"));
+
 const mockData001 = [
     {
         id: "1234567",
@@ -41,6 +44,11 @@ class mockClass {
                     throw new Error("DB Get Error");
                 }
             }
+        }
+    }
+    delete(params) {
+        return {
+            promise: async()=>{return {}}
         }
     }
 }

@@ -1,3 +1,5 @@
+log4js.configure(require("./log4js.test.config.json"));
+const log4js = require("log4js");
 const mockData001 = [
     {
         id: "1234567",

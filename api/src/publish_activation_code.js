@@ -1,5 +1,7 @@
 const AWS = require('aws-sdk');
 const property = require("./property.js");
+const log4js = require("log4js");
+const logger = log4js.getLogger();
 
 const generateActivationCode = async()=>{
    const documentClient = new AWS.DynamoDB .DocumentClient({region: process.env.DB_REGION});
@@ -24,33 +26,36 @@ const generateActivationCode = async()=>{
     throw new Error("Failed generate activation code.")
 }
 module.exports = async(params)=>{
-   const documentClient = new AWS.DynamoDB .DocumentClient({region: process.env.DB_REGION});
+    logger.debug(JSON.stringify(params));
+    const documentClient = new AWS.DynamoDB.DocumentClient({ region: process.env.DB_REGION });
 
-   try {
-       const result = await documentClient.get({
-           TableName: property.TRASH_SCHEDULE_TABLE_NAME,
-           Key: {
-               id: params.id
-           }
-       }).promise();
-       if(result.Item) {
-           const code = await generateActivationCode();
-           //TTLを5分間に設定
-           const ttl = Math.ceil(new Date().getTime()/1000 + (5 * 60));
-           await documentClient.put({
-               TableName: property.ACTIVATE_TABLE_NAME,
-               Item: {
-                   code: code,
-                   user_id: params.id,
-                   TTL: ttl
-               }
-           }).promise();
-           return {statusCode: 200, body: JSON.stringify({code: code})};
-       } else {
-           throw new Error(`ID Not Found: ${params.id}`);
-       }
-   } catch(err) {
-       console.error(err);
-       return {statusCode: 400}
-   }
+    try {
+        const result = await documentClient.get({
+            TableName: property.TRASH_SCHEDULE_TABLE_NAME,
+            Key: {
+                id: params.id
+            }
+        }).promise();
+        logger.debug(`Target Schedule -> ${JSON.stringify(result)} `);
+        if (result.Item) {
+            const code = await generateActivationCode();
+            logger.debug(`Publish Activation Code -> ${code}`);
+            //TTLを5分間に設定
+            const ttl = Math.ceil(new Date().getTime() / 1000 + (5 * 60));
+            await documentClient.put({
+                TableName: property.ACTIVATE_TABLE_NAME,
+                Item: {
+                    code: code,
+                    user_id: params.id,
+                    TTL: ttl
+                }
+            }).promise();
+            return { statusCode: 200, body: JSON.stringify({ code: code }) };
+        } else {
+            throw new Error(`ID Not Found: ${params.id}`);
+        }
+    } catch (err) {
+        logger.error(err);
+        return { statusCode: 400 }
+    }
 }

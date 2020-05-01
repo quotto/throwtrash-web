@@ -3,7 +3,21 @@ const update = require("./update");
 const register = require("./register");
 const publish_activation_code = require("./publish_activation_code");
 const activate = require("./activate");
+
+const log4js = require("log4js");
+log4js.configure({
+    appenders: {
+        out: {type: "console",layout: {
+            type: "pattern",
+            pattern: "[%p] %m"
+        }}
+    },
+    categories: {default: {appenders: ["out"],level: process.env.RUNLEVEL}}
+});
+const logger = log4js.getLogger();
+
 exports.handler = async function(event,context) {
+    logger.debug(event);
     if(event.resource === '/register') {
         // 新規登録処理
         return await register(JSON.parse(event.body))

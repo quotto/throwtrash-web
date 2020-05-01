@@ -154,6 +154,22 @@ const putAuthorizationCode = async(user_id,client_id,redirect_uri,expires_in)=>{
     throw new Error("Put Authorization Code Failed(Over limit)");
 }
 
+const deleteAuthorizationCode = async(code) => {
+    try {
+        const deleteData = await documentClient.delete({
+            TableName: property.AUTHORIZE_TABLE,
+            Key: {
+                code: code
+            }
+        }).promise();
+        logger.debug(`Delete Authorization Code -> ${JSON.stringify(deleteData)}`);
+        return deleteData;
+    } catch(err) {
+        logger.error(err);
+    }
+    throw new Error("Delete Authorization Code Failed.");
+}
+
 const putTrashSchedule = async(item, regist_data) =>{
     const params = {
         TableName: property.SCHEDULE_TABLE,
@@ -242,6 +258,7 @@ module.exports = {
     putTrashSchedule: putTrashSchedule,
     getAuthorizationCode: getAuthorizationCode,
     putAuthorizationCode: putAuthorizationCode,
+    deleteAuthorizationCode: deleteAuthorizationCode,
     publishId: publishId,
     getSession: getSession,
     publishSession: publishSession,

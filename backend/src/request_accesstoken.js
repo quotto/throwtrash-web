@@ -31,7 +31,10 @@ module.exports = async (params,authorization) => {
                     // リフレッシュトークンの登録
                     const refreshToken =db.putRefreshToken(authorizationCode.user_id,params.client_id, REFRESH_TOKEN_EXPIRE);
 
-                    const result = await Promise.all([accessToken,refreshToken]);
+                    // 使い終わった認可コードの削除
+                    const deleteCode = db.deleteAuthorizationCode(params.code);
+
+                    const result = await Promise.all([accessToken,refreshToken,deleteCode]);
                     return {
                         statusCode: 200,
                         body: JSON.stringify({
