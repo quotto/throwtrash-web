@@ -1,4 +1,6 @@
 /* eslint-disable no-unused-vars */
+const log4js = require("log4js");
+log4js.configure(require("./log4js.test.config.json"));
 
 /**
  * DBアクセス等すべて実装済みで実施する
@@ -283,6 +285,27 @@ describe("putAuthorizationCode",()=>{
                 code: result.code
             }
         }).promise();
+    });
+});
+
+describe("deleteAuthorizationCode",()=>{
+    beforeAll(async()=>{
+        await documentClient.put({
+            TableName: property.AUTHORIZE_TABLE,
+            Item: {
+                code: "1234xyz"
+            }
+        }).promise();
+    })
+    it("正常削除",async()=>{
+        const result = await db.deleteAuthorizationCode("1234xyz");
+        // deleteのReturnValuesのデフォルトはNONEのため正常終了の場合は戻り値が空
+        expect(JSON.stringify(result)).toMatch("{}");
+    });
+    it("存在しないデータ",async()=>{
+        const result = await db.deleteAuthorizationCode("not_exists_code");
+        // 存在しないデータの削除も正常終了する
+        expect(JSON.stringify(result)).toMatch("{}");
     });
 });
 

@@ -1,8 +1,11 @@
 const AWS = require("aws-sdk");
 const common = require("trash-common");
 const property = require("./property.js");
+const log4js = require("log4js");
+const logger = log4js.getLogger();
 
 module.exports = async (data)=>{
+    logger.info(`Update Data -> ${JSON.stringify(data)}`);
     const documentClient = new AWS.DynamoDB.DocumentClient({region: process.env.DB_REGION});
 
     try {
@@ -16,6 +19,7 @@ module.exports = async (data)=>{
                 timestamp: new Date().getTime()
             }
 
+            logger.debug(`Put Item -> ${JSON.stringify(dataParams)}`);
             await documentClient.put({
                 TableName: property.TRASH_SCHEDULE_TABLE_NAME,
                 Item: dataParams,
@@ -27,7 +31,7 @@ module.exports = async (data)=>{
             throw new Error(`Invalid Data: ${data.description}`);
         }
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         return { statusCode: 400 }
     }
 }

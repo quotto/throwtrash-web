@@ -1,14 +1,13 @@
 /* eslint-disable no-unused-vars */
-process.env.RUNLEVEL = "DEBUG";
 const log4js = require("log4js");
 log4js.configure({
     appenders: {
-        out: {type: "stdout",layout: {
+        out: {type: "console",layout: {
             type: "pattern",
             pattern: "[%p] %m"
         }}
     },
-    categories: {default: {appenders: ["out"],level: process.env.RUNLEVEL}}
+    categories: {default: {appenders: ["out"],level: "DEBUG"}}
 });
 const logger = log4js.getLogger();
 
@@ -39,6 +38,9 @@ db.getAuthorizationCode.mockImplementation(async (code) => {
     } else {
         return undefined;
     }
+});
+db.deleteAuthorizationCode.mockImplementation(async(code)=>{
+    return {};
 });
 db.putAccessToken.mockImplementation(async (user_id, client_id, expires_in) => {
     if (user_id === "id001") {
