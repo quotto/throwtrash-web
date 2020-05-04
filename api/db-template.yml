@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Description: The AWS CloudFormation template for BSE Workflow
+Parameters:
+  ActivationTableName:
+    Type: String
+    Value: throwtrash-activation
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -12,7 +16,7 @@ Resources:
             Effect: "Allow"
             Action: "dynamodb:*"
             Resource:
-              - !GetAtt ActivationTable.Arn
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${ActivationTableName}"
               - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule"
       PolicyName: !Sub "throwtrash-mobile-policy-${AWS::Region}"
       Roles:
@@ -45,7 +49,7 @@ Resources:
         -
           AttributeName: "code"
           KeyType: HASH
-      TableName: throwtrash-activation
+      TableName: !Ref ActivationTableName 
       TimeToLiveSpecification:
         AttributeName: TTL
         Enabled: true
