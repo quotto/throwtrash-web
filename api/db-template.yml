@@ -4,7 +4,7 @@ Description: The AWS CloudFormation template for BSE Workflow
 Parameters:
   ActivationTableName:
     Type: String
-    Value: throwtrash-activation
+    Default: throwtrash-activation
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
