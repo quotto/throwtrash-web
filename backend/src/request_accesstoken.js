@@ -2,6 +2,7 @@ const log4js = require("log4js");
 const logger = log4js.getLogger();
 
 const db = require("./dbadapter");
+const error_def = require("./error_def");
 
 const ACCESS_TOKEN_EXPIRE = 7 * 24 * 60 * 60;
 const REFRESH_TOKEN_EXPIRE = 30 * 24 * 60 * 60;
@@ -15,9 +16,7 @@ module.exports = async (params,authorization) => {
             params.client_secret === process.env.GOOGLE_USER_SECRET)
     ) {
         logger.error(`Invalid parameter or authorization -> params=${JSON.stringify(params)},authorization=${authorization}`);
-        return {
-            statusCode: 401
-        }
+        return error_def.UserError
     }
     if (params.grant_type === "authorization_code") {
         try {
@@ -54,9 +53,7 @@ module.exports = async (params,authorization) => {
             }
         } catch(err) {
             logger.error(err);
-            return {
-                statusCode: 500
-            }
+            return error_def.ServerError;
         }
     } else if(params.grant_type === "refresh_token") {
         try {
@@ -82,12 +79,8 @@ module.exports = async (params,authorization) => {
             }
         } catch(err) {
             logger.error(err);
-            return {
-                statusCode: 500
-            }
+            return error_def.ServerError;
         }
     }
-    return {
-        statusCode: 400
-    }
+    return error_def.UserError
 }
