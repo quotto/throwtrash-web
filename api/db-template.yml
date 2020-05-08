@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: The AWS CloudFormation template for BSE Workflow
+Parameters:
+  ActivationTableName:
+    Type: String
+    Default: throwtrash-activation
+Resources:
+  LambdaExecPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: "dynamodb:*"
+            Resource:
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${ActivationTableName}"
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule"
+      PolicyName: !Sub "throwtrash-mobile-policy-${AWS::Region}"
+      Roles:
+        - !Ref LambdaExecRole
+    DeletionPolicy: Retain
+  LambdaExecRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      RoleName: !Sub "throwtrash-mobile-lambda-role-${AWS::Region}"
+    DeletionPolicy: Retain
+  ActivationTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "code" 
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "code"
+          KeyType: HASH
+      TableName: !Ref ActivationTableName 
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: MobileBackend
+    DeletionPolicy: Retain
+Outputs:
+  ExecRole:
+    Export:
+      Name: "throwtrash-mobile-exec-role"
+    Value: !GetAtt LambdaExecRole.Arn
