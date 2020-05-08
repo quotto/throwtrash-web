@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: The AWS CloudFormation template for BSE Workflow
+Parameters:
+  RUNLEVEL:
+    Type: String
+    Default: DEBUG
+  GOOGLECLIENTID:
+    Type: String
+  GOOGLECLIENTSECRET:
+    Type: String
+  STAGE:
+    Type: String
+    Default: dev
+  DBREGION:
+    Type: String
+  ALEXACLIENTID:
+    Type: String
+  ALEXACLIENTSECRET:
+    Type: String
+  ALEXAUSERCLIENTID:
+    Type: String
+  ALEXAUSERSECRET:
+    Type: String
+  ALEXASKILLID:
+    Type: String
+Resources:
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: Retain
+    Properties:
+      CodeUri: s3://lambda-function-deployment-ap-northeast-1/throwtrashbackend/f806c6362638ef2832aa83492d2033bf
+      FunctionName:
+        Fn::Sub: throwtrash-backend-${STAGE}
+      Handler: index.handler
+      Role:
+        Fn::ImportValue: throwtrash-backend-exec-role
+      Runtime: nodejs12.x
+      Timeout: 30
+      Environment:
+        Variables:
+          DB_REGION:
+            Ref: DBREGION
+          RUNLEVEL:
+            Ref: RUNLEVEL
+          GOOGLE_CLIENT_ID:
+            Ref: GOOGLECLIENTID
+          GOOGLE_CLIENT_SECRET:
+            Ref: GOOGLECLIENTSECRET
+          GOOGLE_APPLICATION_CREDENTIALS: /var/task/serviceAccountKey.json
+          STAGE:
+            Ref: STAGE
+          ALEXA_CLIENT_ID:
+            Ref: ALEXACLIENTID
+          ALEXA_CLIENT_SECRET:
+            Ref: ALEXACLIENTSECRET
+          ALEXA_USER_CLIENT_ID:
+            Ref: ALEXAUSERCLIENTID
+          ALEXA_USER_SECRET:
+            Ref: ALEXAUSERSECRET
+          ALEXA_SKILL_ID:
+            Ref: ALEXASKILLID
+      Events:
+        OAuthRequest:
+          Type: Api
+          Properties:
+            Path: /oauth_request
+            Method: GET
+            RestApiId:
+              Ref: Api
+            RequestParameters:
+            - method.request.querystring.state:
+                Required: true
+            - method.request.querystring.client_id:
+                Required: true
+            - method.request.querystring.redirect_uri:
+                Required: true
+            - method.request.querystring.platform:
+                Required: true
+            - method.request.querystring.version:
+                Required: true
+        OAuthSignin:
+          Type: Api
+          Properties:
+            Path: /google_signin
+            Method: GET
+            RestApiId:
+              Ref: Api
+        SignIn:
+          Type: Api
+          Properties:
+            Path: /signin
+            Method: GET
+            RestApiId:
+              Ref: Api
+            RequestParameters:
+            - method.request.querystring.service:
+                Required: true
+            - method.request.querystring.access_token
+            - method.request.querystring.code
+            - method.request.querystring.state
+        SignOut:
+          Type: Api
+          Properties:
+            Path: /signout
+            Method: GET
+            RestApiId:
+              Ref: Api
+        UserInfo:
+          Type: Api
+          Properties:
+            Path: /user_info
+            Method: GET
+            RestApiId:
+              Ref: Api
+        Regist:
+          Type: Api
+          Properties:
+            Path: /regist
+            Method: POST
+            RestApiId:
+              Ref: Api
+        RequestAccessToken:
+          Type: Api
+          Properties:
+            Path: /request_accesstoken
+            Method: POST
+            RestApiId:
+              Ref: Api
+        StartLink:
+          Type: Api
+          Properties:
+            Path: /start_link
+            Method: GET
+            RestApiId:
+              Ref: Api
+            RequestParameters:
+            - method.request.querystring.platform:
+                Required: true
+        ExchangeAmazonCode:
+          Type: Api
+          Properties:
+            Path: /enable_skill
+            Method: GET
+            RestApiId:
+              Ref: Api
+            RequestParameters:
+            - method.request.querystring.state:
+                Required: true
+            - method.request.querystring.code:
+                Required: true
+            - method.request.querystring.scope:
+                Required: true
+  Api:
+    Type: AWS::Serverless::Api
+    DeletionPolicy: Retain
+    Properties:
+      Name:
+        Fn::Sub: throwtrash-backend-${STAGE}
+      StageName:
+        Ref: STAGE
+      Cors:
+        AllowMethods: '''GET,POST'''
+        AllowOrigin: '''https://accountlink.mythrowaway.net'''
+        AllowHeaders: '''Content-Type'''
+        AllowCredentials: true
+      MethodSettings:
+      - LoggingLevel: INFO
+        HttpMethod: '*'
+        ResourcePath: /+
+        DataTraceEnabled: true
+  LambdaVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Fn::GetAtt:
+        - LambdaFunction
+        - Arn

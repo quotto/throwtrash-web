@@ -1,0 +1,17 @@
+{
+    "appenders": {
+        "out": {"type": "console","layout": {
+            "type": "pattern",
+            "pattern": "[%p] %m"
+            }
+        }
+    },
+    "categories": {
+        "default": {
+            "appenders": [
+                "out"
+            ],
+            "level": "DEBUG"
+        }
+    }
+}

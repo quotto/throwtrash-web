@@ -34,8 +34,8 @@ class BarMenu extends React.Component {
             LogOutDivider = <Divider />;
             LogOutMenu = <MenuItem onClick={this.signOut}> {this.props.t('BarMenu.logout')} </MenuItem>;
         }
-        const manual_html = `/manual-${this.props.i18n.language}.html`;
-        const policy_html = `/policy-${this.props.i18n.language}.html`;
+        const manual_html = `./manual-${this.props.i18n.language}.html`;
+        const policy_html = `./policy-${this.props.i18n.language}.html`;
         return (
             <Menu
                 id="menu"
