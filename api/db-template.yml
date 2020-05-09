@@ -5,6 +5,9 @@ Parameters:
   ActivationTableName:
     Type: String
     Default: throwtrash-activation
+  Stage:
+    Type: String
+    Default: "dev"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -36,7 +39,7 @@ Resources:
             Action: "sts:AssumeRole"
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-      RoleName: !Sub "throwtrash-mobile-lambda-role-${AWS::Region}"
+      RoleName: !Sub "throwtrash-mobile-lambda-role-${AWS::Region}-${Stage}"
     DeletionPolicy: Retain
   ActivationTable:
     Type: "AWS::DynamoDB::Table"
