@@ -31,7 +31,7 @@
         "TopAppBar": {
             "title": "今日のゴミ出し"
         },
-        "ErrorDIalog": {
+        "ErrorDialog": {
             "message": "お手数ですが%sよりエラーの発生状況をご連絡願います。開発者にて確認次第対応いたします。",
             "formname": "お問い合わせフォーム",
             "close": "閉じる"
