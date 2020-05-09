@@ -14,6 +14,9 @@ Parameters:
   RefreshTokenTableName:
     Type: "String"
     Default: "throwtrash-backend-refreshtoken"
+  Stage:
+    Type: "String"
+    Default: "dev"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -49,7 +52,7 @@ Resources:
             Action: "sts:AssumeRole"
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-      RoleName: !Sub "throwtrash-backend-lambda-exec-role-${AWS::Region}"
+      RoleName: !Sub "throwtrash-backend-lambda-exec-role-${AWS::Region}-${Stage}"
     DeletionPolicy: Retain
   SessionTable:
     Type: "AWS::DynamoDB::Table"

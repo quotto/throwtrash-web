@@ -2,31 +2,31 @@ AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Description: The AWS CloudFormation template for BSE Workflow
 Parameters:
-  RUNLEVEL:
+  RunLevel:
     Type: "String"
     Default: "DEBUG"
-  GOOGLECLIENTID:
+  GoogleClientID:
     Type: "String"
-  GOOGLECLIENTSECRET:
+  GoogleClientSecret:
     Type: "String"
-  STAGE:
+  Stage:
     Type: "String"
     Default: "dev"
-  DBREGION:
+  DBRegion:
     Type: "String"
-  ALEXACLIENTID:
+  AlexaClientID:
     Type: "String"
-  ALEXACLIENTSECRET:
+  AlexaClientSecret:
     Type: "String"
-  ALEXAUSERCLIENTID:
+  AlexaUserClientID:
     Type: "String"
-  ALEXAUSERSECRET:
+  AlexaUserSecret:
     Type: "String"
-  GOOGLEUSERCLIENTID:
+  CoogleUserClientID:
     Type: "String"
-  GOOGLEUSERSECRET:
+  GoogleUserSecret:
     Type: "String"
-  ALEXASKILLID:
+  AlexaSkillID:
     Type: "String"
 Resources:
   LambdaFunction:
@@ -34,25 +34,25 @@ Resources:
     DeletionPolicy: Retain
     Properties:
       CodeUri: ../src/
-      FunctionName: !Sub "throwtrash-backend-${STAGE}"
+      FunctionName: !Sub "throwtrash-backend-${Stage}"
       Handler: index.handler
       Role: !ImportValue  throwtrash-backend-exec-role
       Runtime: nodejs12.x
       Timeout: 30
       Environment:
         Variables:
-          DB_REGION: !Ref DBREGION
-          RUNLEVEL: !Ref RUNLEVEL
-          GOOGLE_CLIENT_ID: !Ref GOOGLECLIENTID
-          GOOGLE_CLIENT_SECRET: !Ref GOOGLECLIENTSECRET
+          DB_REGION: !Ref DBRegion
+          RUNLEVEL: !Ref RunLevel
+          GOOGLE_CLIENT_ID: !Ref GoogleClientID
+          GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
           GOOGLE_APPLICATION_CREDENTIALS: "/var/task/serviceAccountKey.json"
-          ALEXA_CLIENT_ID: !Ref ALEXACLIENTID
-          ALEXA_CLIENT_SECRET: !Ref ALEXACLIENTSECRET
-          ALEXA_USER_CLIENT_ID: !Ref ALEXAUSERCLIENTID
-          ALEXA_USER_SECRET: !Ref ALEXAUSERSECRET
-          GOOGLE_USER_CLIENT_ID: !Ref GOOGLEUSERCLIENTID
-          GOOGLE_USER_SECRET: !Ref GOOGLEUSERSECRET
-          ALEXA_SKILL_ID: !Ref ALEXASKILLID
+          ALEXA_CLIENT_ID: !Ref AlexaClientID
+          ALEXA_CLIENT_SECRET: !Ref AlexaClientSecret
+          ALEXA_USER_CLIENT_ID: !Ref AlexaUserClientID
+          ALEXA_USER_SECRET: !Ref AlexaUserSecret
+          GOOGLE_USER_CLIENT_ID: !Ref CoogleUserClientID
+          GOOGLE_USER_SECRET: !Ref GoogleUserSecret
+          ALEXA_SKILL_ID: !Ref AlexaSkillID
       Tags:
         Group: throwtrash
         Purpose: WebBackend/OAuthBackend
@@ -140,11 +140,11 @@ Resources:
     Type: "AWS::Serverless::Api"
     DeletionPolicy: Retain
     Properties:
-      Name: !Sub "throwtrash-backend-${STAGE}"
+      Name: !Sub "throwtrash-backend-${Stage}"
       Tags:
         Group: throwtrash
         Purpose: WebBackend/OAuthBackend
-      StageName: !Ref STAGE
+      StageName: !Ref Stage
       Cors:
         AllowMethods: "'GET,POST'"
         AllowOrigin: "'https://accountlink.mythrowaway.net'"

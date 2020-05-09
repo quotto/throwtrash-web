@@ -146,43 +146,42 @@ jobs:
       - run:
           name: frontend deploy
           command: |
-            if isChanged "frontend"; then
-              aws s3 sync frontend/dist/${STAGE} s3://throwtrash/${STAGE}
-              # 本番デプロイ時はデプロイステージのキャッシュをクリア
-              if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
-                aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /${STAGE}/*
-              fi
+            aws s3 sync frontend/dist/${STAGE} s3://throwtrash/${STAGE}
+            # 本番デプロイ時はデプロイステージのキャッシュをクリア
+            if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
+              aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /${STAGE}/*
             fi
       - run:
           name: backend deploy
           command: |
-            if isChanged "backend"; then
-              if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
-                echo ${GCP_PRODUCTION_CREDENTIALS} > backend/src/serviceAccountKey.json
-              else
-                echo ${GCP_TEST_CREDENTIALS} > backend/src/serviceAccountKey.json
-              fi
-
-              # lambdaでは1980年以前のタイムスタンプを持つファイルをzipできないためざっくりと1981年以前のファイル日時を更新する
-              YEAR_DIFF=$(expr `date +%Y` - 1981)
-              DATE_DIFF=$(expr $YEAR_DIFF \* 365)
-              find backend/src/node_modules -daystart -mtime +$DATE_DIFF -exec touch {} \;
-
-              # DBのデプロイ
-              aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
-
-              # API/Lambdaのパッケージングとデプロイ
-              aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
-              aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${STAGE} --parameter-overrides ALEXACLIENTID=${ALEXA_CLIENT_ID} ALEXACLIENTSECRET=${ALEXA_CLIENT_SECRET} GOOGLECLIENTID=${GOOGLE_CLIENT_ID} GOOGLECLIENTSECRET=${GOOGLE_CLIENT_SECRET} RUNLEVEL=${RUNLEVEL} DBREGION=${DBREGION} ALEXAUSERCLIENTID=${ALEXA_USER_CLIENT_ID} ALEXAUSERSECRET=${ALEXA_USER_SECRET} GOOGLEUSERCLIENTID=${GOOGLE_USER_CLIENT_ID} GOOGLEUSERSECRET=${GOOGLE_USER_SECRET} ALEXASKILLID=${ALEXA_SKILL_ID} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+            if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
+              echo ${GCP_PRODUCTION_CREDENTIALS} > backend/src/serviceAccountKey.json
+            else
+              echo ${GCP_TEST_CREDENTIALS} > backend/src/serviceAccountKey.json
             fi
+
+            # lambdaでは1980年以前のタイムスタンプを持つファイルをzipできないためざっくりと1981年以前のファイル日時を更新する
+            YEAR_DIFF=$(expr `date +%Y` - 1981)
+            DATE_DIFF=$(expr $YEAR_DIFF \* 365)
+            find backend/src/node_modules -daystart -mtime +$DATE_DIFF -exec touch {} \;
+
+            # DBのデプロイ
+            aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --parameter-overrides Stage=${STAGE} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+
+            # API/Lambdaのパッケージングとデプロイ
+            aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
+
+            aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${STAGE} --parameter-overrides Stage=${STAGE} AlexaClientID=${ALEXA_CLIENT_ID} AlexaClientSecret=${ALEXA_CLIENT_SECRET} GoogleClientID=${GOOGLE_CLIENT_ID} GoogleClientSecret=${GOOGLE_CLIENT_SECRET} RunLevel=${RUNLEVEL} DBRegion=${DBREGION} AlexaUserClientID=${ALEXA_USER_CLIENT_ID} AlexaUserSecret=${ALEXA_USER_SECRET} GoogleUserClientID=${GOOGLE_USER_CLIENT_ID} GoogleUserSecret=${GOOGLE_USER_SECRET} AlexaSkillID=${ALEXA_SKILL_ID} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
       - run:
           name: api deploy
           command: |
-            if isChanged "api"; then
-              aws cloudformation deploy --template-file api/db-template.yml --stack-name throwtrash-mobile-db --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
-              aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
-              aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${STAGE} --parameter-overrides RUNLEVEL=${RUNLEVEL} STAGE=${STAGE} DBREGION=${DBREGION} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
-            fi
+            # DBのデプロイ
+            aws cloudformation deploy --template-file api/db-template.yml --stack-name throwtrash-mobile-db --parameter-overrides Stage=${STAGE} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+
+            # API/Lambdaのパッケージングとデプロイ
+            aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
+
+            aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${STAGE} --parameter-overrides RunLevel=${RUNLEVEL} Stage=${STAGE} DBRegion=${DBREGION} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
 workflows:
   version: 2
   test_and_deploy:
