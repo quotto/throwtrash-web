@@ -1,0 +1,157 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: The AWS CloudFormation template for BSE Workflow
+Parameters:
+  SessionTableName:
+    Type: "String"
+    Default: "throwtrash-backend-session"
+  AuthorizationTableName:
+    Type: "String"
+    Default: "throwtrash-backend-authorization"
+  AccessTokenTableName:
+    Type: "String"
+    Default: "throwtrash-backend-accesstoken"
+  RefreshTokenTableName:
+    Type: "String"
+    Default: "throwtrash-backend-refreshtoken"
+  Stage:
+    Type: "String"
+    Default: "dev"
+Resources:
+  LambdaExecPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: "dynamodb:*"
+            Resource:
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${RefreshTokenTableName}"
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${AccessTokenTableName}"
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${AuthorizationTableName}"
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${SessionTableName}"
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule"
+              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule/index/signinId-index"
+      PolicyName: !Sub "throwtrash-backend-lambda-policy-${AWS::Region}"
+      Roles:
+        - !Ref LambdaExecRole
+    DeletionPolicy: Retain
+  LambdaExecRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      RoleName: !Sub "throwtrash-backend-lambda-exec-role-${AWS::Region}-${Stage}"
+    DeletionPolicy: Retain
+  SessionTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "id"
+          KeyType: HASH
+      TableName: !Ref SessionTableName
+      TimeToLiveSpecification:
+        AttributeName: expire
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: WebBackend/OAuthBackend
+    DeletionPolicy: Retain
+  AuthroizationTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "code"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "code"
+          KeyType: HASH
+      TableName: !Ref AuthorizationTableName
+      TimeToLiveSpecification:
+        AttributeName: expires_in
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: OAuthBackend
+    DeletionPolicy: Retain
+  AccessTokenTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "access_token"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "access_token"
+          KeyType: HASH
+      TableName: !Ref AccessTokenTableName
+      TimeToLiveSpecification:
+        AttributeName: expires_in
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: OAuthBackend
+    DeletionPolicy: Retain
+  RefreshTokenTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "refresh_token"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "refresh_token"
+          KeyType: HASH
+      TableName: !Ref RefreshTokenTableName
+      TimeToLiveSpecification:
+        AttributeName: expires_in
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: OAuthBackend
+    DeletionPolicy: Retain
+Outputs:
+  ExecRole:
+    Export:
+      Name: "throwtrash-backend-exec-role"
+    Value: !GetAtt LambdaExecRole.Arn
