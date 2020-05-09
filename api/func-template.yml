@@ -2,13 +2,13 @@ AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Description: The AWS CloudFormation template for BSE Workflow
 Parameters:
-  RUNLEVEL:
+  RunLevel:
     Type: "String"
     Default: "DEBUG"
-  STAGE:
+  Stage:
     Type: "String"
     Default: "dev"
-  DBREGION:
+  DBRegion:
     Type: "String"
 Resources:
   LambdaFunction:
@@ -16,15 +16,15 @@ Resources:
     DeletionPolicy: Retain
     Properties:
       CodeUri: ./src
-      FunctionName: !Sub "throwtrash-mobile-${STAGE}"
+      FunctionName: !Sub "throwtrash-mobile-${Stage}"
       Handler: index.handler
       Role: !ImportValue  throwtrash-mobile-exec-role
       Runtime: nodejs12.x
       Timeout: 30
       Environment:
         Variables:
-          DB_REGION: !Ref DBREGION
-          RUNLEVEL: !Ref RUNLEVEL
+          DB_REGION: !Ref DBRegion
+          RUNLEVEL: !Ref RunLevel
       Tags:
         Group: throwtrash
         Purpose: MobileBackend
@@ -72,8 +72,8 @@ Resources:
     Type: "AWS::Serverless::Api"
     DeletionPolicy: Retain
     Properties:
-      Name: !Sub "throwtrash-mobile-api-${STAGE}"
+      Name: !Sub "throwtrash-mobile-api-${Stage}"
       Tags:
         Group: throwtrash
         Purpose: MobileBackend
-      StageName: !Ref STAGE
+      StageName: !Ref Stage
