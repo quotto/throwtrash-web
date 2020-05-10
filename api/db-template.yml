@@ -9,38 +9,6 @@ Parameters:
     Type: String
     Default: "dev"
 Resources:
-  LambdaExecPolicy:
-    Type: "AWS::IAM::Policy"
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          -
-            Effect: "Allow"
-            Action: "dynamodb:*"
-            Resource:
-              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${ActivationTableName}"
-              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule"
-      PolicyName: !Sub "throwtrash-mobile-policy-${AWS::Region}"
-      Roles:
-        - !Ref LambdaExecRole
-    DeletionPolicy: Retain
-  LambdaExecRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          -
-            Effect: "Allow"
-            Principal:
-              Service:
-                - "lambda.amazonaws.com"
-            Action: "sts:AssumeRole"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-      RoleName: !Sub "throwtrash-mobile-lambda-role-${AWS::Region}-${Stage}"
-    DeletionPolicy: Retain
   ActivationTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
@@ -66,7 +34,7 @@ Resources:
           Value: MobileBackend
     DeletionPolicy: Retain
 Outputs:
-  ExecRole:
+  ActivationTable:
     Export:
-      Name: "throwtrash-mobile-exec-role"
-    Value: !GetAtt LambdaExecRole.Arn
+      Name: "throwtrash-db-activation"
+    Value: !Ref ActivationTableName

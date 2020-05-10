@@ -14,45 +14,53 @@ Parameters:
   RefreshTokenTableName:
     Type: "String"
     Default: "throwtrash-backend-refreshtoken"
-  Stage:
+  TrashScheduleTableName:
     Type: "String"
-    Default: "dev"
+    Default: "TrashSchedule"
+  SigninIdIndexName:
+    Type: "String"
+    Default: "signinId-index"
 Resources:
-  LambdaExecPolicy:
-    Type: "AWS::IAM::Policy"
+  TrashScheduleTable:
+    Type: "AWS::DynamoDB::Table"
     Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          -
-            Effect: "Allow"
-            Action: "dynamodb:*"
-            Resource:
-              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${RefreshTokenTableName}"
-              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${AccessTokenTableName}"
-              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${AuthorizationTableName}"
-              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/${SessionTableName}"
-              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule"
-              - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/TrashSchedule/index/signinId-index"
-      PolicyName: !Sub "throwtrash-backend-lambda-policy-${AWS::Region}"
-      Roles:
-        - !Ref LambdaExecRole
-    DeletionPolicy: Retain
-  LambdaExecRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          -
-            Effect: "Allow"
-            Principal:
-              Service:
-                - "lambda.amazonaws.com"
-            Action: "sts:AssumeRole"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-      RoleName: !Sub "throwtrash-backend-lambda-exec-role-${AWS::Region}-${Stage}"
+      BillingMode: "PAY_PER_REQUEST"
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: WebBackend/MobileBackend/Skill
+      AttributeDefinitions:
+        - 
+          AttributeName: "id"
+          AttributeType: "S"
+        - 
+          AttributeName: "signinId"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "id"
+          KeyType: "HASH"
+      GlobalSecondaryIndexes:
+        -
+          IndexName: !Ref SigninIdIndexName
+          KeySchema:
+            - 
+              AttributeName: "signinId"
+              KeyType: "HASH"
+          Projection:
+            NonKeyAttributes:
+              - "description"
+              - "id"
+              - "signinService"
+            ProjectionType: "INCLUDE"
+      StreamSpecification:
+        StreamViewType: "NEW_IMAGE"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      TableName: !Ref TrashScheduleTableName
     DeletionPolicy: Retain
   SessionTable:
     Type: "AWS::DynamoDB::Table"
@@ -78,7 +86,7 @@ Resources:
           Key: Purpose
           Value: WebBackend/OAuthBackend
     DeletionPolicy: Retain
-  AuthroizationTable:
+  AuthorizationTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
       AttributeDefinitions:
@@ -151,7 +159,27 @@ Resources:
           Value: OAuthBackend
     DeletionPolicy: Retain
 Outputs:
-  ExecRole:
+  AuthorizationTable:
     Export:
-      Name: "throwtrash-backend-exec-role"
-    Value: !GetAtt LambdaExecRole.Arn
+      Name: !Sub "throwtrash-db-authorization"
+    Value: !Ref AuthorizationTableName
+  AccessTokenTable:
+    Export:
+      Name: !Sub "throwtrash-db-accesstoken"
+    Value: !Ref AccessTokenTableName
+  RefreshTokenTable:
+    Export:
+      Name: !Sub "throwtrash-db-refreshtoken"
+    Value: !Ref RefreshTokenTableName
+  SessionTable:
+    Export:
+      Name: !Sub "throwtrash-db-session"
+    Value: !Ref SessionTableName
+  TrashScheduleTable:
+    Export:
+      Name: !Sub "throwtrash-db-schedule"
+    Value: !Ref TrashScheduleTableName
+  SigninIdIndex:
+    Export:
+      Name: !Sub "throwtrash-db-schedule-signinIndex"
+    Value: !Ref SigninIdIndexName

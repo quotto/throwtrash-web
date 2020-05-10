@@ -12,8 +12,6 @@ Parameters:
   Stage:
     Type: "String"
     Default: "dev"
-  DBRegion:
-    Type: "String"
   AlexaClientID:
     Type: "String"
   AlexaClientSecret:
@@ -22,13 +20,71 @@ Parameters:
     Type: "String"
   AlexaUserSecret:
     Type: "String"
-  CoogleUserClientID:
+  GoogleUserClientID:
     Type: "String"
   GoogleUserSecret:
     Type: "String"
   AlexaSkillID:
     Type: "String"
+  DBRegion:
+    Type: "String"
 Resources:
+  LambdaExecPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: "dynamodb:*"
+            Resource:
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  - Fn::ImportValue: throwtrash-db-schedule
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  - Fn::ImportValue: throwtrash-db-schedule
+                  - "index"
+                  - Fn::ImportValue: throwtrash-db-schedule-signinIndex
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  - Fn::ImportValue: throwtrash-db-accesstoken
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  - Fn::ImportValue: throwtrash-db-refreshtoken
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  - Fn::ImportValue: throwtrash-db-authorization
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  - Fn::ImportValue: throwtrash-db-session
+      PolicyName: !Sub "throwtrash-backend-lambda-policy-${Stage}"
+      Roles:
+        - !Ref LambdaExecRole
+    DeletionPolicy: Retain
+  LambdaExecRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      RoleName: !Sub "throwtrash-backend-lambda-exec-role-${Stage}"
+    DeletionPolicy: Retain
   LambdaFunction:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
@@ -36,12 +92,11 @@ Resources:
       CodeUri: ../src/
       FunctionName: !Sub "throwtrash-backend-${Stage}"
       Handler: index.handler
-      Role: !ImportValue  throwtrash-backend-exec-role
+      Role: !GetAtt  LambdaExecRole.Arn
       Runtime: nodejs12.x
       Timeout: 30
       Environment:
         Variables:
-          DB_REGION: !Ref DBRegion
           RUNLEVEL: !Ref RunLevel
           GOOGLE_CLIENT_ID: !Ref GoogleClientID
           GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
@@ -50,7 +105,7 @@ Resources:
           ALEXA_CLIENT_SECRET: !Ref AlexaClientSecret
           ALEXA_USER_CLIENT_ID: !Ref AlexaUserClientID
           ALEXA_USER_SECRET: !Ref AlexaUserSecret
-          GOOGLE_USER_CLIENT_ID: !Ref CoogleUserClientID
+          GOOGLE_USER_CLIENT_ID: !Ref GoogleUserClientID
           GOOGLE_USER_SECRET: !Ref GoogleUserSecret
           ALEXA_SKILL_ID: !Ref AlexaSkillID
       Tags:
