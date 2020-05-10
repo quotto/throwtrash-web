@@ -161,7 +161,7 @@ jobs:
             fi
 
             # DBのデプロイ
-            aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --parameter-overrides --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --region=${DBREGION}
+            aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --region=${DBREGION}
 
             # lambdaでは1980年以前のタイムスタンプを持つファイルをzipできないためざっくりと1981年以前のファイル日時を更新する
             YEAR_DIFF=$(expr `date +%Y` - 1981)
@@ -176,7 +176,7 @@ jobs:
           name: api deploy
           command: |
             # DBのデプロイ
-            aws cloudformation deploy --template-file api/db-template.yml --stack-name throwtrash-mobile-db --parameter-overrides --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --region=${DBREGION}
+            aws cloudformation deploy --template-file api/db-template.yml --stack-name throwtrash-mobile-db --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --region=${DBREGION}
 
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
