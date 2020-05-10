@@ -97,6 +97,7 @@ Resources:
       Timeout: 30
       Environment:
         Variables:
+          DB_REGION: !Ref DBRegion
           RUNLEVEL: !Ref RunLevel
           GOOGLE_CLIENT_ID: !Ref GoogleClientID
           GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
