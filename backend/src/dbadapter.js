@@ -1,7 +1,6 @@
-const log4js = require("log4js");
-const logger = log4js.getLogger();
 const property = require("./property");
 const common = require("trash-common");
+const logger = common.getLogger();
 const AWS = require("aws-sdk");
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: process.env.DB_REGION });
 const firebase_admin = require("firebase-admin");

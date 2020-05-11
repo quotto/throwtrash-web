@@ -1,13 +1,13 @@
-const log4js = require("log4js");
-const logger = log4js.getLogger();
+const common = require("trash-common");
+const logger = common.getLogger();
 const db = require("./dbadapter");
+const error_def = require("./error_def");
 const rp = require("request-promise");
 module.exports = async(params,session,stage) => {
     logger.debug(JSON.stringify(session));
     if(params.state != session.state) {
-        return {
-            statusCode: 400
-        }
+        logger.error(`Invalid State -> params=${params.state}, session=${session.state}`);
+        return error_def.UserError;
     }
     // amazon access tokenを取得する
     const options = {
@@ -68,8 +68,6 @@ module.exports = async(params,session,stage) => {
         }
     } catch(err) {
         logger.error(err);
-        return {
-            statusCode: 500
-        }
+        return error_def.ServerError;
     }
 }

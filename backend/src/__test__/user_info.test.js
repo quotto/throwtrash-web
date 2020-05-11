@@ -1,3 +1,6 @@
+const logger = require("trash-common").getLogger();
+logger.LEVEL = logger.DEBUG;
+
 const property = require("../property");
 describe('user_info', ()=>{
     const user_info = require('../user_info');
