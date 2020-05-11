@@ -1,8 +1,7 @@
 const AWS = require("aws-sdk");
 const common = require("trash-common");
+const logger = common.getLogger();
 const property = require("./property.js");
-const log4js = require("log4js");
-const logger = log4js.getLogger();
 
 module.exports = async(data)=> {
     logger.info(`Register Data -> ${JSON.stringify(data)}`);

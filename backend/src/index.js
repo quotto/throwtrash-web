@@ -1,14 +1,6 @@
-const log4js = require("log4js");
-log4js.configure({
-    appenders: {
-        out: {type: "console",layout: {
-            type: "pattern",
-            pattern: "[%p] %m"
-        }}
-    },
-    categories: {default: {appenders: ["out"],level: process.env.RUNLEVEL}}
-});
-const logger = log4js.getLogger();
+const common = require("trash-common");
+const logger = common.getLogger();
+logger.LEVEL = process.env.RUNLEVEL === "INFO" ? logger.INFO : logger.DEBUG;
 
 const property = require("./property");
 const error_def = require("./error_def");
