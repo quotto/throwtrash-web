@@ -1,5 +1,3 @@
-const logger = require("trash-common").getLogger();
-logger.LEVEL = logger.DEBUG;
 describe("google_signin", () => {
     const mockResult = [];
     jest.mock("../dbadapter");
@@ -15,6 +13,14 @@ describe("google_signin", () => {
                 code += "a"
             }
             return code;
+        },
+        getLogger: ()=> {
+            return {
+                debug:(params)=>{console.debug(params)},
+                info:(params)=>{console.info(params)},
+                error:(params)=>{console.error(params)},
+                warn:(params)=>{console.warn(params)},
+            };
         }
     }))
     const google_signin = require("../google_signin");
