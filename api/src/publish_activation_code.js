@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const property = require("./property.js");
-const log4js = require("log4js");
-const logger = log4js.getLogger();
+const common = require("trash-common");
+const logger = common.getLogger();
 
 const generateActivationCode = async()=>{
    const documentClient = new AWS.DynamoDB .DocumentClient({region: process.env.DB_REGION});
