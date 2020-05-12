@@ -1,5 +1,5 @@
-const log4js = require("log4js");
-const logger = log4js.getLogger();
+const common = require("trash-common");
+const logger = common.getLogger();
 const db = require("./dbadapter");
 const rp = require("request-promise");
 const jwt = require("jsonwebtoken");

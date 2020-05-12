@@ -1,5 +1,6 @@
-const log4js = require("log4js");
-log4js.configure(require("./log4js.test.config.json"));
+const logger = require("trash-common").getLogger();
+logger.LEVEL = logger.DEBUG;
+const error_def = require("../error_def");
 
 jest.mock("request-promise",()=>(async(option)=>{
     if(option.uri === "https://api.amazon.com/auth/o2/token") {
@@ -94,11 +95,15 @@ describe("enable_skill",()=>{
     describe("異常系",()=>{
         it("stateが一致しない",async()=>{
             const result = await enable_skill({state: "not_match_state"}, {state: "12345"}, "v1");
-            expect(result.statusCode).toBe(400);
+            expect(result.statusCode).toBe(301);
+            const headers = result.headers;
+            expect(headers.Location).toBe(error_def.UserError.headers.Location);
         });
         it("DBエラー",async()=>{
             const result = await enable_skill({state: "12345"},{state: "12345", id: "session_id002",user_id: "id002"}, "v1");
-            expect(result.statusCode).toBe(500);
+            expect(result.statusCode).toBe(301);
+            const headers = result.headers;
+            expect(headers.Location).toBe(error_def.ServerError.headers.Location);
         });
     });
 });
