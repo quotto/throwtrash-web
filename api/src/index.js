@@ -4,17 +4,9 @@ const register = require("./register");
 const publish_activation_code = require("./publish_activation_code");
 const activate = require("./activate");
 
-const log4js = require("log4js");
-log4js.configure({
-    appenders: {
-        out: {type: "console",layout: {
-            type: "pattern",
-            pattern: "[%p] %m"
-        }}
-    },
-    categories: {default: {appenders: ["out"],level: process.env.RUNLEVEL}}
-});
-const logger = log4js.getLogger();
+const common = require("trash-common");
+const logger = common.getLogger();
+logger.LEVEL = process.env.RUNLEVEL === "INFO" ? logger.INFO : logger.DEBUG;
 
 exports.handler = async function(event,_context) {
     logger.debug(event);
