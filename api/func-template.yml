@@ -11,6 +11,44 @@ Parameters:
   DBRegion:
     Type: "String"
 Resources:
+  LambdaExecPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: "dynamodb:*"
+            Resource:
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  - Fn::ImportValue: throwtrash-db-schedule
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  - Fn::ImportValue: throwtrash-db-activation
+      PolicyName: !Sub "throwtrash-mobile-policy-${Stage}"
+      Roles:
+        - !Ref LambdaExecRole
+    DeletionPolicy: Retain
+  LambdaExecRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      RoleName: !Sub "throwtrash-mobile-lambda-role-${Stage}"
+    DeletionPolicy: Retain
   LambdaFunction:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
@@ -18,7 +56,7 @@ Resources:
       CodeUri: ./src
       FunctionName: !Sub "throwtrash-mobile-${Stage}"
       Handler: index.handler
-      Role: !ImportValue  throwtrash-mobile-exec-role
+      Role: !GetAtt LambdaExecRole.Arn
       Runtime: nodejs12.x
       Timeout: 30
       Environment:

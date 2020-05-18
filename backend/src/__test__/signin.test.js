@@ -1,4 +1,7 @@
 /* eslint-disable no-unused-vars */
+const logger = require("trash-common").getLogger();
+logger.LEVEL = logger.DEBUG;
+
 const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
 const URL_500 = 'https://accountlink.mythrowaway.net/500.html';
 

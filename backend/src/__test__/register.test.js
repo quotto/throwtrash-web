@@ -1,4 +1,7 @@
 /* eslint-disable no-unused-vars */
+const logger = require("trash-common").getLogger();
+logger.LEVEL = logger.DEBUG;
+
 const property = require("../property");
 
 const todayMillis = Date.UTC(2020,4,20,12,0,0,0);

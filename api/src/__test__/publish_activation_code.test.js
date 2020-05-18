@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 const property = require("../property.js");
-const log4js = require("log4js");
-log4js.configure(require("./log4js.test.config.json"));
+const logger = require("trash-common").getLogger();
+logger.LEVEL = logger.DEBUG;
 class mockClass {
     constructor(config) { }
     get(params) {
