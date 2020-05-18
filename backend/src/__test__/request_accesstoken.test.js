@@ -1,15 +1,6 @@
 /* eslint-disable no-unused-vars */
-const log4js = require("log4js");
-log4js.configure({
-    appenders: {
-        out: {type: "console",layout: {
-            type: "pattern",
-            pattern: "[%p] %m"
-        }}
-    },
-    categories: {default: {appenders: ["out"],level: "DEBUG"}}
-});
-const logger = log4js.getLogger();
+const logger = require("trash-common").getLogger();
+logger.LEVEL = logger.DEBUG;
 const error_def = require("../error_def");
 
 const mockDate = Date.UTC(2020,3,1,12,0,0,0);

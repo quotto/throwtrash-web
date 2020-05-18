@@ -1,5 +1,5 @@
-const log4js = require("log4js");
-const logger = log4js.getLogger();
+const common = require("trash-common");
+const logger = common.getLogger();
 const property = require("./property");
 const db = require("./dbadapter");
 module.exports = async(session)=>{

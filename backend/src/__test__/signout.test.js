@@ -1,4 +1,7 @@
 /* eslint-disable no-unused-vars */
+const logger = require("trash-common").getLogger();
+logger.LEVEL = logger.DEBUG;
+
 const property = require("../property");
 const mockResult = {}
 jest.mock("../dbadapter");

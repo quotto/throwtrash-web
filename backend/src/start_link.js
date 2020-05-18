@@ -2,8 +2,7 @@ const property = require("./property");
 const db = require("./dbadapter");
 const error_def = require("./error_def");
 const common = require("trash-common");
-const log4js = require("log4js");
-const logger = log4js.getLogger();
+const logger = common.getLogger();
 module.exports = async(params,session,stage) => {
     if (params.id) {
         // sessionにid（access_token相当）とstateを設定して保存
