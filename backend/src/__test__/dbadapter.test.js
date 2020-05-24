@@ -346,6 +346,7 @@ describe("getAuthorizationCode",()=>{
 
 describe("putAccessToken",()=>{
     it("正常登録",async()=>{
+        process.env.ALEXA_CLIENT_ID = "alexa-skill";
         const access_token = await db.putAccessToken("id0001","alexa-skill",300);
         console.log(JSON.stringify(access_token));
         expect(access_token).toBeDefined();
