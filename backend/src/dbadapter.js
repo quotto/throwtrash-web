@@ -29,23 +29,24 @@ const putAccessToken = async(user_id,client_id,expires_in)=>{
     let limit = 0;
     while(limit < 5) {
         const accessToken = common.generateRandomCode(32);
+        const key =  toHash(accessToken);
         const accessTokenItem = {
-            access_token: toHash(accessToken),
             expires_in: Math.ceil((Date.now()/1000))+expires_in,
             user_id: user_id,
             client_id: client_id
         }
         try {
             if(client_id === process.env.ALEXA_CLIENT_ID) {
+                accessTokenItem.access_token = key;
                 await documentClient.put({
                     TableName: property.TOKEN_TABLE,
                     Item: accessTokenItem,
                     ConditionExpression: "attribute_not_exists(access_token)"
                 }).promise();
             } else if(client_id === process.env.GOOGLE_CLIENT_ID) {
-                await firestore.doc(property.TOKEN_TABLE).create(accessTokenItem);
+                await firestore.collection(property.TOKEN_TABLE).doc(key).create(accessTokenItem);
             }
-            logger.debug(`Put AccessToken:${accessToken}`);
+            logger.debug(`Put AccessToken -> ${accessToken}`);
             return accessToken;
         } catch(err) {
             logger.warn(err);
