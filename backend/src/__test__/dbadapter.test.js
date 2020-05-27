@@ -348,7 +348,7 @@ describe("getAuthorizationCode",()=>{
 describe("putAccessToken",()=>{
     describe("正常登録",()=>{
         it("amazon",async()=>{
-            process.env.ALEXA_CLIENT_ID = "alexa-skill";
+            process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             const access_token = await db.putAccessToken("id0001","alexa-skill",300);
             console.log(JSON.stringify(access_token));
             expect(access_token).toBeDefined();
@@ -377,7 +377,7 @@ describe("putAccessToken",()=>{
             }).promise();
         });
         it("google",async()=>{
-            process.env.GOOGLE_CLIENT_ID="google";
+            process.env.GOOGLE_USER_CLIENT_ID="google";
             const access_token = await db.putAccessToken("id002", "google",300);
             console.log(JSON.stringify(access_token));
             expect(access_token).toBeDefined();
@@ -407,7 +407,15 @@ describe("putAccessToken",()=>{
             }).catch(err => {
                 console.error(err);
             })
-        })
+        });
+        it("client_idが一致しない",async()=>{
+            try {
+                await db.putAccessToken("userid", "not_match_client", 1000);
+                expect(false);
+            } catch(err) {
+                expect(true);
+            }
+        });
     });
 });
 
