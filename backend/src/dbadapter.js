@@ -38,13 +38,15 @@ const putAccessToken = async(user_id,client_id,expires_in)=>{
         try {
             if(client_id === process.env.ALEXA_CLIENT_ID) {
                 accessTokenItem.access_token = key;
-                await documentClient.put({
+                const result = await documentClient.put({
                     TableName: property.TOKEN_TABLE,
                     Item: accessTokenItem,
                     ConditionExpression: "attribute_not_exists(access_token)"
                 }).promise();
+                logger.debug(`DynamoDBWriteResult -> ${JSON.stringify(result,null,2)}`)
             } else if(client_id === process.env.GOOGLE_CLIENT_ID) {
-                await firestore.collection(property.TOKEN_TABLE).doc(key).create(accessTokenItem);
+                const result = await firestore.collection(property.TOKEN_TABLE).doc(key).create(accessTokenItem);
+                logger.debug(`FirestoreWriteResult -> ${JSON.stringify(result.writeTime,null,2)}`)
             }
             logger.debug(`Put AccessToken -> ${accessToken}`);
             return accessToken;
