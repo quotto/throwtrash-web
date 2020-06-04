@@ -10,6 +10,7 @@ const AWS = require("aws-sdk");
 const property = require("../property.js");
 const crypto = require("crypto");
 
+
 const documentClient = new AWS.DynamoDB.DocumentClient({region: 'us-west-2'});
 
 // はるか未来の日付
@@ -345,33 +346,76 @@ describe("getAuthorizationCode",()=>{
 });
 
 describe("putAccessToken",()=>{
-    it("正常登録",async()=>{
-        const access_token = await db.putAccessToken("id0001","alexa-skill",300);
-        console.log(JSON.stringify(access_token));
-        expect(access_token).toBeDefined();
+    describe("正常登録",()=>{
+        it("amazon",async()=>{
+            process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
+            const access_token = await db.putAccessToken("id0001","alexa-skill",300);
+            console.log(JSON.stringify(access_token));
+            expect(access_token).toBeDefined();
 
-        const hashKey = crypto.createHash("sha512").update(access_token).digest("hex");
-        await documentClient.get({
-            TableName: property.TOKEN_TABLE,
-            Key: {
-                access_token: hashKey
-            }
-        }).promise().then((data)=>{
-            expect(data.Item.user_id).toBe("id0001");
-            expect(data.Item.client_id).toBe("alexa-skill");
-            // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
-            const expire = Math.ceil(Date.now()/1000) + 300; 
-            expect(data.Item.expires_in).toBeLessThan(expire+10);
-            expect(data.Item.expires_in).toBeGreaterThan(expire-10);
+            const hashKey = crypto.createHash("sha512").update(access_token).digest("hex");
+            await documentClient.get({
+                TableName: property.TOKEN_TABLE,
+                Key: {
+                    access_token: hashKey
+                }
+            }).promise().then((data)=>{
+                expect(data.Item.user_id).toBe("id0001");
+                expect(data.Item.client_id).toBe("alexa-skill");
+                // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
+                const expire = Math.ceil(Date.now()/1000) + 300; 
+                expect(data.Item.expires_in).toBeLessThan(expire+10);
+                expect(data.Item.expires_in).toBeGreaterThan(expire-10);
+            });
+
+            // テスト後はデータ削除
+            await documentClient.delete({
+                TableName: property.TOKEN_TABLE,
+                Key: {
+                    access_token: hashKey
+                }
+            }).promise();
         });
+        it("google",async()=>{
+            process.env.GOOGLE_USER_CLIENT_ID="google";
+            const access_token = await db.putAccessToken("id002", "google",300);
+            console.log(JSON.stringify(access_token));
+            expect(access_token).toBeDefined();
 
-        // テスト後はデータ削除
-        await documentClient.delete({
-            TableName: property.TOKEN_TABLE,
-            Key: {
-                access_token: hashKey
+            const hasKey = crypto.createHash("sha512").update(access_token).digest("hex");
+            const firebase = require("firebase-admin");
+            const firestore = firebase.firestore();
+            await firestore.collection(property.TOKEN_TABLE).doc(hasKey).get().then((doc)=>{
+                const data = doc.data();
+                console.log(JSON.stringify(data,null,2));
+
+                expect(data.user_id).toBe("id002");
+                expect(data.client_id).toBe("google");
+                // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
+                const expire = Math.ceil(Date.now()/1000) + 300; 
+                expect(data.expires_in).toBeLessThan(expire+10);
+                expect(data.expires_in).toBeGreaterThan(expire-10);
+
+
+            }).catch(err=>{
+                console.error(err);
+            });
+
+            // テスト後はデータ削除
+            await firestore.collection(property.TOKEN_TABLE).doc(hasKey).delete().then(result => {
+                console.log(result);
+            }).catch(err => {
+                console.error(err);
+            })
+        });
+        it("client_idが一致しない",async()=>{
+            try {
+                await db.putAccessToken("userid", "not_match_client", 1000);
+                expect(false);
+            } catch(err) {
+                expect(true);
             }
-        }).promise();
+        });
     });
 });
 

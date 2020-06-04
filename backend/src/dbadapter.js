@@ -29,19 +29,30 @@ const putAccessToken = async(user_id,client_id,expires_in)=>{
     let limit = 0;
     while(limit < 5) {
         const accessToken = common.generateRandomCode(32);
+        const key =  toHash(accessToken);
+        const accessTokenItem = {
+            expires_in: Math.ceil((Date.now()/1000))+expires_in,
+            user_id: user_id,
+            client_id: client_id
+        }
         try {
-            await documentClient.put({
-                TableName: property.TOKEN_TABLE,
-                Item: {
-                    access_token: toHash(accessToken),
-                    expires_in: Math.ceil((Date.now()/1000))+expires_in,
-                    user_id: user_id,
-                    client_id: client_id
-                },
-                ConditionExpression: "attribute_not_exists(access_token)"
-            }).promise();
-            logger.debug(`Put AccessToken:${accessToken}`);
-            return accessToken;
+            if(client_id === process.env.ALEXA_USER_CLIENT_ID) {
+                accessTokenItem.access_token = key;
+                const result = await documentClient.put({
+                    TableName: property.TOKEN_TABLE,
+                    Item: accessTokenItem,
+                    ConditionExpression: "attribute_not_exists(access_token)"
+                }).promise();
+                logger.debug(`DynamoDBWriteResult -> ${JSON.stringify(result,null,2)}`)
+                return accessToken;
+            } else if(client_id === process.env.GOOGLE_USER_CLIENT_ID) {
+                const result = await firestore.collection(property.TOKEN_TABLE).doc(key).create(accessTokenItem);
+                logger.debug(`FirestoreWriteResult -> ${JSON.stringify(result.writeTime,null,2)}`)
+                return accessToken;
+            }
+            // client_idが一致しない場合はループを抜けて例外処理
+            logger.error(`putAccessToken failed,Invalid ClientID -> ${client_id}`)
+            break;
         } catch(err) {
             logger.warn(err);
         }
