@@ -8,6 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import SignInDialog from './SignInDialog';
+import NotificationDialog from './NotificationDialog';
 import BarMenu from './BarMenu';
 
 const styles = (theme)=>({
@@ -49,6 +50,10 @@ class TopAppBar extends React.Component {
                         <Typography variant="h6" className={classes.appBarTitle}>
                             {this.props.t('TopAppBar.title')}
                         </Typography>
+                        <NotificationDialog
+                            notificationDialog={this.props.notificationDialog}
+                            onNotificationDialog={this.props.onNotificationDialog}
+                        />
                         <SignInDialog 
                             signinDialog={this.props.signinDialog}
                             onSigninDialog={this.props.onSigninDialog}
@@ -69,6 +74,8 @@ TopAppBar.propTypes = {
     onSigninDialog: PropTypes.func,
     signedIn: PropTypes.bool,
     onSetUserInfo: PropTypes.func,
+    onNotificationDialog: PropTypes.func,
+    notificationDialog: PropTypes.bool,
     t: PropTypes.func
 };
 export default withTranslation()(withStyles(styles)(TopAppBar));

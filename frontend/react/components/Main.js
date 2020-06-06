@@ -16,7 +16,7 @@ class Main extends React.Component {
                 { 
                     headers: { 'Content-Type': 'application/json' },
                     withCredentials: true
-                 }
+                }
             ).then((response) => {
                 window.location = response.data;
             }).catch(() => {

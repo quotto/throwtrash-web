@@ -90,7 +90,7 @@ class SignInDialog extends React.Component {
                         className={classes.loginButton}
                         color="inherit" 
                         onClick={()=>{this.props.onSigninDialog(true);}}>
-                            {this.props.t('SigninDialog.login')}
+                        {this.props.t('SigninDialog.login')}
                     </Button>
                     <Dialog 
                         onClose={()=>{this.props.onSigninDialog(false);}} 
@@ -136,4 +136,5 @@ SignInDialog.propTypes = {
     t: PropTypes.func
 };
 
+        
 export default withTranslation()(withStyles(styles)(SignInDialog));
