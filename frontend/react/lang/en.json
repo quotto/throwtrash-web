@@ -23,6 +23,14 @@
             "logout": "Sign Out",
             "loginas": "Signed in as %s."
         },
+        "NotificationDialog": {
+            "title": "Notification",
+            "message": "Smartphone App for \"MyTrash \" is so useful!!",
+            "sub1": "Connect to Alexa on one tap",
+            "sub2": "Update schedule so easy",
+            "sub3": "Share schedule with your family",
+            "close": "Dismiss"
+        },
         "SigninDialog": {
             "login": "Sign In",
             "aboutlogin": "You can modify schedule easirly by signing in with your Amazon or Google Account.",
