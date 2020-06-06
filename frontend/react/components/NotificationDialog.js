@@ -24,13 +24,10 @@ class NotificationDialog extends React.Component {
         console.log('UserAgent(NotificationDIalog):'+ ua);
         console.log('cookie(NotificationDialog):' + document.cookie);
         if(ua.indexOf('iPhone') === -1 && ua.indexOf('iPad') === -1 && document.cookie.indexOf('showedNotification=true') === -1)  {
-            console.log('notification');
             //ダイアログの表示
             document.cookie = 'showedNotification=true; ' + document.cookie;
             this.props.onNotificationDialog(true);
-        } else {
-            console.log('not notification');
-        }
+        } 
     }
 
     render() {
