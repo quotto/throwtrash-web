@@ -23,6 +23,14 @@
             "logout": "ログアウト",
             "loginas": "%s さんとしてログインしています"
         },
+        "NotificationDialog": {
+            "title": "お知らせ",
+            "message": "『今日のゴミ出し』はスマホアプリでさらに便利に！",
+            "sub1": "ワンタップでAlexaと連携",
+            "sub2": "登録情報の変更も簡単",
+            "sub3": "家族ともスケジュールが共有できる",
+            "close": "閉じる"
+        },
         "SigninDialog": {
             "login": "ログイン",
             "aboutlogin": "お持ちのAmazonまたはGoogleアカウントでログインすることで登録したスケジュールを簡単に修正することができます。",

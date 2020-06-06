@@ -1,0 +1,11 @@
+
+version: "3"
+services:
+    web-development:
+        image: throwtrash/web
+        volumes:
+            - ../:/app:cached
+        command: /bin/sh -c "while sleep 1000; do :; done"
+        ports: 
+            - 9005:9005 # firebase port for account link
+            - 5500:5500 # Live Server(VS Code Extention) port

@@ -10,7 +10,8 @@ export const ActionType = {
     SET_USER_INFO: 'SET_USER_INFO',
     SIGN_OUT: 'SIGN_OUT',
     SIGNIN_DIALOG: 'SIGNIN_DIALOG',
-    MENU_CHANGE: 'MENU_CHANGE'
+    MENU_CHANGE: 'MENU_CHANGE',
+    NOTIFICATION_DIALOG: 'NOTIFICATION_DIALOG'
 };
 
 export const addTrash = () => {
@@ -95,4 +96,8 @@ export const changeMenu = (value,target)=>{
         open: value,
         anchorEl: target
     };
+};
+
+export const notificationDialog= (value)=> {
+    return {type: ActionType.NOTIFICATION_DIALOG, open: value};
 };
