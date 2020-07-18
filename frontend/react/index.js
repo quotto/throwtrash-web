@@ -5,7 +5,6 @@ import {Provider} from 'react-redux';
 import {createStore} from 'redux';
 import App from './components/App';
 import TrashScheduleApp from './reducers';
-import {BrowserRouter} from 'react-router-dom';
 import i18next from './lang/i18n.js';
 import './index.css';
 
@@ -27,9 +26,11 @@ LangProvider.propTypes = {
     match: PropTypes.object
 };
 
-let render_flg = false
+let render_flg = false;
+console.log(document.cookie);
 if(navigator.cookieEnabled) {
     document.cookie = 'isEnabledCookie=true; '+document.cookie;
+    console.log(document.cookie);
     if(document.cookie.length > 0) {
         render_flg = true;
     }

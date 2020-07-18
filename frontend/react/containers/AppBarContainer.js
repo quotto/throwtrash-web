@@ -4,7 +4,8 @@ import {
     setUserInfo,
     signOut,
     signinDialog,
-    changeMenu
+    changeMenu,
+    notificationDialog
 } from '../actions';
 
 const mapPropsState = (state)=> {
@@ -16,7 +17,8 @@ const mapPropsState = (state)=> {
             open: state.MenuState.menuOpen,
             anchorEl: state.MenuState.anchorEl
         },
-        openContact: state.MenuState.openContact
+        openContact: state.MenuState.openContact,
+        notificationDialog: state.UserState.notificationDialog
     };
 };
 
@@ -33,6 +35,9 @@ const mapDispatchToProps = (dispatch)=>{
         },
         onChangeMenu: (value,target)=>{
             dispatch(changeMenu(value,target));
+        },
+        onNotificationDialog: (value)=>{
+            dispatch(notificationDialog(value));
         }
     };
 };
