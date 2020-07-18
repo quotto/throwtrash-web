@@ -51,7 +51,15 @@ module.exports = (env)=>{
             ]),
         ],
         optimization: {
-            minimizer: [new TerserPlugin({}), new OptimizeCSSAssetsPlugin({})]
+            minimizer: [
+                new TerserPlugin({
+                    terserOptions:{
+                        compress: {
+                            drop_console: env.stage != 'dev'
+                        }
+                    }
+                }), 
+                new OptimizeCSSAssetsPlugin({})]
         }
     };
 };

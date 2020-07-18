@@ -7,6 +7,12 @@
         {
             "type": "chrome",
             "request": "launch",
+            "name": "Launch Chrome",
+            "file": "${workspaceFolder}/frontend/dist/dev/index.html",
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
             "name": "Launch AccountLinkComplete",
             "file": "${workspaceFolder}/frontend/html/accountlink-complete.html"
         },
