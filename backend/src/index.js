@@ -85,7 +85,11 @@ exports.handler = async function(event,context) {
        } else {
            params = JSON.parse(event.body);
        }
-       return await request_accesstoken(params, event.headers.Authorization);
+       const result =  await request_accesstoken(params, event.headers.Authorization);
+       logger.info(JSON.stringifyi(result));
+       logger.info(event);
+       logger.info(context);
+       return result;
    } else if (event.resource === "/start_link") {
         // アカウントリンクURLの通知
         if(!session) {
@@ -94,7 +98,14 @@ exports.handler = async function(event,context) {
         return await start_link(event.queryStringParameters, session, event.requestContext.stage);
     }
     else if(event.resource === "/enable_skill") {
-        return await enable_skill(event.queryStringParameters,session, event.requestContext.stage);
+        try {
+            const result =  await enable_skill(event.queryStringParameters,session, event.requestContext.stage);
+            return result;
+        } catch(err) {
+            logger.error(`Unexpected error(enable_skill)->${err}`)
+            logger.error(event)
+            logger.error(context)
+        }
     }
-   return error_def.UserError;
+    return error_def.UserError;
 };
