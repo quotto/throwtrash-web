@@ -86,7 +86,7 @@ exports.handler = async function(event,context) {
            params = JSON.parse(event.body);
        }
        const result =  await request_accesstoken(params, event.headers.Authorization);
-       logger.info(JSON.stringifyi(result));
+       logger.info(JSON.stringify(result));
        logger.info(event);
        logger.info(context);
        return result;
