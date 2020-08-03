@@ -76,6 +76,10 @@ module.exports = async (params,authorization) => {
                         "Cache-Control": "no-store"
                     }
                 }
+            } else {
+                logger.error("Refresh Token Error");
+                logger.error(JSON.stringify(user_info));
+                logger.error(JSON.stringify(params));
             }
         } catch(err) {
             logger.error(err);
