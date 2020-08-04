@@ -4,8 +4,8 @@ const logger = common.getLogger();
 const db = require("./dbadapter");
 const error_def = require("./error_def");
 
-const ACCESS_TOKEN_EXPIRE = 7 * 24 * 60 * 60;
-const REFRESH_TOKEN_EXPIRE = 30 * 24 * 60 * 60;
+const ACCESS_TOKEN_EXPIRE = 30 * 24 * 60 * 60;
+const REFRESH_TOKEN_EXPIRE = 180 * 24 * 60 * 60;
 
 module.exports = async (params,authorization) => {
     logger.debug(JSON.stringify(params));
@@ -39,7 +39,7 @@ module.exports = async (params,authorization) => {
                         body: JSON.stringify({
                             access_token: result[0],
                             token_type: "bearer",
-                            expires_in: 7 * 24 * 60 * 60,
+                            expires_in: ACCESS_TOKEN_EXPIRE,
                             refresh_token: result[1]
                         }),
                         headers: {
@@ -66,7 +66,7 @@ module.exports = async (params,authorization) => {
                     statusCode: 200,
                     body: JSON.stringify({
                         access_token: result[0],
-                        expires_in: 7 * 24 * 60 * 60,
+                        expires_in: ACCESS_TOKEN_EXPIRE,
                         refresh_token: result[1],
                         token_type: "bearer"
                     }),
