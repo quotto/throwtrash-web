@@ -84,7 +84,7 @@ db.getRefreshToken.mockImplementation(async(refresh_token) => {
     if (refresh_token === "refreshtoken004") {
         return {
             user_id: "id004",
-            expires_in: 7 * 24 * 60 * 60,
+            expires_in: 30 * 24 * 60 * 60,
             client_id: "alexa-skill"
         }
     } else if (refresh_token === "error_refreshtoken") {
@@ -118,12 +118,12 @@ describe("request_accesstoken",()=>{
        expect(body.refresh_token).toBe("refreshtoken001");
 
        const date = new Date(body.expires_in);
-       expect(body.expires_in).toBe(7 * 24 * 60 * 60);
+       expect(body.expires_in).toBe(30 * 24 * 60 * 60);
 
        expect(mockResult["accesstoken001"].client_id).toBe("alexa-skill");
-       expect(mockResult["accesstoken001"].expires_in).toBe(Math.ceil(mockDate/1000)+(7 * 24 * 60 * 60));
+       expect(mockResult["accesstoken001"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
        expect(mockResult["refreshtoken001"].client_id).toBe("alexa-skill");
-       expect(mockResult["refreshtoken001"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
+       expect(mockResult["refreshtoken001"].expires_in).toBe(Math.ceil(mockDate/1000)+(180 * 24 * 60 * 60));
     });
     it("grant_type=authorization_code_google",async()=>{
         // googleのアカウンリンク認証はパラメータにclient_id&secretが渡される
@@ -144,12 +144,12 @@ describe("request_accesstoken",()=>{
        expect(body.refresh_token).toBe("refreshtoken-google-001");
 
        const date = new Date(body.expires_in);
-       expect(body.expires_in).toBe(7 * 24 * 60 * 60);
+       expect(body.expires_in).toBe(30 * 24 * 60 * 60);
 
        expect(mockResult["accesstoken-google-001"].client_id).toBe("google");
-       expect(mockResult["accesstoken-google-001"].expires_in).toBe(Math.ceil(mockDate/1000)+(7 * 24 * 60 * 60));
+       expect(mockResult["accesstoken-google-001"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
        expect(mockResult["refreshtoken-google-001"].client_id).toBe("google");
-       expect(mockResult["refreshtoken-google-001"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
+       expect(mockResult["refreshtoken-google-001"].expires_in).toBe(Math.ceil(mockDate/1000)+(180 * 24 * 60 * 60));
     });
     it("grant_type=refresh_token_alexa",async()=>{
        const params = {
@@ -165,12 +165,12 @@ describe("request_accesstoken",()=>{
        expect(body.access_token).toBe("accesstoken004");
        expect(body.token_type).toBe("bearer");
        expect(body.refresh_token).toBe("new_refreshtoken004");
-       expect(body.expires_in).toBe(7 * 24 * 60 * 60);
+       expect(body.expires_in).toBe(30 * 24 * 60 * 60);
 
        expect(mockResult["accesstoken004"].client_id).toBe("alexa-skill");
-       expect(mockResult["accesstoken004"].expires_in).toBe(Math.ceil(mockDate/1000)+(7 * 24 * 60 * 60));
+       expect(mockResult["accesstoken004"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
        expect(mockResult["refreshtoken004"].client_id).toBe("alexa-skill");
-       expect(mockResult["refreshtoken004"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
+       expect(mockResult["refreshtoken004"].expires_in).toBe(Math.ceil(mockDate/1000)+(180 * 24 * 60 * 60));
     });
     it("Authorization Code 取得エラー",async()=>{
         const result = await request_accesstoken(
