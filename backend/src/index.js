@@ -102,8 +102,9 @@ exports.handler = async function(event,context) {
             const result =  await enable_skill(event.queryStringParameters,session, event.requestContext.stage);
             return result;
         } catch(err) {
-            logger.error(`Unexpected error(enable_skill)->${err}`)
+            logger.error(`Unexpected error(enable_skill)->${err.stack || err}`)
             logger.error(event)
+            logger.error(session)
             logger.error(context)
         }
     }
