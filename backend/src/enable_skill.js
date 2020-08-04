@@ -67,7 +67,7 @@ module.exports = async(params,session,stage) => {
             }
         }
     } catch(err) {
-        logger.error(err);
+        logger.error(err.stack || err);
         return error_def.ServerError;
     }
 }
