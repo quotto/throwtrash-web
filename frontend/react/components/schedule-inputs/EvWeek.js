@@ -1,125 +1,87 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormHelperText,FormControl, InputLabel, withStyles, Select } from '@material-ui/core';
+import { Grid, FormControl, InputLabel, withStyles, Select, TextField, MenuItem } from '@material-ui/core';
 import { withTranslation } from 'react-i18next';
-import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab';
 import { WeekDayList } from './WeekDayList';
 
 const styles = (theme)=>({
-    OptionEvWeekDiv: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        [theme.breakpoints.up('sm')] : {
-            width: '60%',
-        },
-        [theme.breakpoints.down('xs')]: {
-            flexDirection: 'column',
-            alignItems:'flex-start'
-        }
-    },
     OptionEvweekFormControl: {
         textAlign:'center',
-        width:'50%',
         marginRight: '10px',
         [theme.breakpoints.down('xs')]: {
-            textAlign:'left',
-            'width':'50%',
-            'min-width':'none',
-            'max-width':'none',
-            'margin-bottom':'8px'
+            width: '50%'
         }
     },
-    OptionEvWeekSelect: {
+    OptionEvweekContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
         [theme.breakpoints.down('xs')]: {
-            'width':'100%',
-            'text-align':'center'
-        }
-    }
-});
-
-
-const ToggleFormControl = withStyles(
-    (theme)=>({
-        root: {
-            [theme.breakpoints.down('xs')]: {
-                paddingBottom: '10px'
-            },
-            display: 'inline-flex',
             flexDirection: 'column',
-            alignItems: 'start'
+            alignItems: 'stretch'
         }
-    })
-)(FormControl);
-
-const StyleToggleButton = withStyles(
-    (theme) => ({
-        selected: {
-            color: 'white',
-            background: theme.palette.secondary.main,
-            '&:after': {
-                background: 'none'
-            },
-            '&:hover': {
-                background: theme.palette.secondary.main
-            }
-        },
-    })
-)(ToggleButton);
+    },
+});
 
 class EvWeek extends React.Component {
     render() {
+        const intervalList = [];
+        [2,3,4].forEach((value,index)=>{
+            intervalList.push(<MenuItem key={value} value={value}>
+                {this.props.t(`TrashSchedule.select.evweek.intervalValue.${index}`)}
+            </MenuItem>);
+        });
         return(
-            <div className={this.props.classes.OptionEvWeekDiv}>
+            <Grid container className={this.props.classes.OptionEvweekContainer}>
+                <FormControl className={this.props.classes.OptionEvweekFormControl}>
+                    <InputLabel htmlFor={`interval-${this.props.trash_index}-${this.props.schedule_index}`}>{this.props.t('TrashSchedule.select.evweek.interval')}</InputLabel>
+                    <Select
+                        id={`interval-${this.props.trash_index}-${this.props.schedule_index}`}
+                        name={`interval-${this.props.trash_index}-${this.props.schedule_index}`}
+                        value={this.props.target_schedule.value.interval}
+                        onChange={(e) => this.props.onChangeInput(this.props.trash_index, this.props.schedule_index, { weekday: this.props.target_schedule.value.weekday, start: this.props.target_schedule.value.start, interval: e.target.interval })}
+                    >
+                        {intervalList}
+                    </Select>
+                </FormControl>
                 <FormControl className={this.props.classes.OptionEvweekFormControl}>
                     <InputLabel htmlFor={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}>{this.props.t('TrashSchedule.select.weekday.label')}</InputLabel>
                     <Select
                         id={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
+                        label={this.props.t('TrashSchedule.select.weekday.label')}
                         name={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
                         value={this.props.target_schedule.value.weekday}
-                        style={{ textAlign: 'center' }}
                         onChange={(e) => this.props.onChangeInput(
-                            this.props.trash_index, 
-                            this.props.schedule_index, 
-                            { weekday: e.target.value, start: this.props.target_schedule.value.start }
+                            this.props.trash_index,
+                            this.props.schedule_index,
+                            { weekday: e.target.value, start: this.props.target_schedule.value.start, interval: this.props.target_schedule.value.interval }
                         )}
                     >
                         {WeekDayList(this.props)}
                     </Select>
                 </FormControl>
-                <ToggleFormControl>
-                    <FormHelperText style={{ margin: '0 0 8px 0' }}>
-                        {this.props.t('TrashSchedule.select.evweek.helper')}
-                    </FormHelperText>
-                    <ToggleButtonGroup
-                        value={this.props.target_schedule.value.start}
-                        exclusive
-                        onChange={(e, changed_value) => {
-                            if (changed_value) {
-                                this.props.onChangeInput(
-                                    this.props.trash_index, 
-                                    this.props.schedule_index, 
-                                    { weekday: this.props.target_schedule.value.weekday, start: changed_value }
-                                );
+                <FormControl className={this.props.classes.OptionEvweekFormControl}>
+                    <TextField
+                        id={`recently-${this.props.trash_index}-${this.props.schedule_index}`}
+                        label={this.props.t('TrashSchedule.select.evweek.helper')}
+                        type="date"
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        inputProps={{
+                            style: {
+                                textAlign: 'center'
                             }
                         }}
-                        style={{ flexDirection: 'column', alignItems: 'start' }}
-                    >
-                        <StyleToggleButton
-                            value='thisweek'
-                            style={{ fontSize: this.props.t('TrashSchedule.style.StyleToggleButton.fontsize') }}
-                        >
-                            {this.props.t('TrashSchedule.select.evweek.thisweek')}
-                        </StyleToggleButton>
-                        <StyleToggleButton
-                            value='nextweek'
-                            style={{ fontSize: this.props.t('TrashSchedule.style.StyleToggleButton.fontsize') }}
-                        >
-                            {this.props.t('TrashSchedule.select.evweek.nextweek')}
-                        </StyleToggleButton>
-                    </ToggleButtonGroup>
-                </ToggleFormControl>
-            </div>
+                        value={this.props.target_schedule.value.start}
+                        onChange={(e) => this.props.onChangeInput(
+                            this.props.trash_index,
+                            this.props.schedule_index,
+                            { weekday: this.props.target_schedule.value.weekday, start: e.target.value,interval: this.props.target_schedule.value.interval}
+                        )}
+                    />
+                </FormControl>
+            </Grid>
         );
     }
 }
