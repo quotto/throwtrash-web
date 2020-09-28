@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Hidden, Grid, withStyles, FormHelperText, Select, Chip, InputLabel, Avatar, MenuItem, FormControl } from '@material-ui/core';
+import { Grid, withStyles, FormHelperText, Select, Chip, InputLabel, Avatar, MenuItem, FormControl, Hidden } from '@material-ui/core';
 import { withTranslation } from 'react-i18next';
 import WeekDay from './schedule-inputs/WeekDay';
 import EvWeek from './schedule-inputs/EvWeek';
@@ -10,21 +10,13 @@ import CalendarToday  from '@material-ui/icons/CalendarToday';
 import { ScheduleType } from './common';
 
 const styles = (theme)=>({
-    TrashSchedule: {
-        display: 'flex',
-        [theme.breakpoints.up('sm')]: {
-            flexDirection: 'row',
-            alignItems: 'baseline'
-        },
-        [theme.breakpoints.down('xs')]: {
-            flexDirection: 'column'
-        }
+    TrashScheduleContainer: {
+        marginBottom: '20px'
     },
     ScheduleTypeFormControl: {
         'vertical-align':'top',
         'text-align':'center',
         [theme.breakpoints.up('sm')] : {
-            'margin-right':'10px',
             'width':'40%',
             'min-width':'130px',
             'max-width':'210px'
@@ -89,10 +81,9 @@ class Schedules extends React.Component {
         const ScheduleTags = [];
         for(let i=0; i<3; i++) {
             ScheduleTags.push(
-                <Grid container spacing={0} key={i.toString()}>
-                    <Hidden key={`Hidden${i}`} xsDown><Grid item sm={5} /></Hidden>
-                    <Hidden smUp><Grid item xs={1} /></Hidden>
-                    <Grid item sm={7} xs={10} key={`Grid${i}`} className={this.props.classes.TrashSchedule}>
+                <Grid container justify='center' alignItems='center' key={`Grid${i}`} className={this.props.classes.TrashScheduleContainer}>
+                    <Hidden xsDown><Grid item sm={5} /></Hidden>
+                    <Grid item sm={7} xs={12}>
                         <FormControl className={this.props.classes.ScheduleTypeFormControl}>
                             <InputLabel htmlFor={`schedule-${this.props.trash_index}-${i}`} style={{ top: '-5' }}>
                                 <Chip
@@ -113,7 +104,7 @@ class Schedules extends React.Component {
                                 onChange={(e) => this.props.onChangeSchedule(this.props.trash_index, i, e.target.value)}
                                 style={{ textAlign: 'center' }}
                             >
-                                {ScheduleType.map((key) => 
+                                {ScheduleType.map((key) =>
                                     <MenuItem key={key} value={key}>
                                         {this.props.t('TrashSchedule.select.scheduletype.option.' + key)}
                                     </MenuItem>
@@ -121,14 +112,18 @@ class Schedules extends React.Component {
                             </Select>
                             <FormHelperText></FormHelperText>
                         </FormControl>
-                        <ScheduleOption 
-                            schedule_index={i}
-                            trash_index={this.props.trash_index}
-                            trash={this.props.trash}
-                            onChangeInput={this.props.onChangeInput}
-                        />
                     </Grid>
-                    <Hidden smUp><Grid item xs={1} /></Hidden>
+                    <Hidden xsDown><Grid item sm={5} /></Hidden>
+                    <Grid item sm={7} xs={12}>
+                        <Grid container alignItems='center'>
+                            <ScheduleOption
+                                schedule_index={i}
+                                trash_index={this.props.trash_index}
+                                trash={this.props.trash}
+                                onChangeInput={this.props.onChangeInput}
+                            />
+                        </Grid>
+                    </Grid>
                 </Grid>
             );
         }

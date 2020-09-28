@@ -114,9 +114,8 @@
                     "label": "Day of the week"
                 },
                 "evweek": {
-                    "helper": "Recently week?(From Sunday)",
-                    "thisweek": "This Week",
-                    "nextweek": "Next Week"
+                    "helper": "Recently date",
+                    "interval": "Interval"
                 }
             },
             "style": {

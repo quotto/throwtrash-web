@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormHelperText, Select, FormControl, InputLabel, withStyles } from '@material-ui/core';
+import { Grid, FormHelperText, Select, FormControl, InputLabel, withStyles } from '@material-ui/core';
 import { withTranslation } from 'react-i18next';
 import { getErrorMessage} from '../common';
 import { WeekDayList } from './WeekDayList';
@@ -15,13 +15,12 @@ const styles = (theme)=>({
             'max-width':'210px'
         },
         [theme.breakpoints.down('xs')]: {
-            'text-align':'left',
             'width':'50%'
         }
     },
     OptionWeekSelect: {
-        'width':'100%',
-        'text-align':'center'
+        'width': '100%',
+        'text-align': 'center'
     }
 });
 
@@ -35,11 +34,10 @@ class WeekDay extends React.Component {
                 <Select
                     id={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
                     name={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
+                    className={this.props.classes.OptionWeekSelect}
                     value={this.props.target_schedule.value}
                     onChange={(e) => this.props.onChangeInput(this.props.trash_index, this.props.schedule_index, e.target.value)}
-                    className={this.props.classes.OptionWeekSelect}
                 >
-                    {/* <WeekDayList t={this.props.t} /> */}
                     {WeekDayList(this.props)}
                 </Select>
                 <FormHelperText error={this.props.target_schedule.error}>
