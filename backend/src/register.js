@@ -4,18 +4,17 @@ const property = require("./property");
 const db = require("./dbadapter");
 
 /**
- * 隔週スケジュールの開始日（今週の日曜日 または 来週の日曜日）を求める 
- * @param {int} weektype : 0:今週,1:来週
- * @param {int} offset : ユーザー地域のタイムゾーンオフセット
+ * 隔週スケジュールの開始日(start_dateの直前の日曜日)を求める 
+ * @param {int} start_date : yyyy-mm-dd形式の文字列
  */
-const calculateStartDate = (weektype, offset) => {
-    const localdt = new Date(Date.now() + (-1 * offset * 60 * 1000));
-    localdt.setUTCDate(localdt.getUTCDate() - localdt.getUTCDay() + (7 * weektype));
+const calculateStartDate = (start_date) => {
+    const start_dt = new Date(start_date);
+    const sunday_dt = new Date(start_dt.getTime() - (24 * 60 * 60 * 1000 * start_dt.getUTCDay()));
 
-    return `${localdt.getUTCFullYear()}-${localdt.getUTCMonth()+1}-${localdt.getUTCDate()}`;
+    return `${sunday_dt.getUTCFullYear()}-${sunday_dt.getUTCMonth()+1}-${sunday_dt.getUTCDate()}`;
 };
 
-const adjustData = (input_data, offset) => {
+const adjustData = (input_data) => {
     let regist_data = [];
     try {
         input_data.forEach((trash)=>{
@@ -34,8 +33,7 @@ const adjustData = (input_data, offset) => {
                 };
                 if(regist_schedule.type && regist_schedule.type != "none" && regist_schedule.value) {
                     if(regist_schedule.type === "evweek") {
-                        const weektype = regist_schedule.value.start==="thisweek" ? 0 : 1;
-                        const start_date = calculateStartDate(weektype, offset);
+                        const start_date = calculateStartDate(regist_schedule.value.start);
                         regist_schedule.value.start = start_date;
                     }
                     trash_schedules.push(regist_schedule);
@@ -56,7 +54,7 @@ module.exports = async(body,session)=>{
         logger.info(`Regist request from ${session.id}`);
         logger.debug("Regist Data:", JSON.stringify(body));
 
-        const regist_data = adjustData(body.data, body.offset);
+        const regist_data = adjustData(body.data);
         if (!common.checkTrashes(regist_data)) {
             logger.error(`platform: ${session.platform}`);
             return {
