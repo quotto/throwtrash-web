@@ -151,15 +151,13 @@ describe("adjustData",()=>{
         const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'weekday', value: '0' },{ "type": "none", "value": "" }, { "type": "none", "value": "" }] }],540);
         expect(JSON.stringify(response)).toBe("[{\"type\":\"other\",\"trash_val\":\"萌えるゴミ\",\"schedules\":[{\"type\":\"weekday\",\"value\":\"0\"}]}]");
     });
-    it('evweek & this week', async () => {
-        Date.now = jest.fn().mockReturnValue(1585710000000); // 2020/04/01 3:00:00
-        const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'evweek', value: {weekday:'0',start: 'thisweek' }}]}],540);
-        expect(response[0].schedules[0].value.start).toBe("2020-3-29");
+    it('evweek & start on saturday', async () => {
+        const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'evweek', value: {weekday:'0',start: '2020-10-02', interval: 2 }}]}],540);
+        expect(response[0].schedules[0].value.start).toBe("2020-9-27");
     });
-    it('evweek & next week', async () => {
-        Date.now = jest.fn().mockReturnValue(1585710000000); // 2020/04/01 3:00:00
-        const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'evweek', value: {weekday:'0',start: 'nextweek' }}]}],540);
-        expect(response[0].schedules[0].value.start).toBe("2020-4-5");
+    it('evweek & start on sunday', async () => {
+        const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'evweek', value: {weekday:'0',start: '2020-09-27', interval: 3 }}]}],540);
+        expect(response[0].schedules[0].value.start).toBe("2020-9-27");
     });
     it('nullのためエラー', async () => {
         const response = adjustData(null,540);
