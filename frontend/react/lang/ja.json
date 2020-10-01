@@ -115,9 +115,13 @@
                     "label": "曜日"
                 },
                 "evweek": {
-                    "helper": "直近の収集日は？（日曜始まり）",
-                    "thisweek": "今週",
-                    "nextweek": "来週"
+                    "helper": "直近の収集日",
+                    "interval": "間隔",
+                    "intervalValue": {
+                        "0":"2週間に1回",
+                        "1":"3週間に1回",
+                        "2":"4週間に1回"
+                    }
                 }
             },
             "style": {

@@ -25,7 +25,7 @@ class Main extends React.Component {
             });
         }
         return (
-            <Grid container justify='center' item xs={12} spacing={24}>
+            <Grid container justify='center' item xs={12} spacing={0} style={{flexBasis: '90%'}}>
                 <TrashSchedule
                     trashes={this.props.trashes}
                     onChangeSchedule={this.props.onChangeSchedule}
@@ -34,32 +34,30 @@ class Main extends React.Component {
                     onClick={this.props.onClickDelete}
                     onInputTrashType={this.props.onInputTrashType}
                 />
-                <Grid item xs={2}></Grid>
-                <Grid item xs={8} style={{textAlign:'center'}}>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        disabled={this.props.trashes.length===MAX_SCHEDULE}
-                        onClick={()=>this.props.onClickAdd()}>
-                        {this.props.t('ScheduleList.button.addtrash')}
-                    </Button>
-                </Grid>
-                <Grid item xs={2}></Grid>
-                <Grid item xs={4}></Grid>
-                <Grid item xs={4} style={{textAlign:'center'}}>
+                <Grid container justify='center' direction='column' alignItems='center' spacing={3}>
+                    <Grid item>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            disabled={this.props.trashes.length === MAX_SCHEDULE}
+                            onClick={() => this.props.onClickAdd()}>
+                            {this.props.t('ScheduleList.button.addtrash')}
+                        </Button>
+                    </Grid>
                     <ErrorDialog
                         showErrorDialog={this.props.showErrorDialog}
                         onError={this.props.onError}
                     />
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        disabled={this.props.submit_error || this.props.submitting}
-                        onClick={()=>this.props.onSubmit(true)}>
-                        {this.props.t('ScheduleList.button.regist')}
-                    </Button>
+                    <Grid item>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            disabled={this.props.submit_error || this.props.submitting}
+                            onClick={() => this.props.onSubmit(true)}>
+                            {this.props.t('ScheduleList.button.regist')}
+                        </Button>
+                    </Grid>
                 </Grid>
-                <Grid item xs={4}></Grid>
             </Grid>
         );
     }
