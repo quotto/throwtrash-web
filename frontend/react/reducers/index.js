@@ -7,7 +7,7 @@ const initialScheduleValue = {
     'weekday': '0',
     'biweek': '0-1',
     'month': '',
-    'evweek': {weekday: '0',start:'thisweek'}
+    'evweek': {weekday: '0',start: new Date().toISOString().substr(0,10), interval: 2}
 };
 
 const initialSchedule = ()=>{
