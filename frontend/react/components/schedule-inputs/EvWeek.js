@@ -27,9 +27,10 @@ class EvWeek extends React.Component {
     render() {
         const intervalList = [];
         [2,3,4].forEach((value,index)=>{
-            intervalList.push(<MenuItem key={value} value={value}>
-                {this.props.t(`TrashSchedule.select.evweek.intervalValue.${index}`)}
-            </MenuItem>);
+            intervalList.push(
+                <MenuItem key={value} value={value}>
+                    {this.props.t(`TrashSchedule.select.evweek.intervalValue.${index}`)}
+                </MenuItem>);
         });
         return(
             <Grid container className={this.props.classes.OptionEvweekContainer}>
@@ -39,7 +40,7 @@ class EvWeek extends React.Component {
                         id={`interval-${this.props.trash_index}-${this.props.schedule_index}`}
                         name={`interval-${this.props.trash_index}-${this.props.schedule_index}`}
                         value={this.props.target_schedule.value.interval}
-                        onChange={(e) => this.props.onChangeInput(this.props.trash_index, this.props.schedule_index, { weekday: this.props.target_schedule.value.weekday, start: this.props.target_schedule.value.start, interval: e.target.interval })}
+                        onChange={(e) => this.props.onChangeInput(this.props.trash_index, this.props.schedule_index, { weekday: this.props.target_schedule.value.weekday, start: this.props.target_schedule.value.start, interval: e.target.value })}
                     >
                         {intervalList}
                     </Select>
