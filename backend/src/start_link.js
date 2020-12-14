@@ -14,7 +14,7 @@ module.exports = async(params,session,stage) => {
             // platformに応じてAlexaログインURLを返す
             let loginUrl = "";
             if (params.platform === "android") {
-                loginUrl = `https://www.amazon.co.jp/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&redirect_uri=https://backend.mythrowaway.net/${stage}/enable_skill&state=${session.state}`
+                loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&redirect_uri=https://backend.mythrowaway.net/${stage}/enable_skill&state=${session.state}`
             }
             return {
                 statusCode: 301,
