@@ -23,7 +23,9 @@ module.exports = async(params,session,stage) => {
                 headers: {
                     // Location: loginUrl,
                     "Set-Cookie": `${property.SESSIONID_NAME}=${session.id};max-age=${property.SESSION_MAX_AGE};`,
-                    "Cache-Control": "no-store"
+                    "Cache-Control": "no-store",
+                    "Content-Type": "text/plain",
+                    "Content-Length": loninUrl.length
                 },
                 body: loginUrl
             }
