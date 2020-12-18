@@ -14,7 +14,6 @@ module.exports = async(params,session,stage) => {
             // platformに応じてAlexaログインURLを返す
             let loginUrl = "";
             if (params.platform === "android") {
-                // loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&redirect_uri=https://backend.mythrowaway.net/${stage}/enable_skill&state=${session.state}`
                 loginUrl = `https://alexa.amazon.com/spa/skill-account-linking-consent?fragment=skill-account-linking-consent&client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&skill_stage=${stage}&response_type=code&redirect_uri=https://mobileapp.mythrowaway.net/accountlink&state=${session.state}`
             }
             return {
@@ -24,10 +23,8 @@ module.exports = async(params,session,stage) => {
                     // Location: loginUrl,
                     "Set-Cookie": `${property.SESSIONID_NAME}=${session.id};max-age=${property.SESSION_MAX_AGE};`,
                     "Cache-Control": "no-store",
-                    "Content-Type": "text/plain",
-                    "Content-Length": loginUrl.length
                 },
-                body: loginUrl
+                body: JSON.stringify({url: loginUrl})
             }
         } catch(err) {
             logger.error(err);
