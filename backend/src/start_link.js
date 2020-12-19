@@ -9,6 +9,7 @@ module.exports = async(params,session,stage) => {
         session.user_id = params.id;
         session.state = common.generateRandomCode(20);
         try {
+            logger.info("save session on start_link\n"+JSON.stringify(session));
             await db.saveSession(session);
 
             // platformに応じてAlexaログインURLを返す
