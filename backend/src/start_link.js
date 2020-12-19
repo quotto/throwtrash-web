@@ -9,12 +9,13 @@ module.exports = async(params,session,stage) => {
         session.user_id = params.id;
         session.state = common.generateRandomCode(20);
         try {
+            logger.info("save session on start_link\n"+JSON.stringify(session));
             await db.saveSession(session);
 
             // platformに応じてAlexaログインURLを返す
             let loginUrl = "";
             if (params.platform === "android") {
-                loginUrl = `https://alexa.amazon.com/spa/skill-account-linking-consent?fragment=skill-account-linking-consent&client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&skill_stage=${stage==="dev" ? "development" : "production"}&response_type=code&state=${session.state}`
+                loginUrl = `https://alexa.amazon.com/spa/skill-account-linking-consent?fragment=skill-account-linking-consent&client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&skill_stage=${stage==="dev" ? "development" : "live"}&response_type=code&state=${session.state}`
             }
             return {
                 // statusCode: 301,
