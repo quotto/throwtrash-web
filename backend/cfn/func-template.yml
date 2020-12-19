@@ -28,8 +28,6 @@ Parameters:
     Type: "String"
   DBRegion:
     Type: "String"
-  AccountLinkBackendUri:
-    Type: "String"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -111,7 +109,6 @@ Resources:
           GOOGLE_USER_CLIENT_ID: !Ref GoogleUserClientID
           GOOGLE_USER_SECRET: !Ref GoogleUserSecret
           ALEXA_SKILL_ID: !Ref AlexaSkillID
-          ACCOUNT_LINK_BACKEND_URI: !Ref AccountLinkBackendUri
       Tags:
         Group: throwtrash
         Purpose: WebBackend/OAuthBackend
