@@ -17,7 +17,7 @@ module.exports = async(params,session,stage) => {
             code: params.code,
             client_id: process.env.ALEXA_CLIENT_ID,
             client_secret: process.env.ALEXA_CLIENT_SECRET,
-            redirect_uri: `https://backend.mythrowaway.net/${stage}/enable_skill`
+            redirect_uri: params.redirect_uri
         },
         method: "POST",
         json: true
@@ -35,9 +35,9 @@ module.exports = async(params,session,stage) => {
             json: true
         });
 
-        // authorization codeを発行する
-        const accessTokenRedirectUri = `https://backend.mythrowaway.net/${stage}/enable_skill`;
-        const authorizationCode = await db.putAuthorizationCode(session.user_id, process.env.ALEXA_USER_CLIENT_ID,accessTokenRedirectUri,300);
+        // サービス側(今日のゴミ出し)のアクセストークン取得のためのauthorization codeを発行しておく
+        // 認可サーバとサービスのバックエンドサーバ分離している場合にはここでもリクエスト送受信が発生する
+        const authorizationCode = await db.putAuthorizationCode(session.user_id, process.env.ALEXA_USER_CLIENT_ID,params.redirect_uri,300);
 
         const skillStage = stage === "dev" ? "development" : "live";
         const enableSkillOptions = {
@@ -50,12 +50,16 @@ module.exports = async(params,session,stage) => {
             body: {
                 stage: skillStage,
                 accountLinkRequest: {
-                    redirectUri: accessTokenRedirectUri,
+                    redirectUri: params.redirect_uri,
                     authCode: authorizationCode.code,
                     type: "AUTH_CODE"
                 }
             }
         }
+        
+        // Alexa APIエンドポイントにスキル有効化のリクエストを送信する
+        // Alexa APIではサービス（今日のゴミ出し）にauthorization codeをつけてアクセストークンをリクエストする
+        // 正常にアクセストークンが取得できれば200が戻る
         const skillResponse = await rp(enableSkillOptions);
         logger.debug(skillResponse);
 
