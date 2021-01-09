@@ -85,16 +85,25 @@ Resources:
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
       RoleName: !Sub "throwtrash-backend-lambda-exec-role-${Stage}"
     DeletionPolicy: Retain
+  FunctionLayer:
+    Type: "AWS::Serverless::LayerVersion"
+    Properties:
+      ContentUri: ../src/layer
+      LayerName: !Sub "throwtrash-backend-layer-${Stage}"
+      CompatibleRuntimes:
+        - nodejs12.x
   LambdaFunction:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
     Properties:
-      CodeUri: ../src/
+      CodeUri: ../src/dist
       FunctionName: !Sub "throwtrash-backend-${Stage}"
       Handler: index.handler
       Role: !GetAtt  LambdaExecRole.Arn
       Runtime: nodejs12.x
       Timeout: 30
+      Layers:
+        - !Ref FunctionLayer
       Environment:
         Variables:
           DB_REGION: !Ref DBRegion
@@ -212,7 +221,7 @@ Resources:
         -
           LoggingLevel: "INFO"
           HttpMethod: "*"
-          ResourcePath: "/+"
+          ResourcePath: "/*"
           DataTraceEnabled: true
   LambdaVersion:
     Type: "AWS::Lambda::Version"

@@ -1,8 +1,11 @@
-const logger = require("trash-common").getLogger();
-logger.LEVEL = logger.DEBUG;
-const error_def = require("../error_def");
+import * as common from "trash-common"
+const logger = common.getLogger();
+logger.setLevel_DEBUG();
+import error_def from "../error_def";
 
-jest.mock("request-promise",()=>(async(option)=>{
+import { mocked } from "ts-jest/utils";
+
+jest.mock("request-promise",()=>(async(option: any)=>{
     if(option.uri === "https://api.amazon.com/auth/o2/token") {
         return {
             access_token: "amazon-accesstoken001"
@@ -31,9 +34,9 @@ jest.mock("request-promise",()=>(async(option)=>{
 }));
 
 jest.mock("../dbadapter");
-const db = require("../dbadapter");
-const mockPutAuthorizationCodeResult = {};
-db.putAuthorizationCode.mockImplementation(async(user_id,client_id,redirect_uri,expires_in)=>{
+import db from "../dbadapter";
+const mockPutAuthorizationCodeResult: any = {};
+mocked(db.putAuthorizationCode).mockImplementation(async(user_id: string,client_id: string,redirect_uri: string,expires_in: number)=>{
     if(user_id === "id001") {
         mockPutAuthorizationCodeResult[user_id] =
         {
@@ -48,19 +51,19 @@ db.putAuthorizationCode.mockImplementation(async(user_id,client_id,redirect_uri,
         throw new Error("PutAuthorizationCode Error");
     }
 });
-db.deleteSession.mockImplementation(async(session_id)=>{
+mocked(db.deleteSession).mockImplementation(async(session_id: string)=>{
     if(session_id === "session_id001") {
         return true;
     }
     throw new Error("delete session error");
 });
-const enable_skill = require("../enable_skill");
+import enable_skill from "../enable_skill";
 describe("enable_skill",()=>{
     describe("正常系",()=>{
         it("開発:正常終了",async()=>{
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-dev";
-            const result = await enable_skill({state: "12345",redirect_uri: "https://backend.mythrowaway.net/dev/enable_skill"},{id: "session_id001",state: "12345", user_id: "id001"},"dev");
+            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"dev");
             
             expect(result.statusCode).toBe(301);
             expect(result.headers.Location).toBe("https://accountlink.mythrowaway.net/dev/accountlink-complete.html");
@@ -77,7 +80,7 @@ describe("enable_skill",()=>{
         it("本番:正常終了",async()=>{
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
-            const result = await enable_skill({state: "12345",redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill" },{id: "session_id001",state: "12345", user_id: "id001"},"v1");
+            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"v1");
             
             expect(result.statusCode).toBe(301);
             expect(result.headers.Location).toBe("https://accountlink.mythrowaway.net/v1/accountlink-complete.html");
@@ -94,13 +97,13 @@ describe("enable_skill",()=>{
     })
     describe("異常系",()=>{
         it("stateが一致しない",async()=>{
-            const result = await enable_skill({state: "not_match_state"}, {state: "12345"}, "v1");
+            const result = await enable_skill({state: "not_match_state"}, {id: "session_id002", user_id: "id002",state: "12345",expire:999999999}, "v1");
             expect(result.statusCode).toBe(301);
             const headers = result.headers;
             expect(headers.Location).toBe(error_def.UserError.headers.Location);
         });
         it("DBエラー",async()=>{
-            const result = await enable_skill({state: "12345"},{state: "12345", id: "session_id002",user_id: "id002"}, "v1");
+            const result = await enable_skill({state: "12345"},{state: "12345", id: "session_id002",user_id: "id002", expire:999999999}, "v1");
             expect(result.statusCode).toBe(301);
             const headers = result.headers;
             expect(headers.Location).toBe(error_def.ServerError.headers.Location);

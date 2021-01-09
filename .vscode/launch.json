@@ -46,6 +46,17 @@
             }
         }, 
         {
+            "name": "Jest Backend Tests",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/src/node_modules/.bin/jest",
+            "protocol": "inspector",
+            "args": ["signin.test.ts","-t","amazon", "-c","${workspaceFolder}/backend/src/jest.config.js","--runInBand", ],
+            "windows": {
+                "program": "${workspaceFolder}/backend/src/node_modules/jest/bin/jest.js"
+            }
+        }, 
+        {
             "type": "node",
             "request": "launch",
             "name": "Mocha Frontend",
