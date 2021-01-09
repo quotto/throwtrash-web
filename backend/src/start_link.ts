@@ -1,9 +1,10 @@
-const property = require("./property");
-const db = require("./dbadapter");
-const error_def = require("./error_def");
-const common = require("trash-common");
+import property from "./property";
+import db from "./dbadapter";
+import error_def from "./error_def";
+import {BackendResponse} from "./interface";
+import * as common from "trash-common";
 const logger = common.getLogger();
-module.exports = async(params,session,stage) => {
+export default async(params: any,session: any,stage: string): Promise<BackendResponse> => {
     if (params.id) {
         // sessionにid（access_token相当）とstateを設定して保存
         session.user_id = params.id;

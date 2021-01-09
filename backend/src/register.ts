@@ -1,40 +1,49 @@
-const common = require("trash-common");
-const logger = common.getLogger();
-const property = require("./property");
-const db = require("./dbadapter");
+import {getLogger, Logger, TrashData, TrashSchedule, EvweekValue, checkTrashes} from "trash-common";
+const logger: Logger = getLogger();
+import property from "./property";
+import db from "./dbadapter";
+import {BackendResponse, SessionItem} from "./interface";
+
+interface TrashDataOnWeb {
+    type: string,
+    trash_val?: string,
+    schedules: TrashSchedule[]
+}
 
 /**
  * 隔週スケジュールの開始日(start_dateの直前の日曜日)を求める 
- * @param {int} start_date : yyyy-mm-dd形式の文字列
+ * @param {string} start_date : yyyy-mm-dd形式の文字列
  */
-const calculateStartDate = (start_date) => {
+const calculateStartDate = (start_date: string) => {
     const start_dt = new Date(start_date);
     const sunday_dt = new Date(start_dt.getTime() - (24 * 60 * 60 * 1000 * start_dt.getUTCDay()));
 
     return `${sunday_dt.getUTCFullYear()}-${sunday_dt.getUTCMonth()+1}-${sunday_dt.getUTCDate()}`;
 };
 
-const adjustData = (input_data) => {
-    let regist_data = [];
+export const adjustData = (input_data: TrashDataOnWeb[]) => {
+    let regist_data: TrashData[] = [];
     try {
         input_data.forEach((trash)=>{
-            let regist_trash = {
-                type: trash.type
+            let regist_trash: any = {
+                type: trash.type,
+                schedules: []
             };
             if(trash.type === "other") {
                 regist_trash.trash_val = trash.trash_val;
             }
 
-            let trash_schedules = [];
-            trash.schedules.forEach((schedule)=>{
-                let regist_schedule = {
-                    type: schedule.type,
-                    value: schedule.value
-                };
-                if(regist_schedule.type && regist_schedule.type != "none" && regist_schedule.value) {
+            let trash_schedules:  TrashSchedule[] = [];
+            trash.schedules.forEach((schedule: TrashSchedule)=>{
+                if(schedule.type && schedule.type != "none" && schedule.value) {
+                    let regist_schedule = {
+                        type: schedule.type,
+                        value: schedule.value
+                    };
                     if(regist_schedule.type === "evweek") {
-                        const start_date = calculateStartDate(regist_schedule.value.start);
-                        regist_schedule.value.start = start_date;
+                        const evweekValue: EvweekValue = regist_schedule.value as EvweekValue; 
+                        const start_date = calculateStartDate(evweekValue.start);
+                        evweekValue.start = start_date;
                     }
                     trash_schedules.push(regist_schedule);
                 }
@@ -48,14 +57,14 @@ const adjustData = (input_data) => {
     return regist_data;
 }
 
-module.exports = async(body,session)=>{
+export default async(body: any,session: SessionItem): Promise<BackendResponse>=>{
     // 検証した登録データをセッションに格納
     if(body && session && session.state && session.client_id && session.redirect_uri) {
         logger.info(`Regist request from ${session.id}`);
-        logger.debug("Regist Data:", JSON.stringify(body));
+        logger.debug("Regist Data:"+ JSON.stringify(body));
 
         const regist_data = adjustData(body.data);
-        if (!common.checkTrashes(regist_data)) {
+        if (!checkTrashes(regist_data)) {
             logger.error(`platform: ${session.platform}`);
             return {
                 statusCode: 400,
@@ -63,7 +72,7 @@ module.exports = async(body,session)=>{
             }
         }
 
-        const item = {};
+        const item: any = {};
         if(session.userInfo) {
             item.signinId = session.userInfo.signinId;
             item.signinService = session.userInfo.signinService;
@@ -89,7 +98,7 @@ module.exports = async(body,session)=>{
             await db.deleteSession(session.id);
 
             const redirect_url = `${session.redirect_uri}?state=${session.state}&code=${authorizationCode.code}`;
-            logger.debug("redirect to amazon auhorize service:", redirect_url);
+            logger.debug("redirect to amazon auhorize service:"+ redirect_url);
             return {
                 statusCode: 200,
                 body: redirect_url,

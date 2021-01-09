@@ -1,11 +1,16 @@
-const logger = require("trash-common").getLogger();
-logger.LEVEL = logger.DEBUG;
-const error_def = require("../error_def");
+import * as common from "trash-common";
+const logger = common.getLogger();
+logger.setLevel_DEBUG();
+import oauth_request from "../oauth_request";
+import db from "../dbadapter";
+import error_def from "../error_def";
 
-const mockResult = [];
+import { mocked } from "ts-jest/utils";
+import { SessionItem } from "../interface";
+
+const mockResult: {[key:string]: SessionItem} = {};
 jest.mock("../dbadapter");
-const db = require("../dbadapter");
-db.saveSession.mockImplementation(async(session)=>{
+mocked(db.saveSession).mockImplementation(async(session)=>{
     mockResult[session.id] = session;
     if (session.id === "sessionid-001" || session.id === "sessionid-002") {
         return true;
@@ -13,7 +18,6 @@ db.saveSession.mockImplementation(async(session)=>{
     return false;
 });
 describe("oauth_request", () => {
-    const oauth_request = require("../oauth_request");
     it("セッションID新規発行", async () => {
         // パラメータはqueryStringParameters,セッション情報,セッション新規発行フラグ,API Gatewayのstage
         const response = await oauth_request({
@@ -27,8 +31,9 @@ describe("oauth_request", () => {
         );
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
-        expect(headers.Location).toBe("https://accountlink.mythrowaway.net/v5/index.html");
-        expect(headers["Set-Cookie"]).toBe("throwaway-session=sessionid-001;max-age=3600;");
+        expect(headers).not.toBeUndefined();
+        expect(headers!.Location).toBe("https://accountlink.mythrowaway.net/v5/index.html");
+        expect(headers!["Set-Cookie"]).toBe("throwaway-session=sessionid-001;max-age=3600;");
 
         // 保存したセッション
         const session = mockResult["sessionid-001"];
@@ -50,8 +55,9 @@ describe("oauth_request", () => {
             "v5");
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
-        expect(headers.Location).toBe("https://accountlink.mythrowaway.net/v5/index.html");
-        expect(headers["Set-Cookie"]).toBe(undefined);
+        expect(headers).not.toBeUndefined();
+        expect(headers!.Location).toBe("https://accountlink.mythrowaway.net/v5/index.html");
+        expect(headers!["Set-Cookie"]).toBe(undefined);
 
         // 保存したセッション
         const session = mockResult["sessionid-002"];
@@ -73,63 +79,51 @@ describe("oauth_request", () => {
             "v5");
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
-        expect(headers.Location).toBe(error_def.ServerError.headers.Location);
+        expect(headers).not.toBeUndefined();
+        expect(headers!.Location).toBe(error_def.ServerError.headers.Location);
     });
     it("パラメータエラー state無し", async () => {
         const response = await oauth_request({
             client_id: "alexa-skill",
             redirect_uri: "https://xxxx.com",
-            platform: "amazon"
-        });
+            platform: "amazon",
+        }, {id: "session001",expire: 999999}, true, "dev");
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
-        expect(headers.Location).toBe(error_def.UserError.headers.Location);
-    }, {}, true);
+        expect(headers).not.toBeUndefined();
+        expect(headers!.Location).toBe(error_def.UserError.headers.Location);
+    });
     it("パラメータエラー client_id無し", async () => {
         const response = await oauth_request({
             state: "xxxxxx",
             redirect_uri: "https://xxxx.com",
             platform: "amazon",
-        }, {}, true, "v5");
+        }, {id: "session001", expire:999999}, true, "v5");
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
-        expect(headers.Location).toBe(error_def.UserError.headers.Location);
+        expect(headers).not.toBeUndefined();
+        expect(headers!.Location).toBe(error_def.UserError.headers.Location);
     });
     it("パラメータエラー redirect_uri無し", async () => {
         const response = await oauth_request({
             state: "xxxxxx",
             client_id: "alexa-skill",
             platform: "amazon"
-        }, {}, false, "v5");
+        }, {id: "session001", expire:999999}, false, "v5");
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
-        expect(headers.Location).toBe(error_def.UserError.headers.Location);
-    });
-    it("パラメータエラー バージョンなし", async () => {
-        const response = await oauth_request({
-            state: "xxxxxx",
-            client_id: "alexa-skill",
-            redirect_uri: "https://xxxx.com",
-            platform: "amazon"
-        }, {}, false, undefined);
-        expect(response.statusCode).toBe(301);
-        const headers = response.headers;
-        expect(headers.Location).toBe(error_def.UserError.headers.Location);
+        expect(headers).not.toBeUndefined();
+        expect(headers!.Location).toBe(error_def.UserError.headers.Location);
     });
     it("パラメータエラー platform無し", async () => {
         const response = await oauth_request({
             state: "xxxxxx",
             client_id: "alexa-skill",
             redirect_uri: "https://xxxx.com",
-        }, {}, false, "v5");
+        }, {id: "session001",expire: 9999999}, false, "v5");
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
-        expect(headers.Location).toBe(error_def.UserError.headers.Location);
-    });
-    it("パラメータエラー パラメータ無し", async () => {
-        const response = await oauth_request(undefined, undefined, false, "v5");
-        expect(response.statusCode).toBe(301);
-        const headers = response.headers;
-        expect(headers.Location).toBe(error_def.UserError.headers.Location);
+        expect(headers).not.toBeUndefined();
+        expect(headers!.Location).toBe(error_def.UserError.headers.Location);
     });
 });

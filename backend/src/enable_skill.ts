@@ -1,9 +1,12 @@
-const common = require("trash-common");
+import { SessionItem } from "./interface";
+
+import * as common from "trash-common";
 const logger = common.getLogger();
-const db = require("./dbadapter");
-const error_def = require("./error_def");
-const rp = require("request-promise");
-module.exports = async(params,session,stage) => {
+import db from "./dbadapter";
+import error_def from "./error_def";
+import rp from "request-promise";
+
+export default async(params: any,session: SessionItem,stage: string) => {
     logger.debug(JSON.stringify(session));
     if(params.state != session.state) {
         logger.error(`Invalid State -> params=${params.state}, session=${session.state}`);
@@ -37,7 +40,7 @@ module.exports = async(params,session,stage) => {
 
         // サービス側(今日のゴミ出し)のアクセストークン取得のためのauthorization codeを発行しておく
         // 認可サーバとサービスのバックエンドサーバ分離している場合にはここでもリクエスト送受信が発生する
-        const authorizationCode = await db.putAuthorizationCode(session.user_id, process.env.ALEXA_USER_CLIENT_ID,params.redirect_uri,300);
+        const authorizationCode = await db.putAuthorizationCode(session.user_id, process.env.ALEXA_USER_CLIENT_ID!,params.redirect_uri,300);
 
         const skillStage = stage === "dev" ? "development" : "live";
         const enableSkillOptions = {

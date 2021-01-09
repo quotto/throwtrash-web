@@ -18,7 +18,7 @@
 	},
 
 	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": ["dbaeumer.vscode-eslint","msjsdiag.debugger-for-chrome","ritwickdey.liveserver"],
+	"extensions": ["dbaeumer.vscode-eslint","msjsdiag.debugger-for-chrome","ritwickdey.liveserver","aws-scripting-guy.cform"],
 
 	"workspaceFolder": "/app"
 
