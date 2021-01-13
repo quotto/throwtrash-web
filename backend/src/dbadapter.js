@@ -87,11 +87,11 @@ const putRefreshToken = async(user_id,client_id,expires_in)=>{
 }
 const saveSession = async (session) => {
     session.expire = Math.ceil(Date.now()/1000) + property.SESSION_MAX_AGE;
-    logger.debug("save session", session);
     return documentClient.put({
         TableName: property.SESSION_TABLE,
         Item: session
     }).promise().then(() => {
+        logger.info("save session", session);
         return true;
     }).catch(err => {
         logger.error(err);
