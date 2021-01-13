@@ -60,7 +60,7 @@ describe("enable_skill",()=>{
         it("開発:正常終了",async()=>{
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-dev";
-            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001"},"dev");
+            const result = await enable_skill({state: "12345",redirect_uri: "https://backend.mythrowaway.net/dev/enable_skill"},{id: "session_id001",state: "12345", user_id: "id001"},"dev");
             
             expect(result.statusCode).toBe(301);
             expect(result.headers.Location).toBe("https://accountlink.mythrowaway.net/dev/accountlink-complete.html");
@@ -77,7 +77,7 @@ describe("enable_skill",()=>{
         it("本番:正常終了",async()=>{
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
-            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001"},"v1");
+            const result = await enable_skill({state: "12345",redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill" },{id: "session_id001",state: "12345", user_id: "id001"},"v1");
             
             expect(result.statusCode).toBe(301);
             expect(result.headers.Location).toBe("https://accountlink.mythrowaway.net/v1/accountlink-complete.html");
