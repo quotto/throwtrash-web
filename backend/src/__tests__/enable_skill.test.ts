@@ -23,7 +23,7 @@ jest.mock("request-promise",()=>(async(option: any)=>{
             }
         }
     } else if(option.uri === "https://alexa.endpoint.com/v1/users/~current/skills/test-skill-id-prod/enablement"){
-        if(option.body.stage === "live" && option.body.accountLinkRequest.redirectUri === "https://backend.mythrowaway.net/v1/enable_skill" && option.body.accountLinkRequest.authCode === "authorization_code001" && option.body.accountLinkRequest.type === "AUTH_CODE" && option.headers.Authorization === "Bearer amazon-accesstoken001"){
+        if((option.body.stage === "live" || option.body.stage === "dev") && option.body.accountLinkRequest.redirectUri === "https://backend.mythrowaway.net/v1/enable_skill" && option.body.accountLinkRequest.authCode === "authorization_code001" && option.body.accountLinkRequest.type === "AUTH_CODE" && option.headers.Authorization === "Bearer amazon-accesstoken001"){
             return {
                 result: "success"
             }
@@ -60,10 +60,10 @@ mocked(db.deleteSession).mockImplementation(async(session_id: string)=>{
 import enable_skill from "../enable_skill";
 describe("enable_skill",()=>{
     describe("正常系",()=>{
-        it("開発:正常終了",async()=>{
+        it("開発:正常終了,paramsはstate/redirect_uri/code,sessionはid/state/user_id/expireが正しく指定されている",async()=>{
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-dev";
-            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"dev");
+            const result = await enable_skill({state: "12345",redirect_uri: "https://backend.mythrowaway.net/dev/enable_skill",code:"12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"dev");
             
             expect(result.statusCode).toBe(301);
             expect(result.headers.Location).toBe("https://accountlink.mythrowaway.net/dev/accountlink-complete.html");
@@ -77,10 +77,10 @@ describe("enable_skill",()=>{
                 expires_in: 300
             });
         });
-        it("本番:正常終了",async()=>{
+        it("本番:正常終了,paramsはstate/redirect_uri/code,sessionはid/state/user_id/expireが正しく指定されている",async()=>{
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
-            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"v1");
+            const result = await enable_skill({state: "12345", redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill",code:"12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"v1");
             
             expect(result.statusCode).toBe(301);
             expect(result.headers.Location).toBe("https://accountlink.mythrowaway.net/v1/accountlink-complete.html");
@@ -96,17 +96,25 @@ describe("enable_skill",()=>{
         })
     })
     describe("異常系",()=>{
-        it("stateが一致しない",async()=>{
+        it("params.stateとsession.stateが一致しなければユーザーエラー",async()=>{
             const result = await enable_skill({state: "not_match_state"}, {id: "session_id002", user_id: "id002",state: "12345",expire:999999999}, "v1");
             expect(result.statusCode).toBe(301);
             const headers = result.headers;
             expect(headers.Location).toBe(error_def.UserError.headers.Location);
         });
-        it("DBエラー",async()=>{
+        it("DB処理が異常の場合はサーバーエラー",async()=>{
             const result = await enable_skill({state: "12345"},{state: "12345", id: "session_id002",user_id: "id002", expire:999999999}, "v1");
             expect(result.statusCode).toBe(301);
             const headers = result.headers;
             expect(headers.Location).toBe(error_def.ServerError.headers.Location);
+        });
+        it("params.redirect_uriがない場合はユーザーエラー",async()=>{
+            process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
+            process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
+            const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"v1");
+            
+            expect(result.statusCode).toBe(301);
+            expect(result.headers.Location).toBe(error_def.ServerError.headers.Location);
         });
     });
 });
