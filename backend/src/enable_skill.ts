@@ -59,6 +59,8 @@ export default async(params: any,session: SessionItem,stage: string) => {
                 }
             }
         }
+
+        logger.debug(JSON.stringify(enableSkillOptions));
         
         // Alexa APIエンドポイントにスキル有効化のリクエストを送信する
         // Alexa APIではサービス（今日のゴミ出し）にauthorization codeをつけてアクセストークンをリクエストする
