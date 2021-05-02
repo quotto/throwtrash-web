@@ -60,7 +60,7 @@
             "type": "node",
             "request": "launch",
             "name": "Mocha Frontend",
-            "program": "${workspaceFolder}/server/node_modules/mocha/bin/_mocha",
+            "program": "${workspaceFolder}/frontend/node_modules/.bin/mocha",
             "args": [
                 "-u",
                 "tdd",
@@ -69,7 +69,7 @@
                 "--colors",
                 "--compilers",
                 "js:@babel/register",
-                "${workspaceFolder}/server/frontend/test"
+                "${workspaceFolder}/frontend/react/test"
             ],
             "internalConsoleOptions": "openOnSessionStart",
         },

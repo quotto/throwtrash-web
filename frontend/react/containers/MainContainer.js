@@ -8,7 +8,9 @@ import {
     inputTrashType,
     changeInput,
     errorDialog,
-    setSubmitting
+    setSubmitting,
+    addSchedule,
+    deleteSchedule
 } from '../actions';
 
 const mapPropsState = (state) => {
@@ -20,38 +22,20 @@ const mapPropsState = (state) => {
     };
 };
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onChangeTrash: (i,value) => {
-            dispatch(changeTrashType(i,value));
-        },
-        onChangeSchedule: (i,j,value) => {
-            dispatch(changeSchedule(i,j,value));
-        },
-        onChangeInput: (i,j,value) => {
-            dispatch(changeInput(i,j,value));
-        },
-        onInputTrashType: (i,value,maxlength) => {
-            dispatch(inputTrashType(i,value,maxlength));
-        },
-        onClickAdd: () => {
-            dispatch(addTrash());
-        },
-        onClickDelete: (i) =>{
-            dispatch(deleteTrash(i));
-        },
-        onError: (open)=> {
-            dispatch(errorDialog(open));
-        },
-        onSubmit: (status)=>{
-            dispatch(setSubmitting(status));
-        }
-    };
-};
-
 const MainContainer = connect(
     mapPropsState,
-    mapDispatchToProps
+    {
+        onChangeTrash: changeTrashType,
+        onChangeSchedule: changeSchedule,
+        onChangeInput: changeInput,
+        onInputTrashType: inputTrashType,
+        onClickAdd: addTrash,
+        onClickDelete: deleteTrash,
+        onError: errorDialog,
+        onSubmit: setSubmitting,
+        addSchedule,
+        deleteSchedule
+    }
 )(Main);
 
 export default MainContainer;
