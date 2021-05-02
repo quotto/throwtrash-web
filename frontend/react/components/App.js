@@ -3,15 +3,11 @@ import PropTypes from 'prop-types';
 import {Grid} from '@material-ui/core';
 import MainContainer from '../containers/MainContainer';
 import TopAppBarContainer from '../containers/AppBarContainer';
-import {withStyles, createMuiTheme, MuiThemeProvider} from '@material-ui/core/styles';
+import ExcludeDate from '../components/excludeDate/ExcludeDate';
+import {createMuiTheme, MuiThemeProvider} from '@material-ui/core/styles';
 import {withTranslation} from 'react-i18next';
+import {BrowserRouter as Router,Route,Switch} from 'react-router-dom';
 
-const styles = {
-    TopMessage: {
-        textAlign:'center',
-        paddingBottom: '12px'
-    }
-};
 const defaultTheme = createMuiTheme({
     typography: {
         useNextVariants: true
@@ -23,14 +19,17 @@ class App extends React.Component {
             <MuiThemeProvider theme={defaultTheme}>
                 <Grid container>
                     <TopAppBarContainer />
-                    <Grid item xs={12} className={this.props.classes.TopMessage}>
-                        <ul style={{ display: 'inline-block', textAlign: 'left' }}>
-                            <li>{this.props.t('App.description.trash')}</li>
-                            <li>{this.props.t('App.description.schedule')}</li>
-                        </ul>
-                    </Grid>
                     <Grid container justify='center' item xs={12}>
-                        <MainContainer />
+                        <Router>
+                            <Switch>
+                                <Route exact={true} path="/frontend/dist/dev">
+                                    <MainContainer />
+                                </Route>
+                                <Route path="/exclude/:trashIndex">
+                                    <ExcludeDate />
+                                </Route>
+                            </Switch>
+                        </Router>
                     </Grid>
                 </Grid>
             </MuiThemeProvider>
@@ -42,4 +41,4 @@ App.propTypes = {
     classes: PropTypes.object,
     t: PropTypes.func
 };
-export default withStyles(styles)(withTranslation()(App));
+export default withTranslation()(App);

@@ -4,7 +4,7 @@ import {render} from 'react-dom';
 import {Provider} from 'react-redux';
 import {createStore} from 'redux';
 import App from './components/App';
-import TrashScheduleApp from './reducers';
+import TrashScheduleApp from './reducers/TrashReducer';
 import i18next from './lang/i18n.js';
 import './index.css';
 
@@ -14,7 +14,6 @@ let store = createStore(TrashScheduleApp);
 class LangProvider extends React.Component {
     render(){
         const lang = navigator.language || navigator.browserLanguage || navigator.userLanguage || 'ja-JP';
-        console.log(lang);
         i18next.changeLanguage(lang.substr(0,2));
         return(
             <App />
@@ -27,10 +26,8 @@ LangProvider.propTypes = {
 };
 
 let render_flg = false;
-console.log(document.cookie);
 if(navigator.cookieEnabled) {
     document.cookie = 'isEnabledCookie=true; '+document.cookie;
-    console.log(document.cookie);
     if(document.cookie.length > 0) {
         render_flg = true;
     }

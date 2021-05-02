@@ -8,12 +8,12 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = (env)=>{
     const filename = 'bundle.js';
-    const path = `${app_root.path}/dist/${env.stage}`;
+    const build_path = `${app_root.path}/dist/${env.stage}`;
     const api_host = 'backend.mythrowaway.net';
     return {
         entry: './react/index.js',
         output: {
-            path: path,
+            path: build_path,
             filename: `js/${filename}`
         },
         module: {
@@ -47,7 +47,7 @@ module.exports = (env)=>{
             }),
             new CopyPlugin([
                 // {from: 'react/index.html', to: path},
-                {from: 'static', to: path}
+                {from: 'static', to: build_path}
             ]),
         ],
         optimization: {
@@ -60,6 +60,10 @@ module.exports = (env)=>{
                     }
                 }), 
                 new OptimizeCSSAssetsPlugin({})]
+        },
+        watchOptions: {
+            ignored: '**/node_modules',
+            poll: 1000
         }
     };
 };

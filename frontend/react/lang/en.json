@@ -58,7 +58,9 @@
         },
         "TrashSchedule":{
             "button":{
-                "delete": "Delete"
+                "delete": "Delete",
+                "exclude": "ExcludeDate",
+                "add": "Add Schedule"
             },
             "input":{
                 "other":{
