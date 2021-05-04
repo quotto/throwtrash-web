@@ -9,11 +9,13 @@ commands:
           command: |
             if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
               echo "export RUNLEVEL=INFO" >> $BASH_ENV
-              echo "export STAGE=v3" >> $BASH_ENV
+              echo "export FRONT_STAGE=v4" >> $BASH_ENV
+              echo "export BACK_STAGE=v3" >> $BASH_ENV
               echo "export DBREGION=ap-northeast-1" >> $BASH_ENV
             else
               echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
-              echo "export STAGE=dev" >> $BASH_ENV
+              echo "export FRONT_STAGE=dev" >> $BASH_ENV
+              echo "export BACK_STAGE=dev" >> $BASH_ENV
               echo "export DBREGION=us-west-2" >> $BASH_ENV
             fi
 
@@ -108,7 +110,7 @@ jobs:
           working_directory: frontend
       - run:
           name: build
-          command: npm run build -- --env.stage=${STAGE}
+          command: npm run build -- --env.stage=${BACK_STAGE}
           working_directory: frontend
       - persist_to_workspace:
           root: frontend
@@ -176,10 +178,10 @@ jobs:
       - run:
           name: frontend deploy
           command: |
-            aws s3 sync frontend/dist/${STAGE} s3://throwtrash/${STAGE}
+            aws s3 sync frontend/dist/${FRONT_STAGE} s3://throwtrash/${FRONT_STAGE}
             # 本番デプロイ時はデプロイステージのキャッシュをクリア
             if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
-              aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /${STAGE}/*
+              aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /${FRONT_STAGE}/*
             fi
       - run:
           name: backend deploy
@@ -205,7 +207,7 @@ jobs:
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
 
-            aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${STAGE} --parameter-overrides Stage=${STAGE} AlexaClientID=${ALEXA_CLIENT_ID} AlexaClientSecret=${ALEXA_CLIENT_SECRET} GoogleClientID=${GOOGLE_CLIENT_ID} GoogleClientSecret=${GOOGLE_CLIENT_SECRET} RunLevel=${RUNLEVEL} DBRegion=${DBREGION} AlexaUserClientID=${ALEXA_USER_CLIENT_ID} AlexaUserSecret=${ALEXA_USER_SECRET} GoogleUserClientID=${GOOGLE_USER_CLIENT_ID} GoogleUserSecret=${GOOGLE_USER_SECRET} AlexaSkillID=${ALEXA_SKILL_ID} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+            aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${BACK_STAGE} --parameter-overrides Stage=${BACK_STAGE} AlexaClientID=${ALEXA_CLIENT_ID} AlexaClientSecret=${ALEXA_CLIENT_SECRET} GoogleClientID=${GOOGLE_CLIENT_ID} GoogleClientSecret=${GOOGLE_CLIENT_SECRET} RunLevel=${RUNLEVEL} DBRegion=${DBREGION} AlexaUserClientID=${ALEXA_USER_CLIENT_ID} AlexaUserSecret=${ALEXA_USER_SECRET} GoogleUserClientID=${GOOGLE_USER_CLIENT_ID} GoogleUserSecret=${GOOGLE_USER_SECRET} AlexaSkillID=${ALEXA_SKILL_ID} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
       - run:
           name: api deploy
           command: |
@@ -215,7 +217,7 @@ jobs:
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
 
-            aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${STAGE} --parameter-overrides RunLevel=${RUNLEVEL} Stage=${STAGE} DBRegion=${DBREGION} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+            aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${BACK_STAGE} --parameter-overrides RunLevel=${RUNLEVEL} Stage=${BACK_STAGE} DBRegion=${DBREGION} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
 workflows:
   version: 2
   test_and_deploy:
