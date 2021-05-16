@@ -41,6 +41,7 @@ class Main extends React.Component {
                         <li>{this.props.t('App.description.schedule')}</li>
                     </ul>
                 </Grid>
+                {/* TODO: 日本語ページのみ郵便番号検索が表示されるように対応する */}
                 <ZipcodeSearch {...this.props} />
                 <TrashSchedule
                     trashes={this.props.trashes}
