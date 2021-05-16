@@ -4,7 +4,7 @@ import {render} from 'react-dom';
 import {Provider} from 'react-redux';
 import {createStore} from 'redux';
 import App from './components/App';
-import TrashScheduleApp from './reducers/TrashReducer';
+import TrashScheduleApp from './reducers/index';
 import i18next from './lang/i18n.js';
 import './index.css';
 

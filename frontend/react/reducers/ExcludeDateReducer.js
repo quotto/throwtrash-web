@@ -1,4 +1,4 @@
-const {ActionType}  = require('../actions/index');
+import {ActionType} from '../actions/index';
 const initialExcludeDate = {
     month: 1,
     date: 1

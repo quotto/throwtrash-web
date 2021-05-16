@@ -96,7 +96,9 @@ const TrashReducer = (state=initialState,action)=> {
         new_state.error = common_check.exist_error(new_state.trashes);
         return new_state;
     }
-    case ActionType.SET_USER_INFO: {
+    case ActionType.SET_USER_INFO:
+    case ActionType.SET_PRESET: 
+    {
         if(action.preset.length > 0) {
             new_state.trashes = _.cloneDeep(action.preset);
             new_state.error = common_check.exist_error(new_state.trashes);

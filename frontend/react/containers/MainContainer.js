@@ -10,7 +10,13 @@ import {
     errorDialog,
     setSubmitting,
     addSchedule,
-    deleteSchedule
+    deleteSchedule,
+    setZipcodeMessage,
+    changeZipcode,
+    submitZipcode,
+    changeZipcodeStatus,
+    setErrorZipcode,
+    setPreset
 } from '../actions';
 
 const mapPropsState = (state) => {
@@ -18,7 +24,8 @@ const mapPropsState = (state) => {
         trashes: state.updateState.trashes,
         submit_error: state.updateState.error,
         showErrorDialog: state.SubmitState.showErrorDialog,
-        submitting: state.SubmitState.submitting
+        submitting: state.SubmitState.submitting,
+        zipcodeState: state.zipCodeReducer
     };
 };
 
@@ -34,7 +41,13 @@ const MainContainer = connect(
         onError: errorDialog,
         onSubmit: setSubmitting,
         addSchedule,
-        deleteSchedule
+        deleteSchedule,
+        setZipcodeMessage,
+        changeZipcode,
+        submitZipcode,
+        changeZipcodeStatus,
+        setErrorZipcode,
+        setPreset
     }
 )(Main);
 

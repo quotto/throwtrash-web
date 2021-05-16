@@ -1,4 +1,4 @@
-import {getLogger, Logger, TrashData, TrashSchedule, EvweekValue, checkTrashes} from "trash-common";
+import {getLogger, Logger, TrashData, TrashSchedule, EvweekValue, checkTrashes, ExcludeDate} from "trash-common";
 const logger: Logger = getLogger();
 import property from "./property";
 import db from "./dbadapter";
@@ -7,7 +7,8 @@ import {BackendResponse, SessionItem} from "./interface";
 interface TrashDataOnWeb {
     type: string,
     trash_val?: string,
-    schedules: TrashSchedule[]
+    schedules: TrashSchedule[],
+    excludes:  ExcludeDate[]
 }
 
 /**
@@ -27,7 +28,8 @@ export const adjustData = (input_data: TrashDataOnWeb[]) => {
         input_data.forEach((trash)=>{
             let regist_trash: any = {
                 type: trash.type,
-                schedules: []
+                schedules: [],
+                excludes: []
             };
             if(trash.type === "other") {
                 regist_trash.trash_val = trash.trash_val;
@@ -49,6 +51,7 @@ export const adjustData = (input_data: TrashDataOnWeb[]) => {
                 }
             });
             regist_trash.schedules = trash_schedules;
+            regist_trash.excludes = trash.excludes;
             regist_data.push(regist_trash);
         });
     } catch(err) {
