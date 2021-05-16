@@ -7,11 +7,11 @@ import {withStyles,Button,Grid} from '@material-ui/core';
 import axios from 'axios';
 import {withTranslation} from 'react-i18next';
 import ErrorDialog from './ErrorDialog';
+import ZipcodeSearch  from './zipcode/ZipcodeSearch';
 
 const styles = {
     TopMessage: {
         textAlign:'center',
-        paddingBottom: '12px'
     }
 };
 
@@ -41,6 +41,7 @@ class Main extends React.Component {
                         <li>{this.props.t('App.description.schedule')}</li>
                     </ul>
                 </Grid>
+                <ZipcodeSearch {...this.props} />
                 <TrashSchedule
                     trashes={this.props.trashes}
                     onChangeSchedule={this.props.onChangeSchedule}

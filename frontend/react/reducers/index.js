@@ -5,6 +5,7 @@ import SubmitReducer from './SubmitReducer';
 import MenuReducer from './MenuReducer';
 import LoginReducer from './LoginReducer';
 import UserReducer from './UserReducer';
+import ZipCodeReducer from './ZipcodeReducer';
 
 // combineするプロパティ名はいずれ修正したい
 // (既にComponentで利用されている名前もあるのでこのままとしている)
@@ -14,7 +15,8 @@ const TrashScheduleApp = combineReducers({
     LoginState: LoginReducer,
     MenuState: MenuReducer,
     UserState: UserReducer,
-    excludeReducer: ExcludeDateReducer
+    excludeReducer: ExcludeDateReducer,
+    zipCodeReducer: ZipCodeReducer
 });
 
 export default TrashScheduleApp;

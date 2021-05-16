@@ -12,6 +12,7 @@ module.exports = (env)=>{
     const api_host = 'backend.mythrowaway.net';
     return {
         entry: './react/index.js',
+        target: 'node',
         output: {
             path: build_path,
             filename: `js/${filename}`
@@ -21,11 +22,12 @@ module.exports = (env)=>{
                 {
                     test: /\.js$/, //ローダーの処理対象ファイル
                     exclude: /node_modules/, //ローダーの処理対象外ファイル(ディレクトリ)
-                    use: [ //利用するローダー
-                        {
-                            loader: 'babel-loader'
-                        }
-                    ]
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env', '@babel/preset-react'],
+                        // Reactモジュールでasync/awaitを使うために必要
+                        plugins: ['@babel/plugin-transform-runtime']
+                    }
                 },
                 {
                     test: /\.css$/, //ローダーの処理対象ファイル

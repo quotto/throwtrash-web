@@ -20,6 +20,12 @@ export const ActionType = {
     CHANGE_EXCLUDE: 'CHANGE_EXCLUDE',
     INIT_EXCLUDE: 'INIT_EXCLUDE',
     RESET_EXCLUDE_SUBMIT: 'RESET_EXCLUDE_SUBMIT',
+    CHANGE_ZIPCODE: 'CHANGE_ZIPCODE',
+    SET_ZIPCODE_MESSAGE: 'SET_ZIP_CODE_MESSAGE',
+    SUBMIT_ZIPCODE: 'SUBMIT_ZIPCODE',
+    CHANGE_ZIPCODE_STATUS: 'CHANGE_ZIPCODE_STATUS',
+    ERROR_ZIPCODE: 'ERROR_ZIPCODE',
+    SET_PRESET: 'SET_PRESET'
 };
 
 export const addTrash = () => {
@@ -155,4 +161,46 @@ export const resetExcludeSubmit = (index) => {
         index: index
     };
 };
+
+export const setZipcodeMessage = (message) => {
+    return {
+        type: ActionType.SET_ZIPCODE_MESSAGE,
+        message: message
+    };
+};
+
+export const changeZipcode = (value) => (
+    {
+        type: ActionType.CHANGE_ZIPCODE,
+        zipcode: value
+    }
+);
+
+export const submitZipcode = (submit) => (
+    {
+        type: ActionType.SUBMIT_ZIPCODE,
+        status: submit //true: サブミット中, false: 検索可能
+    }
+);
+
+export const changeZipcodeStatus = (status, value) => (
+    {
+        type: ActionType.CHANGE_ZIPCODE_STATUS,
+        status: status,
+        value: value // アドレス一覧選択の場合は住所リスト,ゴミ出し予定選択の場合はゴミ出し予定のリスト,通常状態なら値無し(空のリスト)
+    }
+);
+
+export const setErrorZipcode = () => (
+    {
+        type: ActionType.ERROR_ZIPCODE
+    }
+);
+
+export const setPreset = (preset) => (
+    {
+        type: ActionType.SET_PRESET,
+        preset: preset
+    }
+);
 

@@ -12,6 +12,8 @@ class BarMenu extends React.Component {
     }
 
     signOut() {
+        // API_HOST,API_STAGEはwebpackで置換する
+        // eslint-disable-next-line no-undef
         axios.get(`https://${API_HOST}/${API_STAGE}/signout`,{withCredentials: true})
             .then(()=>{
                 this.props.onSignOut();
@@ -45,13 +47,13 @@ class BarMenu extends React.Component {
                 {UserName}
                 {UserNameDivider} 
                 <MenuItem onClick={()=>this.openWindow(manual_html)}>
-                    {this.props.t("BarMenu.usage")}
+                    {this.props.t('BarMenu.usage')}
                 </MenuItem>
                 <MenuItem onClick={()=>this.openWindow(policy_html)}>
-                    {this.props.t("BarMenu.policy")}
+                    {this.props.t('BarMenu.policy')}
                 </MenuItem>
                 <MenuItem onClick={()=>this.openWindow('https://docs.google.com/forms/d/e/1FAIpQLScQiZNzcYKgto1mQYAmxmo49RTuAnvtmkk3BQ02MsVlE4OmHg/viewform?embedded=true')}>
-                    {this.props.t("BarMenu.contact")}
+                    {this.props.t('BarMenu.contact')}
                 </MenuItem>
                 {LogOutDivider}
                 {LogOutMenu}
