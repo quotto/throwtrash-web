@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {addExcludeDate, deleteExcludeDate, submitExcludeDate, changeExcludeDate, initExcludeDate,resetExcludeSubmit} from '../../actions';
 import PropTypes from 'prop-types';
 import {withRouter} from 'react-router-dom';
-import {AddCircle,Delete} from '@material-ui/icons';
+import {AddCircle, HighlightOff} from '@material-ui/icons';
 
 const styles = (_)=>({
     button: {
@@ -61,17 +61,6 @@ class ExcludeDate extends React.Component {
                     alignItems='center'
                     xs={12} key={`selector-${index}`}
                     className={this.props.classes.dateRow}>
-                    <label htmlFor='icon-delete'>
-                        <IconButton
-                            className={this.props.classes.dateComponent}
-                            size='small'
-                            color='secondary'
-                            arial-label='delete date'
-                            component='span'
-                            onClick={()=>this.props.deleteExcludeDate(index)}>
-                            <Delete />
-                        </IconButton>
-                    </label>
                     <Select 
                         className={this.props.classes.dateComponent}
                         value={exclude.month} 
@@ -90,6 +79,17 @@ class ExcludeDate extends React.Component {
                         )}
                     </Select>
                     <div className={this.props.classes.dateComponent}>日</div>
+                    <label htmlFor='icon-delete'>
+                        <IconButton
+                            className={this.props.classes.dateComponent}
+                            size='small'
+                            color='secondary'
+                            arial-label='delete date'
+                            component='span'
+                            onClick={()=>this.props.deleteExcludeDate(index)}>
+                            <HighlightOff />
+                        </IconButton>
+                    </label>
                 </Grid>
             );
         });
