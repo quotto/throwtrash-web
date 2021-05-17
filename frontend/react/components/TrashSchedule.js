@@ -83,7 +83,7 @@ class TrashSchedule extends React.Component {
                             item container 
                             sm={12} xs={12} 
                         >
-                            {trashes.length < 3 ? <Button
+                            {trashes[i].schedules.length < 3 ? <Button
                                 color='primary'
                                 variant='outlined'
                                 startIcon={<CalendarToday />}
