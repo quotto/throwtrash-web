@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import NumberFormat from 'react-number-format';
 import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
+import AddressSearchDialog from './AddressSearchDiallog';
 import ResultDialog from './ResultDiallog';
 
 const styles = (_)=>({
@@ -115,6 +116,7 @@ class ZipcodeSearch extends React.Component {
                         </FormGroup>
                     </FormControl>
                 }
+                <AddressSearchDialog {...this.props} />
                 <ResultDialog {...this.props} />
             </Grid>
         );
