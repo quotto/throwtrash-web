@@ -48,12 +48,12 @@ const toTrashName = (trash_type,trash_val) => {
 
 const init_address_page_state = ()=> ({
     per_page: 5,
-    current_page: 1,
+    current_page: 0,
     address_list: [],
 });
 const init_trash_page_state = ()=> ({
     per_page: 5,
-    current_page: 1,
+    current_page: 0,
     trash_list: [],
     trash_text_list: [], // trash_listをUIに表示するためにテキスト化したもの
 });
@@ -111,6 +111,20 @@ const ZipcodeReducer = (state = {
         break;
     case ActionType.ERROR_ZIPCODE:
         new_state.error = '一致するユーザーの情報が見つかりませんでした。';
+        break;
+    case ActionType.CHANGE_PAGE:
+        if(state.status === ZipcodeStatus.AddressSelect) {
+            new_state.address_page_state.current_page = action.page;
+        } else if(state.status === ZipcodeStatus.ResultSelect) {
+            new_state.trash_page_state.current_page = action.page;
+        }
+        break;
+    case ActionType.CHANGE_PER_PAGE:
+        if(state.status === ZipcodeStatus.AddressSelect) {
+            new_state.address_page_state.per_page = action.per_page;
+        } else if(state.status === ZipcodeStatus.ResultSelect) {
+            new_state.trash_page_state.per_page = action.per_page;
+        }
         break;
     }
     return new_state;

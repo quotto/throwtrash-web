@@ -18,8 +18,9 @@ const StyledTableRow = withStyles((theme) => ({
 
 class ResultDialog extends React.Component {
     render() {
-        const { changeZipcodeStatus, setPreset } = this.props;
+        const { changeZipcodeStatus, setPreset, changePage, changePerPage } = this.props;
         const { status, trash_page_state } = this.props.zipcodeState;
+        const { trash_list, trash_text_list, per_page, current_page } = trash_page_state;
         return (
             <Dialog
                 open={status === ZipcodeStatus.ResultSelect}
@@ -35,20 +36,19 @@ class ResultDialog extends React.Component {
                     <TableContainer component={Paper}>
                         <Table size='small' arial-label='trashes-table'>
                             <TableBody>
-                                {trash_page_state.trash_text_list.map((trash_text,index)=>(
-                                    <StyledTableRow 
+                                { trash_list.slice(current_page * per_page, current_page * per_page + per_page).map((trash,index)=>{
+                                    return (<StyledTableRow 
                                         key={index}
                                         onClick={(_)=>{
-                                            setPreset(trash_page_state.trash_list[index]);
+                                            setPreset(trash);
                                             changeZipcodeStatus(ZipcodeStatus.None);
                                         }}
                                     >
                                         <TableCell component='th' scope='row'>
-                                            {trash_text}
+                                            {trash_text_list[index]}
                                         </TableCell>
-                                    </StyledTableRow>
-                                ))
-                                }
+                                    </StyledTableRow>);
+                                })}
                             </TableBody>
                         </Table>
                     </TableContainer>
@@ -60,8 +60,12 @@ class ResultDialog extends React.Component {
                         rowsPerPage={trash_page_state.per_page}
                         page={trash_page_state.current_page}
                         labelRowsPerPage='1ページあたりの行数'
-                        // onChangePage={handleChangePage}
-                        // onChangeRowsPerPage={handleChangeRowsPerPage}
+                        onChangePage={(e,new_page)=>changePage(new_page)}
+                        onChangeRowsPerPage={(e)=>{
+                            console.log(e);
+                            changePerPage(e.target.value);
+                            changePage(0);
+                        }}
                     />}
                 </DialogContent>
                 <DialogActions>
@@ -80,7 +84,9 @@ class ResultDialog extends React.Component {
 ResultDialog.propTypes = {
     changeZipcodeStatus: PropTypes.func.isRequired,
     setPreset: PropTypes.func.isRequired,
-    zipcodeState: PropTypes.object.isRequired
+    zipcodeState: PropTypes.object.isRequired,
+    changePage: PropTypes.func.isRequired,
+    changePerPage: PropTypes.func.isRequired
 };
 
 export default ResultDialog;
