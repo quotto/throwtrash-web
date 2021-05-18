@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
 import axios from 'axios';
 
-
 const StyledTableRow = withStyles((theme) => ({
     root: {
         '&:nth-of-type(odd)': {
@@ -19,8 +18,9 @@ const StyledTableRow = withStyles((theme) => ({
 
 class AddressSearchDialog extends React.Component {
     render() {
-        const { changeZipcodeStatus, submitZipcode } = this.props;
+        const { changeZipcodeStatus, submitZipcode, changePage, changePerPage } = this.props;
         const { status, address_page_state, submitting } = this.props.zipcodeState;
+        const { current_page, per_page, address_list } = address_page_state;
         return (
             <Dialog
                 open={status === ZipcodeStatus.AddressSelect}
@@ -38,8 +38,8 @@ class AddressSearchDialog extends React.Component {
                             <TableContainer component={Paper}>
                                 <Table size='small' arial-label='trashes-table'>
                                     <TableBody>
-                                        {address_page_state.address_list.map((address,index)=>(
-                                            <StyledTableRow 
+                                        {address_list.slice(current_page * per_page, current_page + per_page).map((address,index)=>{
+                                            return (<StyledTableRow 
                                                 key={index}
                                                 onClick={async(_)=>{
                                                     submitZipcode(true);
@@ -54,9 +54,8 @@ class AddressSearchDialog extends React.Component {
                                                 <TableCell component='th' scope='row'>
                                                     {address}
                                                 </TableCell>
-                                            </StyledTableRow>
-                                        ))
-                                        }
+                                            </StyledTableRow>);
+                                        })}
                                     </TableBody>
                                 </Table>
                             </TableContainer>
@@ -64,12 +63,15 @@ class AddressSearchDialog extends React.Component {
                             {address_page_state.address_list.length > 5 && <TablePagination
                                 rowsPerPageOptions={[5, 10, 25, 50]}
                                 component="div"
-                                count={address_page_state.address_list.length}
-                                rowsPerPage={address_page_state.per_page}
-                                page={address_page_state.current_page}
+                                count={address_list.length}
+                                rowsPerPage={per_page}
+                                page={current_page}
                                 labelRowsPerPage='1ページあたりの行数'
-                                // onChangePage={handleChangePage}
-                                // onChangeRowsPerPage={handleChangeRowsPerPage}
+                                onChangePage={(e,new_page)=>changePage(new_page)}
+                                onChangeRowsPerPage={(e)=>{
+                                    changePerPage(e.target.value);
+                                    changePage(0);
+                                }}
                             />}
                         </Paper>
                     }
@@ -91,7 +93,9 @@ AddressSearchDialog.propTypes = {
     changeZipcodeStatus: PropTypes.func.isRequired,
     setPreset: PropTypes.func.isRequired,
     zipcodeState: PropTypes.object.isRequired,
-    submitZipcode: PropTypes.func.isRequired
+    submitZipcode: PropTypes.func.isRequired,
+    changePage: PropTypes.func.isRequired,
+    changePerPage: PropTypes.func.isRequired
 };
 
 export default AddressSearchDialog;

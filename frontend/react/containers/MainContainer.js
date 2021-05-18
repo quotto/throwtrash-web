@@ -16,7 +16,9 @@ import {
     submitZipcode,
     changeZipcodeStatus,
     setErrorZipcode,
-    setPreset
+    setPreset,
+    changePage,
+    changePerPage
 } from '../actions';
 
 const mapPropsState = (state) => {
@@ -47,7 +49,9 @@ const MainContainer = connect(
         submitZipcode,
         changeZipcodeStatus,
         setErrorZipcode,
-        setPreset
+        setPreset,
+        changePerPage,
+        changePage
     }
 )(Main);
 

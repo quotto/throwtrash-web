@@ -25,7 +25,9 @@ export const ActionType = {
     SUBMIT_ZIPCODE: 'SUBMIT_ZIPCODE',
     CHANGE_ZIPCODE_STATUS: 'CHANGE_ZIPCODE_STATUS',
     ERROR_ZIPCODE: 'ERROR_ZIPCODE',
-    SET_PRESET: 'SET_PRESET'
+    SET_PRESET: 'SET_PRESET',
+    CHANGE_PAGE: 'CHANGE_PAGE',
+    CHANGE_PER_PAGE: 'CHANGE_PER_PAGE'
 };
 
 export const addTrash = () => {
@@ -204,3 +206,16 @@ export const setPreset = (preset) => (
     }
 );
 
+export const changePage = (page) => (
+    {
+        type: ActionType.CHANGE_PAGE,
+        page: page
+    }
+);
+
+export const changePerPage = (per_page) => (
+    {
+        type: ActionType.CHANGE_PER_PAGE,
+        per_page: per_page
+    }
+);
