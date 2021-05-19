@@ -52,7 +52,6 @@ class ResultDialog extends React.Component {
                             </TableBody>
                         </Table>
                     </TableContainer>
-                    {/* TODO: ページネーションロジック未実装 */ }
                     {trash_page_state.trash_list.length > 5 && <TablePagination
                         rowsPerPageOptions={[5, 10, 25, 50]}
                         component="div"
