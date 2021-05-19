@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import TrashSchedule from './TrashSchedule';
 import {withStyles,Button,Grid} from '@material-ui/core';
 import axios from 'axios';
+import i18next from 'i18next';
 import {withTranslation} from 'react-i18next';
 import ErrorDialog from './ErrorDialog';
 import ZipcodeSearch  from './zipcode/ZipcodeSearch';
@@ -41,8 +42,7 @@ class Main extends React.Component {
                         <li>{this.props.t('App.description.schedule')}</li>
                     </ul>
                 </Grid>
-                {/* TODO: 日本語ページのみ郵便番号検索が表示されるように対応する */}
-                <ZipcodeSearch {...this.props} />
+                {i18next.language === 'ja' && <ZipcodeSearch {...this.props} />}
                 <TrashSchedule
                     trashes={this.props.trashes}
                     onChangeSchedule={this.props.onChangeSchedule}

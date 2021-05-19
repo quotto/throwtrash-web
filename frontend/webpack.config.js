@@ -48,7 +48,6 @@ module.exports = (env)=>{
                 API_HOST: JSON.stringify(api_host)
             }),
             new CopyPlugin([
-                // {from: 'react/index.html', to: path},
                 {from: 'static', to: build_path}
             ]),
         ],
@@ -63,6 +62,7 @@ module.exports = (env)=>{
                 }), 
                 new OptimizeCSSAssetsPlugin({})]
         },
+        // Dockerコンテナ内でwatchするための設定
         watchOptions: {
             ignored: '**/node_modules',
             poll: 1000
