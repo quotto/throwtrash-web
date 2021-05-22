@@ -22,11 +22,11 @@ class App extends React.Component {
                     <Grid container justify='center' item xs={12}>
                         <Router>
                             <Switch>
-                                <Route exact={true} path="/frontend/dist/dev">
-                                    <MainContainer />
-                                </Route>
                                 <Route path="/exclude/:trashIndex">
                                     <ExcludeDate />
+                                </Route>
+                                <Route path="/">
+                                    <MainContainer />
                                 </Route>
                             </Switch>
                         </Router>

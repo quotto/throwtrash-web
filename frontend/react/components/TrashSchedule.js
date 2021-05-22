@@ -51,13 +51,13 @@ class TrashSchedule extends React.Component {
         let trashTag = [];
         for(let i=0; i < trashes.length; i++) {
             trashTag.push(
-                <Grid 
+                <Grid
                     className={classes.TrashScheduleContainer}
                     container>
                     <Hidden xsDown><Grid item sm={2} md={3} /></Hidden>
-                    <Grid container 
-                        spacing={0} 
-                        style={{marginBottom:'10px'}} 
+                    <Grid container
+                        spacing={0}
+                        style={{marginBottom:'10px'}}
                         key={`trash${i}`}
                         xs={12}
                         sm={8}
@@ -78,10 +78,10 @@ class TrashSchedule extends React.Component {
                                 deleteSchedule={this.props.deleteSchedule}
                             />
                         </Grid>
-                        <Grid 
+                        <Grid
                             className={classes.TrashScheduleUnderButtons}
-                            item container 
-                            sm={12} xs={12} 
+                            item container
+                            sm={12} xs={12}
                         >
                             {trashes[i].schedules.length < 3 ? <Button
                                 color='primary'
@@ -91,11 +91,11 @@ class TrashSchedule extends React.Component {
                             >
                                 {this.props.t('TrashSchedule.button.add')}
                             </Button> : null}
-                            <Link 
-                                to={`/EXCLUDE/${i}`}
+                            <Link
+                                to={`/exclude/${i}`}
                                 style={{textDecoration: 'none'}}
                             >
-                                <Button 
+                                <Button
                                     className={classes.ExcludeButton}
                                     variant='outlined'
                                     color='success.main'
@@ -103,9 +103,9 @@ class TrashSchedule extends React.Component {
                                     {this.props.t('TrashSchedule.button.exclude')}
                                 </Button>
                             </Link>
-                            <Button 
-                                variant='outlined' 
-                                color='secondary' 
+                            <Button
+                                variant='outlined'
+                                color='secondary'
                                 startIcon={<Delete />}
                                 onClick={()=>this.props.onClick(i)}>{this.props.t('TrashSchedule.button.delete')}</Button>
                         </Grid>

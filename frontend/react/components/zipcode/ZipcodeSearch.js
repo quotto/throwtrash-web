@@ -87,14 +87,12 @@ class ZipcodeSearch extends React.Component {
                                         `https://zipcode.mythrowaway.net/search?zipcode=${zipcodeState.zipcode}`
                                     ).then(async(response)=>{
                                         if(response.status === 200) {
-                                            console.log(response.data);
                                             if(response.data.address.length === 0) {
                                                 setErrorZipcode();
                                             } else if(response.data.address.length === 1) {
                                                 await axios.get(`https://zipcode.mythrowaway.net/load?address=${response.data.address[0]}`).then((response)=>{
-                                                    console.log(response.data);
                                                     // ページネーション表示
-                                                    changeZipcodeStatus(ZipcodeStatus.ResultSelect,response.data);
+                                                    changeZipcodeStatus(ZipcodeStatus.ResultSelect,response.data.data);
                                                 }).catch(error=>console.error(error));
                                             } else {
                                                 // 住所選択モード
