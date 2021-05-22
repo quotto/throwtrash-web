@@ -44,9 +44,8 @@ class AddressSearchDialog extends React.Component {
                                                 onClick={async(_)=>{
                                                     submitZipcode(true);
                                                     axios.get(`https://zipcode.mythrowaway.net/load?address=${address}`).then((response) => {
-                                                        console.log(response.data);
                                                         // ページネーション表示
-                                                        changeZipcodeStatus(ZipcodeStatus.ResultSelect, response.data);
+                                                        changeZipcodeStatus(ZipcodeStatus.ResultSelect, response.data.data);
                                                     }).catch(error => console.error(error))
                                                         .finally(() => submitZipcode(false));
                                                 }}
