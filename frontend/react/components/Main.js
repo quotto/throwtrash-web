@@ -5,10 +5,8 @@ import PropTypes from 'prop-types';
 import TrashSchedule from './TrashSchedule';
 import {withStyles,Button,Grid} from '@material-ui/core';
 import axios from 'axios';
-import i18next from 'i18next';
 import {withTranslation} from 'react-i18next';
 import ErrorDialog from './ErrorDialog';
-import ZipcodeSearch  from './zipcode/ZipcodeSearch';
 
 const styles = {
     TopMessage: {
@@ -23,7 +21,7 @@ class Main extends React.Component {
             axios.post(
                 `https://${API_HOST}/${API_STAGE}/regist`,
                 JSON.stringify({ data: this.props.trashes, offset: new Date().getTimezoneOffset() }),
-                { 
+                {
                     headers: { 'Content-Type': 'application/json' },
                     withCredentials: true
                 }
@@ -42,7 +40,6 @@ class Main extends React.Component {
                         <li>{this.props.t('App.description.schedule')}</li>
                     </ul>
                 </Grid>
-                {i18next.language === 'ja' && <ZipcodeSearch {...this.props} />}
                 <TrashSchedule
                     trashes={this.props.trashes}
                     onChangeSchedule={this.props.onChangeSchedule}
