@@ -31,6 +31,6 @@
     "jsonwebtoken": "^8.5.1",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
-    "trash-common": "git+https://github.com/quotto/throwtrash-common-module.git#develop_implement_exclude_date"
+    "trash-common": "git+https://github.com/quotto/throwtrash-common-module.git#v2.3"
   }
 }
