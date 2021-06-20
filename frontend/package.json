@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack",
     "start": "cd backend && node server.js",
-    "test": "mocha --compilers js:@babel/register react/test"
+    "test": "mocha --require @babel/register react/test"
   },
   "author": "",
   "license": "ISC",
@@ -53,7 +53,7 @@
     "install": "^0.10.4",
     "markdown-to-html": "0.0.13",
     "mini-css-extract-plugin": "^0.8.2",
-    "mocha": "^5.2.0",
+    "mocha": "^7.2.0",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "redux-devtools": "^3.5.0",
     "rewire": "^4.0.1",
