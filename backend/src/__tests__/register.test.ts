@@ -63,7 +63,7 @@ describe('register', () => {
     });
     it('サインイン済み,id無し', async () => {
         const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
-            { 
+            {
                 id: 'sessionid-001', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon', expire: 9999999,
                 userInfo: {
                     name: "test-user",
@@ -95,7 +95,7 @@ describe('register', () => {
     });
     it('サインイン済み,idあり', async () => {
         const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
-            { 
+            {
                 id: 'sessionid-001', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon', expire: 9999999,
                 userInfo: {
                     id: "id003",
@@ -150,19 +150,19 @@ describe('register', () => {
 
 describe("adjustData",()=>{
     it('一つ以上のスケジュール登録があれば正常', async () => {
-        const response = adjustData([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' },{ "type": "none", "value": "" }, { "type": "none", "value": "" }] }]);
-        expect(JSON.stringify(response)).toBe("[{\"type\":\"burn\",\"schedules\":[{\"type\":\"weekday\",\"value\":\"0\"}]}]");
+        const response = adjustData([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' },{ "type": "none", "value": "" }, { "type": "none", "value": "" }],excludes:[] }]);
+        expect(JSON.stringify(response)).toBe("[{\"type\":\"burn\",\"schedules\":[{\"type\":\"weekday\",\"value\":\"0\"}],\"excludes\":[]}]");
     });
     it('trash.type=other', async () => {
-        const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'weekday', value: '0' },{ "type": "none", "value": "" }, { "type": "none", "value": "" }] }]);
-        expect(JSON.stringify(response)).toBe("[{\"type\":\"other\",\"schedules\":[{\"type\":\"weekday\",\"value\":\"0\"}],\"trash_val\":\"萌えるゴミ\"}]");
+        const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'weekday', value: '0' },{ "type": "none", "value": "" }, { "type": "none", "value": "" }],excludes:[{month: 5,date: 4}] }]);
+        expect(JSON.stringify(response)).toBe("[{\"type\":\"other\",\"schedules\":[{\"type\":\"weekday\",\"value\":\"0\"}],\"excludes\":[{\"month\":5,\"date\":4}],\"trash_val\":\"萌えるゴミ\"}]");
     });
     it('evweek & start on saturday', async () => {
-        const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'evweek', value: {weekday:'0',start: '2020-10-02', interval: 2 } as EvweekValue}]}]);
+        const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'evweek', value: {weekday:'0',start: '2020-10-02', interval: 2 } as EvweekValue}],excludes:[{month:12,date:3},{month:1, date:1}]}]);
         expect((response[0].schedules[0].value as EvweekValue).start).toBe("2020-9-27");
     });
     it('evweek & start on sunday', async () => {
-        const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'evweek', value: {weekday:'0',start: '2020-09-27', interval: 3 } as EvweekValue}]}]);
+        const response = adjustData([{ type: 'other',trash_val:"萌えるゴミ",schedules: [{ type: 'evweek', value: {weekday:'0',start: '2020-09-27', interval: 3 } as EvweekValue}],excludes:[]}]);
         expect((response[0].schedules[0].value as EvweekValue).start).toBe("2020-9-27");
     });
     it('nullのためエラー', async () => {
