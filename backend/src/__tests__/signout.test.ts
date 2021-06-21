@@ -1,17 +1,21 @@
-/* eslint-disable no-unused-vars */
-const logger = require("trash-common").getLogger();
-logger.LEVEL = logger.DEBUG;
+import {getLogger} from "trash-common";
+const logger = getLogger();
+logger.setLevel_DEBUG();
 
-const property = require("../property");
-const mockResult = {}
+import signout from "../signout";
+import db from "../dbadapter";
+import property from "../property";
+
+import { mocked } from "ts-jest/utils";
+import { SessionItem } from "../interface";
+const mockResult: {[key:string]:SessionItem} = {}
+
 jest.mock("../dbadapter");
-const db = require("../dbadapter");
-db.saveSession.mockImplementation(async(_session)=>{
+mocked(db.saveSession).mockImplementation(async(_session)=>{
     mockResult[_session.id] = _session;
     return true;
 });
 describe('signout', () => {
-    const signout = require("../signout");
     it('通常のサインアウト', async () => {
         // パラメータはセッション情報
         const response = await signout({ id: 'sessionId', userInfo: { name: 'testUser', signinId: 'signin-id', signinService: 'amazon' , preset: []} });

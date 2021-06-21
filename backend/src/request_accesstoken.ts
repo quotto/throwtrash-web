@@ -1,13 +1,15 @@
-const common = require("trash-common");
+import * as common from "trash-common";
 const logger = common.getLogger();
 
-const db = require("./dbadapter");
-const error_def = require("./error_def");
+import db from "./dbadapter";
+import error_def from "./error_def";
+
+import {BackendResponse} from "./interface";
 
 const ACCESS_TOKEN_EXPIRE = 30 * 24 * 60 * 60;
 const REFRESH_TOKEN_EXPIRE = 180 * 24 * 60 * 60;
 
-module.exports = async (params,authorization) => {
+export default async (params: any, authorization: string|undefined): Promise<BackendResponse> => {
     logger.debug(JSON.stringify(params));
     logger.debug(`Authorization -> ${authorization}`);
     if(!(params.client_id === process.env.ALEXA_USER_CLIENT_ID &&
@@ -43,7 +45,6 @@ module.exports = async (params,authorization) => {
                             refresh_token: result[1]
                         }),
                         headers: {
-                            Pragma: "no-cache",
                             "Content-Type": "application/json;charset UTF-8",
                             "Cache-Control": "no-store"
                         }
@@ -71,7 +72,6 @@ module.exports = async (params,authorization) => {
                         token_type: "bearer"
                     }),
                     headers: {
-                        Pragma: "no-cache",
                         "Content-Type": "application/json;charset UTF-8",
                         "Cache-Control": "no-store"
                     }

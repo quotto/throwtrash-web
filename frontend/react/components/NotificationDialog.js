@@ -21,8 +21,6 @@ const styles = (theme)=> ({
 class NotificationDialog extends React.Component {
     componentDidMount() {
         const ua = navigator.userAgent;
-        console.log('UserAgent(NotificationDIalog):'+ ua);
-        console.log('cookie(NotificationDialog):' + document.cookie);
         if(ua.indexOf('iPhone') === -1 && ua.indexOf('iPad') === -1 && document.cookie.indexOf('showedNotification=true') === -1)  {
             //ダイアログの表示
             document.cookie = 'showedNotification=true; ' + document.cookie;
@@ -32,7 +30,6 @@ class NotificationDialog extends React.Component {
 
     render() {
         const {classes} = this.props;
-        console.log(`notification: ${this.props.notificationDialog}`);
         return(
             <Dialog
                 onClose={()=>{this.props.onNotificationDialog(false);}}

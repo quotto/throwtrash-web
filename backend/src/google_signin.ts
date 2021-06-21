@@ -1,6 +1,7 @@
-const common = require("trash-common");
-const db  = require("./dbadapter");
-module.exports = async(session,domain,stage)=>{
+import * as common from "trash-common";
+import db from "./dbadapter";
+import {BackendResponse, SessionItem} from "./interface";
+export default async(session: SessionItem,domain: string,stage: string): Promise<BackendResponse>=>{
     const endpoint = "https://accounts.google.com/o/oauth2/v2/auth";
     const google_state = common.generateRandomCode(20);
     const option = {

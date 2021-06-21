@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     SESSION_TABLE: "throwtrash-backend-session",
     SCHEDULE_TABLE: "TrashSchedule",
     AUTHORIZE_TABLE: "throwtrash-backend-authorization",
