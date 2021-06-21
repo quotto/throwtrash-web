@@ -1,30 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Grid,MenuItem, FormControl, InputLabel, Chip, Avatar, Select, FormHelperText, TextField, Hidden } from '@material-ui/core';
+import { Grid,MenuItem, FormControl, InputLabel, Chip, Avatar, Select, FormHelperText, TextField } from '@material-ui/core';
 import Delete from '@material-ui/icons/Delete';
 import { withStyles } from '@material-ui/core/styles';
 import { withTranslation } from 'react-i18next';
-import { isError } from './common';
+import { isError, TrashTypeList } from './common';
 
-const styles = (theme)=>({
+const styles = (_)=>({
     TrashTypeContainer: {
-        marginBottom: '20px'
-    },
-    TrashTypeFormControl: {
-        [theme.breakpoints.up('sm')] : {
-            'width': '40%',
-            'min-width':'130px',
-            'max-width':'210px',
-        },
-        [theme.breakpoints.down('xs')] : {
-            'width': '100%',
-        }
+        marginBottom: '20px',
     },
 });
-
-const TRASH_OPTION = [
-    'burn','unburn','plastic','bin','can','petbottle','paper','resource','coarse','other'
-];
 
 class TrashType extends React.Component {
     getErrorMessage(message_id,params=[]) {
@@ -38,17 +24,19 @@ class TrashType extends React.Component {
     }
     render() {
         const TRASH_OPTION_TAG = [];
-        TRASH_OPTION.forEach((key)=>{
+        TrashTypeList.forEach((key)=>{
             TRASH_OPTION_TAG.push(
                 <MenuItem key={key} value={key}>
                     {this.props.t('TrashSchedule.select.trashtype.option.'+key)}
                 </MenuItem>);
         });
         return (
-            <Grid container justify='center' alignItems='center' className={this.props.classes.TrashTypeContainer}>
-                <Hidden xsDown><Grid item sm={5} /></Hidden>
-                <Grid item sm={7} xs={12}>
-                    <FormControl className={this.props.classes.TrashTypeFormControl}>
+            <Grid 
+                container 
+                className={this.props.classes.TrashTypeContainer} 
+            >
+                <Grid items xs={12}>
+                    <FormControl>
                         <InputLabel htmlFor={`trash${this.props.number}`} style={{ top: '-5' }}>
                             <Chip
                                 avatar={
@@ -75,11 +63,9 @@ class TrashType extends React.Component {
                         </FormHelperText>
                     </FormControl>
                 </Grid>
-                <Hidden xsDown><Grid item sm={5} /></Hidden>
-                <Grid item sm={7} xs={12}>
+                <Grid items xs={12}>
                     {this.props.trash.type === 'other' && (
                         <TextField 
-                            className={this.props.classes.TrashTypeFormControl}
                             id={`othertrashtype${this.props.number}`}
                             name={`othertrashtype${this.props.number}`}
                             label={this.props.t('TrashSchedule.input.other.placeholder')}
@@ -101,7 +87,6 @@ class TrashType extends React.Component {
                             }
                             error={isError(this.props.trash.input_trash_type_error)}
                         />
-                        // </FormControl>
                     )}
                 </Grid>
             </Grid>

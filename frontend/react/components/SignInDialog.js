@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/** API_HOST,API_STAGEはwebpackのビルドで置き換えられる文字列のためエラーは無視する **/
 import React from 'react';
 import {withTranslation} from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -54,7 +56,6 @@ class SignInDialog extends React.Component {
     componentDidMount() {
         if(document.getElementById('amazon-root')) {
             window.onAmazonLoginReady = function () {
-                // eslint-disable-next-line no-undef
                 amazon.Login.setClientId('amzn1.application-oa2-client.8b1fd843af554c6891d9e48fc3c75be7');
             };
             (function (d) {
@@ -69,7 +70,6 @@ class SignInDialog extends React.Component {
     loginWithAmazon() {
         var options = { scope: 'profile' };
 
-        // eslint-disable-next-line no-undef
         amazon.Login.authorize(options, (response)=>{
             if(response.error) {
                 console.error('amazonログインエラー:' + response.error);

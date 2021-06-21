@@ -1,9 +1,9 @@
-const db = require("./dbadapter");
-const property = require("./property");
-const error_def = require("./error_def");
+import db from "./dbadapter";
+import property from "./property";
+import error_def from "./error_def";
+import {BackendResponse, SessionItem} from "./interface";
 
-
-module.exports = async (params,session,new_flg,stage)=> {
+export default async (params: any,session: SessionItem,new_flg: boolean,stage: string): Promise<BackendResponse>=> {
     if(params && params.state && params.client_id && params.redirect_uri && params.platform && stage) {
         session.state = params.state;
         session.client_id = params.client_id;
@@ -11,14 +11,14 @@ module.exports = async (params,session,new_flg,stage)=> {
         session.platform = params.platform;
 
         if(await db.saveSession(session)) {
-            const response =  {
+            const response: BackendResponse =  {
                 statusCode: 301,
                 headers: {
                     Location: `https://accountlink.mythrowaway.net/${stage}/index.html`
                 }
             };
             if(new_flg) {
-               response.headers["Set-Cookie"] = `${property.SESSIONID_NAME}=${session.id};max-age=${property.SESSION_MAX_AGE};`;
+               response.headers!["Set-Cookie"] = `${property.SESSIONID_NAME}=${session.id};max-age=${property.SESSION_MAX_AGE};`;
             }
             return response;
         }

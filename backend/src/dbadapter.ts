@@ -1,20 +1,22 @@
-const property = require("./property");
-const common = require("trash-common");
+import property from "./property";
+import * as common from "trash-common";
 const logger = common.getLogger();
-const AWS = require("aws-sdk");
+import AWS from "aws-sdk";
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: process.env.DB_REGION });
-const firebase_admin = require("firebase-admin");
+import firebase_admin from "firebase-admin";
 firebase_admin.initializeApp({
     credential: firebase_admin.credential.applicationDefault()
 });
 const firestore = firebase_admin.firestore();
-const crypto = require("crypto");
+import crypto from "crypto";
+import { AccessTokenItem, CodeItem, RawTrasScheduleItem, RefreshTokenItem, SessionItem } from "./interface";
 
-const toHash = (value) => {
+
+const toHash = (value: string): string => {
     return crypto.createHash("sha512").update(value).digest("hex");
 }
 
-const getRefreshToken = async(refresh_token)=> {
+const getRefreshToken = async(refresh_token: string): Promise<RefreshTokenItem | undefined> => {
     const result = await documentClient.get({
         TableName: property.REFRESH_TABLE,
         Key: {
@@ -22,15 +24,15 @@ const getRefreshToken = async(refresh_token)=> {
         }
     }).promise();
     logger.debug("Get RefreshToken:" + JSON.stringify(result));
-    return result.Item;
+    return result.Item? result.Item as RefreshTokenItem : undefined;
 }
 
-const putAccessToken = async(user_id,client_id,expires_in)=>{
+const putAccessToken = async(user_id: string,client_id: string,expires_in: number): Promise<string>=>{
     let limit = 0;
     while(limit < 5) {
         const accessToken = common.generateRandomCode(32);
         const key =  toHash(accessToken);
-        const accessTokenItem = {
+        const accessTokenItem: AccessTokenItem = {
             expires_in: Math.ceil((Date.now()/1000))+expires_in,
             user_id: user_id,
             client_id: client_id
@@ -61,7 +63,7 @@ const putAccessToken = async(user_id,client_id,expires_in)=>{
     throw new Error("Put Access Token Failed.");
 }
 
-const putRefreshToken = async(user_id,client_id,expires_in)=>{
+const putRefreshToken = async(user_id: string,client_id: string,expires_in: number): Promise<string>=>{
     let limit = 0;
     while(limit < 5) {
         const refreshToken = common.generateRandomCode(32);
@@ -85,13 +87,13 @@ const putRefreshToken = async(user_id,client_id,expires_in)=>{
     }
     throw new Error("Put Refresh Token Failed.");
 }
-const saveSession = async (session) => {
+const saveSession = async (session: SessionItem): Promise<boolean> => {
     session.expire = Math.ceil(Date.now()/1000) + property.SESSION_MAX_AGE;
     return documentClient.put({
         TableName: property.SESSION_TABLE,
         Item: session
     }).promise().then(() => {
-        logger.info("save session", session);
+        logger.info("save session"+JSON.stringify(session));
         return true;
     }).catch(err => {
         logger.error(err);
@@ -99,7 +101,7 @@ const saveSession = async (session) => {
     });
 }
 
-const getDataBySigninId = async(signinId)=>{
+const getDataBySigninId = async(signinId: string): Promise<RawTrasScheduleItem | {}>=>{
     logger.debug("get data by signinId:"+signinId);
     return documentClient.query({
         TableName: property.SCHEDULE_TABLE,
@@ -107,10 +109,10 @@ const getDataBySigninId = async(signinId)=>{
         ExpressionAttributeNames: { "#i": "signinId" } ,
         ExpressionAttributeValues: { ":val": signinId },
         KeyConditionExpression: "#i = :val"
-    }).promise().then((data)=>{
-        if(data.Count > 0) {
-            logger.debug("get data",data.Items[0]);
-            return data.Items[0];
+    }).promise().then((data: AWS.DynamoDB.DocumentClient.QueryOutput)=>{
+        if(data.Count && data.Count > 0) {
+            logger.debug("get data"+JSON.stringify(data.Items![0]));
+            return data.Items![0] as RawTrasScheduleItem;
         }
         return {};
     }).catch(err=>{
@@ -119,7 +121,7 @@ const getDataBySigninId = async(signinId)=>{
     });
 }
 
-const deleteSession = async(sessionId)=>{
+const deleteSession = async(sessionId: string): Promise<boolean>=>{
     await documentClient.delete({
         TableName: property.SESSION_TABLE,
         Key:{
@@ -129,20 +131,20 @@ const deleteSession = async(sessionId)=>{
     return true;
 }
 
-const getAuthorizationCode = async(code)=>{
+const getAuthorizationCode = async(code: string): Promise<CodeItem | undefined>=>{
     const result = await documentClient.get({
         TableName: property.AUTHORIZE_TABLE,
         Key: {
             code: code
         }
     }).promise();
-    return result.Item;
+    return result.Item? result.Item as CodeItem : undefined;
 }
 
-const putAuthorizationCode = async(user_id,client_id,redirect_uri,expires_in)=>{
+const putAuthorizationCode = async(user_id:string ,client_id: string,redirect_uri: string, expires_in: number): Promise<CodeItem> =>{
     let limit = 0;
     while(limit < 5) {
-        const codeItem = {
+        const codeItem: CodeItem = {
             code: common.generateRandomCode(),
             user_id: user_id,
             client_id: client_id,
@@ -164,7 +166,7 @@ const putAuthorizationCode = async(user_id,client_id,redirect_uri,expires_in)=>{
     throw new Error("Put Authorization Code Failed(Over limit)");
 }
 
-const deleteAuthorizationCode = async(code) => {
+const deleteAuthorizationCode = async(code: string): Promise<boolean> => {
     try {
         const deleteData = await documentClient.delete({
             TableName: property.AUTHORIZE_TABLE,
@@ -173,19 +175,19 @@ const deleteAuthorizationCode = async(code) => {
             }
         }).promise();
         logger.debug(`Delete Authorization Code -> ${JSON.stringify(deleteData)}`);
-        return deleteData;
+        return true;
     } catch(err) {
         logger.error(err);
     }
     throw new Error("Delete Authorization Code Failed.");
 }
 
-const putTrashSchedule = async(item, regist_data) =>{
+const putTrashSchedule = async(item: any, regist_data: any ): Promise<boolean> =>{
     const params = {
         TableName: property.SCHEDULE_TABLE,
         Item: item
     };
-    logger.debug("regist parameter:", params);
+    logger.debug("regist parameter:"+JSON.stringify(params));
     await documentClient.put(params).promise();
     logger.info(`Regist user(${JSON.stringify(item)})`);
 
@@ -199,8 +201,8 @@ const putTrashSchedule = async(item, regist_data) =>{
     return true;
 }
 
-const publishId = async()=>{
-    let user_id = null;
+const publishId = async(): Promise<string> =>{
+    let user_id: string|null = null;
     // 初回登録は最大5回まで重複のないIDの採番を試みる
     let retry = 0;
     while(retry < 5) {
@@ -213,10 +215,10 @@ const publishId = async()=>{
                 }
             }).promise();
             if(!result.Item) {
-                logger.debug("generate new id:", user_id);
+                logger.debug("generate new id:"+user_id);
                 return user_id;
             }
-            logger.warn("duplicate id:",user_id);
+            logger.warn("duplicate id:"+user_id);
             user_id = null;
             retry++;
         } catch(err) {
@@ -226,7 +228,7 @@ const publishId = async()=>{
     throw new Error("PublishId Failed(Over limit)");
 }
 
-const getSession = async(sessionId) => {
+const getSession = async(sessionId: string): Promise<SessionItem | null | undefined>=> {
     const params = {
         Key: {
             id: sessionId
@@ -234,7 +236,7 @@ const getSession = async(sessionId) => {
         TableName: property.SESSION_TABLE
     }
     return documentClient.get(params).promise().then(async(data)=>{
-        return data.Item;
+        return data.Item as SessionItem;
     }).catch(error=>{
         logger.error("Failed getSession.");
         logger.error(error);
@@ -242,12 +244,12 @@ const getSession = async(sessionId) => {
     })
 }
 
-const publishSession = async()=>{
+const publishSession = async(): Promise<SessionItem | null>=>{
     const new_session =  {
         id: common.generateRandomCode(20),
         expire: Math.ceil((new Date()).getTime() / 1000) + property.SESSION_MAX_AGE
     }
-    logger.info("publish new session:",new_session);
+    logger.info("publish new session:"+ JSON.stringify(new_session));
     return documentClient.put({
         TableName: property.SESSION_TABLE,
         Item: new_session,
@@ -261,18 +263,18 @@ const publishSession = async()=>{
     });
 };
 
-module.exports = {
+export default {
     saveSession: saveSession,
-    getDataBySigninId: getDataBySigninId,
-    deleteSession: deleteSession,
-    putTrashSchedule: putTrashSchedule,
-    getAuthorizationCode: getAuthorizationCode,
-    putAuthorizationCode: putAuthorizationCode,
-    deleteAuthorizationCode: deleteAuthorizationCode,
     publishId: publishId,
-    getSession: getSession,
     publishSession: publishSession,
     putAccessToken: putAccessToken,
+    putAuthorizationCode: putAuthorizationCode,
     putRefreshToken: putRefreshToken,
-    getRefreshToken: getRefreshToken
+    putTrashSchedule: putTrashSchedule,
+    deleteAuthorizationCode: deleteAuthorizationCode,
+    deleteSession: deleteSession,
+    getAuthorizationCode: getAuthorizationCode,
+    getDataBySigninId: getDataBySigninId,
+    getRefreshToken: getRefreshToken,
+    getSession: getSession,
 }

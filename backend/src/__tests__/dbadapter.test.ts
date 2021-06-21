@@ -1,14 +1,15 @@
-/* eslint-disable no-unused-vars */
-const logger = require("trash-common").getLogger();
-logger.LEVEL = logger.DEBUG;
+import { getLogger } from "trash-common";
+const logger = getLogger();
+logger.setLevel_DEBUG();
 
 /**
  * DBアクセス等すべて実装済みで実施する
  */
 process.env.DB_REGION = "us-west-2";
-const AWS = require("aws-sdk");
-const property = require("../property.js");
-const crypto = require("crypto");
+import AWS from "aws-sdk";
+import crypto from "crypto";
+
+import firebase from "firebase-admin";
 
 
 const documentClient = new AWS.DynamoDB.DocumentClient({region: 'us-west-2'});
@@ -16,7 +17,11 @@ const documentClient = new AWS.DynamoDB.DocumentClient({region: 'us-west-2'});
 // はるか未来の日付
 const DEFAULT_EXPIRE = 4133862000000;
 
-const db = require("../dbadapter");
+import db from "../dbadapter";
+import property from "../property";
+import { UserInfo } from "../interface";
+
+
 describe('getDataBySigninId',()=>{
     const testdata =  {
         id: 'test-001',
@@ -69,7 +74,7 @@ describe('saveSession',()=>{
         }).promise().then(()=>done());
     });
     it('セッションテーブルに存在しないデータ', async()=>{
-        const session_data = {id: 'session001'};
+        const session_data = {id: 'session001', expire: 9999999};
         const result = await db.saveSession(session_data);
         expect(result);
 
@@ -79,16 +84,18 @@ describe('saveSession',()=>{
                 id: 'session001'
             }
         }).promise().then((data)=>{
-            expect(data.Item.id).toBe("session001");
-            expect(data.Item.expire).toBeDefined();
+            expect(data.Item).not.toBeUndefined();
+            expect(data.Item!.id).toBe("session001");
+            expect(data.Item!.expire).toBeDefined();
         });
     });
     it('セッションテーブルに存在するデータ', async()=>{
-        const overwireUserInfo = {
+        const overwireUserInfo: UserInfo = {
             signinId: 'google001',
             signinService: 'google',
             preset: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }],
-            id: 'test002'
+            id: 'test002',
+            name: "testUser"
         }
         const session_data = {id: 'session002', expire: 3600,userInfo: overwireUserInfo};
         const result = await db.saveSession(session_data);
@@ -99,9 +106,10 @@ describe('saveSession',()=>{
                 id: 'session002'
             }
         }).promise().then((data)=>{
-            expect(data.Item.id).toBe('session002');
-            expect(data.Item.userInfo).toMatchObject(overwireUserInfo);
-            expect(data.Item.expire).toBeDefined();
+            expect(data.Item).not.toBeUndefined();
+            expect(data.Item!.id).toBe('session002');
+            expect(data.Item!.userInfo).toMatchObject(overwireUserInfo);
+            expect(data.Item!.expire).toBeDefined();
         });
     });
     afterAll((done)=>{
@@ -245,15 +253,17 @@ describe('publishSession',()=>{
     });
     it('publish new session id',async ()=>{
         const session = await db.publishSession();
-        expect(session.id.length).toBe(20);
+        expect(session).not.toBeNull();
+        expect(session!.id.length).toBe(20);
         await documentClient.get({
             TableName: property.SESSION_TABLE,
-            Key:{id: session.id}
+            Key:{id: session!.id}
         }).promise().then(async(data)=>{
-            expect(data.Item.id).toBe(session.id);
+            expect(data.Item).not.toBeUndefined();
+            expect(data.Item!.id).toBe(session!.id);
             await documentClient.delete({
                 TableName: property.SESSION_TABLE,
-                Key:{id: session.id}
+                Key:{id: session!.id}
             }).promise();
         });
     });
@@ -270,14 +280,15 @@ describe("putAuthorizationCode",()=>{
                 code: result.code
             }
         }).promise().then((data)=>{
-            expect(data.Item.code).toBe(result.code);
-            expect(data.Item.client_id).toBe("alexa-skill");
-            expect(data.Item.redirect_uri).toBe("https://example.com/skill");
-            expect(data.Item.user_id).toBe("id0001");
+            expect(data.Item).not.toBeUndefined();
+            expect(data.Item!.code).toBe(result.code);
+            expect(data.Item!.client_id).toBe("alexa-skill");
+            expect(data.Item!.redirect_uri).toBe("https://example.com/skill");
+            expect(data.Item!.user_id).toBe("id0001");
             // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
             const expire = Math.ceil(Date.now()/1000) +300;
-            expect(data.Item.expires_in).toBeLessThan(expire+10);
-            expect(data.Item.expires_in).toBeGreaterThan(expire-10);
+            expect(data.Item!.expires_in).toBeLessThan(expire+10);
+            expect(data.Item!.expires_in).toBeGreaterThan(expire-10);
         });
 
         await documentClient.delete({
@@ -301,12 +312,12 @@ describe("deleteAuthorizationCode",()=>{
     it("正常削除",async()=>{
         const result = await db.deleteAuthorizationCode("1234xyz");
         // deleteのReturnValuesのデフォルトはNONEのため正常終了の場合は戻り値が空
-        expect(JSON.stringify(result)).toMatch("{}");
+        expect(result).toBeTruthy();
     });
     it("存在しないデータ",async()=>{
         const result = await db.deleteAuthorizationCode("not_exists_code");
         // 存在しないデータの削除も正常終了する
-        expect(JSON.stringify(result)).toMatch("{}");
+        expect(result).toBeTruthy();
     });
 });
 
@@ -324,15 +335,16 @@ describe("getAuthorizationCode",()=>{
         }).promise();
     });
     it("存在するデータ",async()=>{
-        const result = await db.getAuthorizationCode("1234567",300);
+        const result = await db.getAuthorizationCode("1234567");
         console.log(JSON.stringify(result));
-        expect(result.code).toBe("1234567");
-        expect(result.client_id).toBe("alexa-skill");
-        expect(result.user_id).toBe("id001");
-        expect(result.redirect_uri).toBe("https://example.com/skill");
+        expect(result).not.toBeUndefined();
+        expect(result!.code).toBe("1234567");
+        expect(result!.client_id).toBe("alexa-skill");
+        expect(result!.user_id).toBe("id001");
+        expect(result!.redirect_uri).toBe("https://example.com/skill");
     });
     it("存在しないデータ",async()=>{
-        const result = await db.getAuthorizationCode("9999999",300);
+        const result = await db.getAuthorizationCode("9999999");
         expect(result).toBeUndefined();
     });
     afterAll(async()=>{
@@ -360,12 +372,13 @@ describe("putAccessToken",()=>{
                     access_token: hashKey
                 }
             }).promise().then((data)=>{
-                expect(data.Item.user_id).toBe("id0001");
-                expect(data.Item.client_id).toBe("alexa-skill");
+                expect(data.Item).not.toBeUndefined();
+                expect(data.Item!.user_id).toBe("id0001");
+                expect(data.Item!.client_id).toBe("alexa-skill");
                 // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
                 const expire = Math.ceil(Date.now()/1000) + 300; 
-                expect(data.Item.expires_in).toBeLessThan(expire+10);
-                expect(data.Item.expires_in).toBeGreaterThan(expire-10);
+                expect(data.Item!.expires_in).toBeLessThan(expire+10);
+                expect(data.Item!.expires_in).toBeGreaterThan(expire-10);
             });
 
             // テスト後はデータ削除
@@ -383,28 +396,28 @@ describe("putAccessToken",()=>{
             expect(access_token).toBeDefined();
 
             const hasKey = crypto.createHash("sha512").update(access_token).digest("hex");
-            const firebase = require("firebase-admin");
             const firestore = firebase.firestore();
             await firestore.collection(property.TOKEN_TABLE).doc(hasKey).get().then((doc)=>{
                 const data = doc.data();
                 console.log(JSON.stringify(data,null,2));
-
-                expect(data.user_id).toBe("id002");
-                expect(data.client_id).toBe("google");
+                
+                expect(data).not.toBeUndefined();
+                expect(data!.user_id).toBe("id002");
+                expect(data!.client_id).toBe("google");
                 // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
                 const expire = Math.ceil(Date.now()/1000) + 300; 
-                expect(data.expires_in).toBeLessThan(expire+10);
-                expect(data.expires_in).toBeGreaterThan(expire-10);
+                expect(data!.expires_in).toBeLessThan(expire+10);
+                expect(data!.expires_in).toBeGreaterThan(expire-10);
 
 
-            }).catch(err=>{
+            }).catch((err)=>{
                 console.error(err);
             });
 
             // テスト後はデータ削除
-            await firestore.collection(property.TOKEN_TABLE).doc(hasKey).delete().then(result => {
+            await firestore.collection(property.TOKEN_TABLE).doc(hasKey).delete().then((result) => {
                 console.log(result);
-            }).catch(err => {
+            }).catch((err) => {
                 console.error(err);
             })
         });
@@ -432,13 +445,14 @@ describe("putRefreshToken",()=>{
                 refresh_token: hashKey 
             }
         }).promise().then((data)=>{
-            expect(data.Item.refresh_token).toBe(hashKey);
-            expect(data.Item.user_id).toBe("id0001");
-            expect(data.Item.client_id).toBe("alexa-skill");
+            expect(data.Item).not.toBeUndefined();
+            expect(data.Item!.refresh_token).toBe(hashKey);
+            expect(data.Item!.user_id).toBe("id0001");
+            expect(data.Item!.client_id).toBe("alexa-skill");
             // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
             const expire = Math.ceil(Date.now()/1000) +  300;
-            expect(data.Item.expires_in).toBeLessThan(expire+10);
-            expect(data.Item.expires_in).toBeGreaterThan(expire-10);
+            expect(data.Item!.expires_in).toBeLessThan(expire+10);
+            expect(data.Item!.expires_in).toBeGreaterThan(expire-10);
         });
 
         // テスト後はデータ削除
@@ -467,10 +481,11 @@ describe("getRefreshToken", ()=> {
     });
     it("正常取得", async()=>{
         const result = await db.getRefreshToken("refreshtoken001");
-        expect(result.refresh_token).toBe(cryptedToken);
-        expect(result.expires_in).toBe(expires_in);
-        expect(result.user_id).toBe("id001");
-        expect(result.client_id).toBe("alexa-skill");
+        expect(result).not.toBeUndefined();
+        expect(result!.refresh_token).toBe(cryptedToken);
+        expect(result!.expires_in).toBe(expires_in);
+        expect(result!.user_id).toBe("id001");
+        expect(result!.client_id).toBe("alexa-skill");
     });
     it("存在しないデータ", async()=>{
         const result = await db.getRefreshToken("not_exist_refreshtoken");

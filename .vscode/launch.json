@@ -46,10 +46,21 @@
             }
         }, 
         {
+            "name": "Jest Backend Tests",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/src/node_modules/.bin/jest",
+            "protocol": "inspector",
+            "args": ["__tests__/enable_skill.test.ts", "-c","${workspaceFolder}/backend/src/jest.config.js","--runInBand", ],
+            "windows": {
+                "program": "${workspaceFolder}/backend/src/node_modules/jest/bin/jest.js"
+            }
+        }, 
+        {
             "type": "node",
             "request": "launch",
             "name": "Mocha Frontend",
-            "program": "${workspaceFolder}/server/node_modules/mocha/bin/_mocha",
+            "program": "${workspaceFolder}/frontend/node_modules/.bin/mocha",
             "args": [
                 "-u",
                 "tdd",
@@ -58,7 +69,7 @@
                 "--colors",
                 "--compilers",
                 "js:@babel/register",
-                "${workspaceFolder}/server/frontend/test"
+                "${workspaceFolder}/frontend/react/test"
             ],
             "internalConsoleOptions": "openOnSessionStart",
         },

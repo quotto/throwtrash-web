@@ -3,9 +3,6 @@
 {
 	"name": "throwtrash/web development",
 
-	// Sets the run context to one level up instead of the .devcontainer folder.
-	"context": "..",
-
 	"dockerComposeFile": "docker-compose.yml",
 
 	"service": "web-development",
@@ -18,7 +15,7 @@
 	},
 
 	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": ["dbaeumer.vscode-eslint","msjsdiag.debugger-for-chrome","ritwickdey.liveserver"],
+	"extensions": ["dbaeumer.vscode-eslint","msjsdiag.debugger-for-chrome","ritwickdey.liveserver","aws-scripting-guy.cform"],
 
 	"workspaceFolder": "/app"
 
