@@ -97,10 +97,15 @@ const TrashReducer = (state=initialState,action)=> {
         return new_state;
     }
     case ActionType.SET_USER_INFO:
-    case ActionType.SET_PRESET: 
+    case ActionType.SET_PRESET:
     {
         if(action.preset.length > 0) {
             new_state.trashes = _.cloneDeep(action.preset);
+            new_state.trashes.forEach(trash=>{
+                if(trash.excludes === undefined) {
+                    trash.excludes = [];
+                }
+            });
             new_state.error = common_check.exist_error(new_state.trashes);
         }
         return new_state;
@@ -114,7 +119,7 @@ const TrashReducer = (state=initialState,action)=> {
         const check_result = new_state.trashes[action.index].excludes.every((value)=>{
             if(value.month >=1 && value.month <= 12 && value.date >= 1) {
                 if((value.month == 2 && value.date <= 29) ||
-                    ([1,3,5,7,8,9].includes(value.month) && value.date <= 31) || 
+                    ([1,3,5,7,8,9].includes(value.month) && value.date <= 31) ||
                     value.date <= 30) {
                     return true;
                 }
