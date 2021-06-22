@@ -10,7 +10,7 @@ commands:
             if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
               echo "export RUNLEVEL=INFO" >> $BASH_ENV
               echo "export FRONT_STAGE=v4" >> $BASH_ENV
-              echo "export BACK_STAGE=v3" >> $BASH_ENV
+              echo "export BACK_STAGE=v4" >> $BASH_ENV
               echo "export DBREGION=ap-northeast-1" >> $BASH_ENV
             else
               echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
@@ -110,7 +110,7 @@ jobs:
           working_directory: frontend
       - run:
           name: build
-          command: npm run build -- --env.stage=${BACK_STAGE}
+          command: npm run build -- --env.stage=${FRONT_STAGE}
           working_directory: frontend
       - persist_to_workspace:
           root: frontend
