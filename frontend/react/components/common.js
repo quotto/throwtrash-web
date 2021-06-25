@@ -12,4 +12,8 @@ export function isError(error) {
     return typeof(error) != 'undefined';
 }
 
-export const ScheduleType = ['none','weekday','biweek','month','evweek'];
+export const ScheduleTypeList = ['none','weekday','biweek','month','evweek'];
+
+export const TrashTypeList = [
+    'burn','unburn','plastic','bin','can','petbottle','paper','resource','coarse','other'
+];

@@ -1,8 +1,9 @@
-const common = require("trash-common");
-const logger = common.getLogger();
-const property = require("./property");
-const db = require("./dbadapter");
-module.exports = async(session)=>{
+import { getLogger } from "trash-common";
+const logger = getLogger();
+import property from "./property";
+import db from "./dbadapter";
+import {BackendResponse} from "./interface";
+export default async(session: any)=>{
     if(session.userInfo) {
         logger.info("signout:"+session.userInfo.signinId);
         session.userInfo = undefined;

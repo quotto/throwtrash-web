@@ -22,29 +22,15 @@ const mapPropsState = (state)=> {
     };
 };
 
-const mapDispatchToProps = (dispatch)=>{
-    return {
-        onSetUserInfo: (user_info,preset)=>{
-            dispatch(setUserInfo(user_info,preset));
-        },
-        onSignOut: ()=>{
-            dispatch(signOut());
-        },
-        onSigninDialog: (value)=>{
-            dispatch(signinDialog(value));
-        },
-        onChangeMenu: (value,target)=>{
-            dispatch(changeMenu(value,target));
-        },
-        onNotificationDialog: (value)=>{
-            dispatch(notificationDialog(value));
-        }
-    };
-};
-
 const AppBarContainer = connect(
     mapPropsState,
-    mapDispatchToProps
+    {
+        onSetUserInfo: setUserInfo,
+        onSignOut: signOut,
+        onSigninDialog: signinDialog,
+        onChangeMenu: changeMenu,
+        onNotificationDialog: notificationDialog,
+    }
 )(TopAppBar);
 
 export default AppBarContainer;

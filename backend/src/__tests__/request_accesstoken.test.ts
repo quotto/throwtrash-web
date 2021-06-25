@@ -1,40 +1,43 @@
-/* eslint-disable no-unused-vars */
-const logger = require("trash-common").getLogger();
-logger.LEVEL = logger.DEBUG;
-const error_def = require("../error_def");
+import db from "../dbadapter";
+import * as common from "trash-common";
+const logger = common.getLogger();
+logger.setLevel_DEBUG();
+import error_def from "../error_def";
+
+import { mocked } from "ts-jest/utils";
 
 const mockDate = Date.UTC(2020,3,1,12,0,0,0);
-const mockResult = { };
+const mockResult: any = { };
 
 jest.mock("../dbadapter");
-const db = require("../dbadapter");
-db.getAuthorizationCode.mockImplementation(async (code) => {
+
+mocked(db.getAuthorizationCode).mockImplementation(async (code: string) => {
     if (code === "12345") {
         return {
-            code: code, user_id: "id001", client_id: "alexa-skill", redirect_uri: "https://alexa.amazon.co.jp/api/skill/link/XXXXXX"
+            code: code, user_id: "id001", client_id: "alexa-skill", redirect_uri: "https://alexa.amazon.co.jp/api/skill/link/XXXXXX",expires_in: 99999
         };
     } else if (code === "56789") {
         return {
-            code: code, user_id: "id002", client_id: "alexa-skill", redirect_uri: "https://alexa.amazon.co.jp/api/skill/link/XXXXXX"
+            code: code, user_id: "id002", client_id: "alexa-skill", redirect_uri: "https://alexa.amazon.co.jp/api/skill/link/XXXXXX",expires_in: 99999
         };
     } else if (code === "00000") {
         return {
-            code: code, user_id: "id003", client_id: "alexa-skill", redirect_uri: "https://alexa.amazon.co.jp/api/skill/link/XXXXXX"
+            code: code, user_id: "id003", client_id: "alexa-skill", redirect_uri: "https://alexa.amazon.co.jp/api/skill/link/XXXXXX",expires_in: 99999
         };
     } else if (code === "99999") {
         throw new Error("Get code Error");
     } else if (code === "g0123") {
         return {
-            code: code, user_id: "id-google-001", client_id: "google", redirect_uri: "https://alexa.amazon.co.jp/api/skill/link/XXXXXX"
+            code: code, user_id: "id-google-001", client_id: "google", redirect_uri: "https://alexa.amazon.co.jp/api/skill/link/XXXXXX",expires_in: 99999
         };
     } else {
         return undefined;
     }
 });
-db.deleteAuthorizationCode.mockImplementation(async(code)=>{
-    return {};
+mocked(db.deleteAuthorizationCode).mockImplementation(async(code: string)=>{
+    return true;
 });
-db.putAccessToken.mockImplementation(async (user_id, client_id, expires_in) => {
+mocked(db.putAccessToken).mockImplementation(async (user_id: string, client_id: string, expires_in: number) => {
     if (user_id === "id001") {
         mockResult["accesstoken001"] = {
             client_id: client_id,
@@ -56,8 +59,9 @@ db.putAccessToken.mockImplementation(async (user_id, client_id, expires_in) => {
         }
         return "accesstoken-google-001";
     }
+    return "";
 });
-db.putRefreshToken.mockImplementation(async (user_id, client_id, expires_in) => {
+mocked(db.putRefreshToken).mockImplementation(async (user_id: string, client_id: string, expires_in: number) => {
     if (user_id === "id001") {
         mockResult["refreshtoken001"] = {
             client_id: client_id,
@@ -79,13 +83,15 @@ db.putRefreshToken.mockImplementation(async (user_id, client_id, expires_in) => 
         }
         return "refreshtoken-google-001";
     }
+    return "";
 });
-db.getRefreshToken.mockImplementation(async(refresh_token) => {
+mocked(db.getRefreshToken).mockImplementation(async(refresh_token: string) => {
     if (refresh_token === "refreshtoken004") {
         return {
             user_id: "id004",
             expires_in: 30 * 24 * 60 * 60,
-            client_id: "alexa-skill"
+            client_id: "alexa-skill",
+            refresh_token: "refreshtoken004"
         }
     } else if (refresh_token === "error_refreshtoken") {
         throw new Error("Get RefreshToken Error");
@@ -93,7 +99,7 @@ db.getRefreshToken.mockImplementation(async(refresh_token) => {
     return undefined;
 });
 
-const request_accesstoken = require("../request_accesstoken.js");
+import request_accesstoken from "../request_accesstoken";
 describe("request_accesstoken",()=>{
     const alexaAuthorization = "Basic YWxleGEtc2tpbGw6OGg2cEd4SGRXaDhy"; //alexa-skill:8h6pGxHdWh8r
     process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
@@ -112,14 +118,15 @@ describe("request_accesstoken",()=>{
        console.log(result);
        expect(result.statusCode).toBe(200);
 
-       const body = JSON.parse(result.body);
+       expect(result.body).not.toBeUndefined();
+       const body = JSON.parse(result.body!);
        expect(body.access_token).toBe("accesstoken001");
        expect(body.token_type).toBe("bearer");
        expect(body.refresh_token).toBe("refreshtoken001");
 
        const date = new Date(body.expires_in);
        expect(body.expires_in).toBe(30 * 24 * 60 * 60);
-
+       
        expect(mockResult["accesstoken001"].client_id).toBe("alexa-skill");
        expect(mockResult["accesstoken001"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
        expect(mockResult["refreshtoken001"].client_id).toBe("alexa-skill");
@@ -138,7 +145,9 @@ describe("request_accesstoken",()=>{
        console.log(result);
        expect(result.statusCode).toBe(200);
 
-       const body = JSON.parse(result.body);
+       expect(result.body).not.toBeUndefined();
+
+       const body = JSON.parse(result.body!);
        expect(body.access_token).toBe("accesstoken-google-001");
        expect(body.token_type).toBe("bearer");
        expect(body.refresh_token).toBe("refreshtoken-google-001");
@@ -161,7 +170,9 @@ describe("request_accesstoken",()=>{
        console.log(result);
        expect(result.statusCode).toBe(200);
 
-       const body = JSON.parse(result.body);
+       expect(result.body).not.toBeUndefined();
+
+       const body = JSON.parse(result.body!);
        expect(body.access_token).toBe("accesstoken004");
        expect(body.token_type).toBe("bearer");
        expect(body.refresh_token).toBe("new_refreshtoken004");

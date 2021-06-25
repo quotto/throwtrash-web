@@ -58,7 +58,9 @@
         },
         "TrashSchedule":{
             "button":{
-                "delete": "削除"
+                "delete": "削除",
+                "exclude": "例外日を設定",
+                "add": "スケジュールを追加"
             },
             "input":{
                 "other":{

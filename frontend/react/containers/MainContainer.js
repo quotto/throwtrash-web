@@ -8,7 +8,17 @@ import {
     inputTrashType,
     changeInput,
     errorDialog,
-    setSubmitting
+    setSubmitting,
+    addSchedule,
+    deleteSchedule,
+    setZipcodeMessage,
+    changeZipcode,
+    submitZipcode,
+    changeZipcodeStatus,
+    setErrorZipcode,
+    setPreset,
+    changePage,
+    changePerPage
 } from '../actions';
 
 const mapPropsState = (state) => {
@@ -16,42 +26,33 @@ const mapPropsState = (state) => {
         trashes: state.updateState.trashes,
         submit_error: state.updateState.error,
         showErrorDialog: state.SubmitState.showErrorDialog,
-        submitting: state.SubmitState.submitting
-    };
-};
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onChangeTrash: (i,value) => {
-            dispatch(changeTrashType(i,value));
-        },
-        onChangeSchedule: (i,j,value) => {
-            dispatch(changeSchedule(i,j,value));
-        },
-        onChangeInput: (i,j,value) => {
-            dispatch(changeInput(i,j,value));
-        },
-        onInputTrashType: (i,value,maxlength) => {
-            dispatch(inputTrashType(i,value,maxlength));
-        },
-        onClickAdd: () => {
-            dispatch(addTrash());
-        },
-        onClickDelete: (i) =>{
-            dispatch(deleteTrash(i));
-        },
-        onError: (open)=> {
-            dispatch(errorDialog(open));
-        },
-        onSubmit: (status)=>{
-            dispatch(setSubmitting(status));
-        }
+        submitting: state.SubmitState.submitting,
+        zipcodeState: state.zipCodeReducer
     };
 };
 
 const MainContainer = connect(
     mapPropsState,
-    mapDispatchToProps
+    {
+        onChangeTrash: changeTrashType,
+        onChangeSchedule: changeSchedule,
+        onChangeInput: changeInput,
+        onInputTrashType: inputTrashType,
+        onClickAdd: addTrash,
+        onClickDelete: deleteTrash,
+        onError: errorDialog,
+        onSubmit: setSubmitting,
+        addSchedule,
+        deleteSchedule,
+        setZipcodeMessage,
+        changeZipcode,
+        submitZipcode,
+        changeZipcodeStatus,
+        setErrorZipcode,
+        setPreset,
+        changePerPage,
+        changePage
+    }
 )(Main);
 
 export default MainContainer;

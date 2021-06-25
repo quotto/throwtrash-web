@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     ServerError: {
         statusCode: 301,
         headers: {
