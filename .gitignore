@@ -3,6 +3,7 @@ backend/certs
 backend/config.json
 backend/src/node_modules
 backend/src/serviceAccountKey.json
+backend/src/dist
 backend/cfn/package-template.yml
 frontend/dist
 api/src/node_modules

@@ -33,7 +33,7 @@ class EvWeek extends React.Component {
                 </MenuItem>);
         });
         return(
-            <Grid container className={this.props.classes.OptionEvweekContainer}>
+            <Grid item xs={12}>
                 <FormControl className={this.props.classes.OptionEvweekFormControl}>
                     <InputLabel htmlFor={`interval-${this.props.trash_index}-${this.props.schedule_index}`}>{this.props.t('TrashSchedule.select.evweek.interval')}</InputLabel>
                     <Select
