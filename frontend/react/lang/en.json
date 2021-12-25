@@ -1,5 +1,26 @@
 {
     "translation": {
+        "IntroJS": {
+            "main": {
+                "title": "Input Trash Schedule",
+                "hint": "Max 3 types per a trash and max 10 trashes"
+            },
+            "login": {
+                "title": "Login",
+                "hint": "Use Amazon or Googl Account and easily edit registered trashes"
+            },
+            "nextday": {
+                "title": "Tommorrow's Trashes",
+                "hint": "Tell you tommorrow's trashes, If Alexa skill is called by regular action in between 12 and 24 o'clock."
+            },
+            "other": {
+                "title": "QA",
+                "hint": "Please check how to use and any question."
+            },
+            "label": {
+                "done": "Done"
+            }
+        },
         "error": {
             "missingvalue": "empty value",
             "wrongnumber": "only numbers",
@@ -14,6 +35,10 @@
             "description":{
                 "trash": "You can register up to 10 type of trash.",
                 "schedule": "You can register up to 3 schedules on one trash."
+            },
+            "checkbox": {
+                "nextday": "Notify tomorrow trashes in afternoon or later",
+                "description": "If you check this, skill will tell you tomorrow trashes when you call skill via regular action on between 12 and 24 o'cklock."
             }
         },
         "BarMenu": {

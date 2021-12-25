@@ -37,12 +37,15 @@ class TopAppBar extends React.Component {
             <div className={classes.root}>
                 <AppBar position="static">
                     <Toolbar>
-                        <IconButton 
-                            edge="start" 
-                            className={classes.menuButton} 
-                            color="inherit" 
-                            aria-label="menu" 
-                            arial-control="menu" 
+                        <IconButton
+                            data-title={this.props.t('IntroJS.other.title')}
+                            data-intro={this.props.t('IntroJS.other.hint')}
+                            data-step={4}
+                            edge="start"
+                            className={classes.menuButton}
+                            color="inherit"
+                            aria-label="menu"
+                            arial-control="menu"
                             onClick={(event)=>this.props.onChangeMenu(true,event.target)}>
                             <MenuIcon />
                         </IconButton>
@@ -54,7 +57,7 @@ class TopAppBar extends React.Component {
                             notificationDialog={this.props.notificationDialog}
                             onNotificationDialog={this.props.onNotificationDialog}
                         />
-                        <SignInDialog 
+                        <SignInDialog
                             signinDialog={this.props.signinDialog}
                             onSigninDialog={this.props.onSigninDialog}
                             signedIn={this.props.signedIn}

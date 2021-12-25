@@ -3,10 +3,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import TrashSchedule from './TrashSchedule';
-import {withStyles,Button,Grid} from '@material-ui/core';
+import {withStyles,Button,Grid,Checkbox,FormControlLabel, Tooltip} from '@material-ui/core';
 import axios from 'axios';
 import {withTranslation} from 'react-i18next';
 import ErrorDialog from './ErrorDialog';
+import { green } from '@material-ui/core/colors';
 
 const styles = {
     TopMessage: {
@@ -14,13 +15,14 @@ const styles = {
     }
 };
 
+
 const MAX_SCHEDULE = 10;
 class Main extends React.Component {
     render() {
         if(this.props.submitting) {
             axios.post(
                 `https://${API_HOST}/${API_STAGE}/regist`,
-                JSON.stringify({ data: this.props.trashes, offset: new Date().getTimezoneOffset() }),
+                JSON.stringify({ data: this.props.trashes, offset: new Date().getTimezoneOffset(), nextdayflag: this.props.nextday_checked }),
                 {
                     headers: { 'Content-Type': 'application/json' },
                     withCredentials: true
@@ -40,16 +42,22 @@ class Main extends React.Component {
                         <li>{this.props.t('App.description.schedule')}</li>
                     </ul>
                 </Grid>
-                <TrashSchedule
-                    trashes={this.props.trashes}
-                    onChangeSchedule={this.props.onChangeSchedule}
-                    onChangeTrash={this.props.onChangeTrash}
-                    onChangeInput={this.props.onChangeInput}
-                    onClick={this.props.onClickDelete}
-                    onInputTrashType={this.props.onInputTrashType}
-                    addSchedule={this.props.addSchedule}
-                    deleteSchedule={this.props.deleteSchedule}
-                />
+                <div
+                    data-title={this.props.t('IntroJS.main.title')}
+                    data-intro={this.props.t('IntroJS.main.hint')}
+                    data-step={1}
+                >
+                    <TrashSchedule
+                        trashes={this.props.trashes}
+                        onChangeSchedule={this.props.onChangeSchedule}
+                        onChangeTrash={this.props.onChangeTrash}
+                        onChangeInput={this.props.onChangeInput}
+                        onClick={this.props.onClickDelete}
+                        onInputTrashType={this.props.onInputTrashType}
+                        addSchedule={this.props.addSchedule}
+                        deleteSchedule={this.props.deleteSchedule}
+                    />
+                </div>
                 <Grid container justify='center' direction='column' alignItems='center' spacing={3}>
                     <Grid item>
                         <Button
@@ -59,6 +67,24 @@ class Main extends React.Component {
                             onClick={() => this.props.onClickAdd()}>
                             {this.props.t('ScheduleList.button.addtrash')}
                         </Button>
+                    </Grid>
+                    <Grid item
+                        data-title={this.props.t('IntroJS.nextday.title')}
+                        data-intro={this.props.t('IntroJS.nextday.hint')}
+                        data-step={2}
+                    >
+                        <Tooltip
+                            title={this.props.t('App.checkbox.description')}
+                            placement='top'
+                            arial-label='description'>
+                            <FormControlLabel
+                                control={<Checkbox
+                                    checked={this.props.nextday_checked}
+                                    style={{color:green[600]}}
+                                    onChange={(event)=>this.props.onChangeNextdayCheck(event.target.checked)}/>
+                                }
+                                label={this.props.t('App.checkbox.nextday')} />
+                        </Tooltip>
                     </Grid>
                     <ErrorDialog
                         showErrorDialog={this.props.showErrorDialog}
@@ -83,6 +109,7 @@ Main.propTypes = {
     submitting: PropTypes.bool,
     submit_error: PropTypes.bool.isRequired,
     trashes: PropTypes.array,
+    onChangeNextdayCheck: PropTypes.func,
     onChangeSchedule: PropTypes.func,
     onChangeTrash: PropTypes.func,
     onChangeInput: PropTypes.func,
@@ -95,7 +122,8 @@ Main.propTypes = {
     deleteSchedule: PropTypes.func,
     t: PropTypes.func,
     classes: PropTypes.object,
-    showErrorDialog: PropTypes.bool
+    showErrorDialog: PropTypes.bool,
+    nextday_checked: PropTypes.bool
 };
 
 export default withStyles(styles)(withTranslation()(Main));
