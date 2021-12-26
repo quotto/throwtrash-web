@@ -52,7 +52,7 @@ export default async (params: any, authorization: string|undefined): Promise<Bac
             } else {
                 logger.error(`Invalid Parameters: db-> ${JSON.stringify(authorizationCode)},params->${JSON.stringify(params)}`);
             }
-        } catch(err) {
+        } catch(err: any) {
             logger.error(err);
             return error_def.ServerError;
         }
@@ -81,7 +81,7 @@ export default async (params: any, authorization: string|undefined): Promise<Bac
                 logger.error(JSON.stringify(user_info));
                 logger.error(JSON.stringify(params));
             }
-        } catch(err) {
+        } catch(err: any) {
             logger.error(err);
             return error_def.ServerError;
         }

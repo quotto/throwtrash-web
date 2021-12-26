@@ -1,7 +1,7 @@
 import property from "./property";
 import * as common from "trash-common";
 const logger = common.getLogger();
-import AWS from "aws-sdk";
+import AWS, { AWSError } from "aws-sdk";
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: process.env.DB_REGION });
 import firebase_admin from "firebase-admin";
 firebase_admin.initializeApp({
@@ -55,7 +55,7 @@ const putAccessToken = async(user_id: string,client_id: string,expires_in: numbe
             // client_idが一致しない場合はループを抜けて例外処理
             logger.error(`putAccessToken failed,Invalid ClientID -> ${client_id}`)
             break;
-        } catch(err) {
+        } catch(err: any) {
             logger.warn(err);
         }
         limit++;
@@ -80,7 +80,7 @@ const putRefreshToken = async(user_id: string,client_id: string,expires_in: numb
             }).promise();
             logger.debug(`Put RefreshToken:${refreshToken}`);
             return refreshToken;
-        } catch(err) {
+        } catch(err: any) {
             logger.warn(err);
         }
         limit++;
@@ -158,7 +158,7 @@ const putAuthorizationCode = async(user_id:string ,client_id: string,redirect_ur
                 ConditionExpression: "attribute_not_exists(code)"
             }).promise();
             return codeItem;
-        } catch(err) {
+        } catch(err: any) {
             logger.warn(err);
         }
         limit++;
@@ -176,7 +176,7 @@ const deleteAuthorizationCode = async(code: string): Promise<boolean> => {
         }).promise();
         logger.debug(`Delete Authorization Code -> ${JSON.stringify(deleteData)}`);
         return true;
-    } catch(err) {
+    } catch(err: any) {
         logger.error(err);
     }
     throw new Error("Delete Authorization Code Failed.");
@@ -221,7 +221,7 @@ const publishId = async(): Promise<string> =>{
             logger.warn("duplicate id:"+user_id);
             user_id = null;
             retry++;
-        } catch(err) {
+        } catch(err: any) {
             logger.error(err);
         }
     }

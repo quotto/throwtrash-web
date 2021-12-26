@@ -27,7 +27,8 @@ export const ActionType = {
     ERROR_ZIPCODE: 'ERROR_ZIPCODE',
     SET_PRESET: 'SET_PRESET',
     CHANGE_PAGE: 'CHANGE_PAGE',
-    CHANGE_PER_PAGE: 'CHANGE_PER_PAGE'
+    CHANGE_PER_PAGE: 'CHANGE_PER_PAGE',
+    CHECK_NEXTDAY: 'CHECK_NEXTDAY'
 };
 
 export const addTrash = () => {
@@ -217,5 +218,12 @@ export const changePerPage = (per_page) => (
     {
         type: ActionType.CHANGE_PER_PAGE,
         per_page: per_page
+    }
+);
+
+export const changeNextdayCheck = (checked) => (
+    {
+        type: ActionType.CHECK_NEXTDAY,
+        value: checked
     }
 );

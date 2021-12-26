@@ -86,14 +86,17 @@ class SignInDialog extends React.Component {
             return (
                 <div className={classes.root}>
                     <div id="amazon-root"></div>
-                    <Button 
+                    <Button
+                        data-title={this.props.t('IntroJS.login.title')}
+                        data-intro={this.props.t('IntroJS.login.hint')}
+                        data-step={3}
                         className={classes.loginButton}
-                        color="inherit" 
+                        color="inherit"
                         onClick={()=>{this.props.onSigninDialog(true);}}>
                         {this.props.t('SigninDialog.login')}
                     </Button>
-                    <Dialog 
-                        onClose={()=>{this.props.onSigninDialog(false);}} 
+                    <Dialog
+                        onClose={()=>{this.props.onSigninDialog(false);}}
                         open={this.props.signinDialog}
                         scroll='body'
                         aria-labelledby="signin-dialog-title">
@@ -136,5 +139,5 @@ SignInDialog.propTypes = {
     t: PropTypes.func
 };
 
-        
+
 export default withTranslation()(withStyles(styles)(SignInDialog));

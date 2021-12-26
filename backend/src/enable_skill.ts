@@ -61,7 +61,7 @@ export default async(params: any,session: SessionItem,stage: string) => {
         }
 
         logger.debug(JSON.stringify(enableSkillOptions));
-        
+
         // Alexa APIエンドポイントにスキル有効化のリクエストを送信する
         // Alexa APIではサービス（今日のゴミ出し）にauthorization codeをつけてアクセストークンをリクエストする
         // 正常にアクセストークンが取得できれば200が戻る
@@ -75,7 +75,7 @@ export default async(params: any,session: SessionItem,stage: string) => {
                 Location: `https://accountlink.mythrowaway.net/${stage}/accountlink-complete.html`
             }
         }
-    } catch(err) {
+    } catch(err: any) {
         logger.error(err.stack || err);
         return error_def.ServerError;
     }

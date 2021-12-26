@@ -19,7 +19,7 @@ const DEFAULT_EXPIRE = 4133862000000;
 
 import db from "../dbadapter";
 import property from "../property";
-import { UserInfo } from "../interface";
+import { UserInfo,RawTrasScheduleItem } from "../interface";
 
 
 describe('getDataBySigninId',()=>{
@@ -37,11 +37,14 @@ describe('getDataBySigninId',()=>{
         }).promise().then(()=>done());
     })
     it('IDあり',async()=>{
-        const result = await db.getDataBySigninId('1111-1111-1111');
-        expect(JSON.stringify(result)).toBe(JSON.stringify(testdata));
+        const result = await db.getDataBySigninId('1111-1111-1111') as RawTrasScheduleItem;
+        expect(result.id).toBe(testdata.id);
+        expect(result.signinId).toBe(testdata.signinId);
+        expect(result.description).toBe(testdata.description);
+
     });
     it('IDなし',async()=>{
-        const result = await db.getDataBySigninId('xxxx-xxxx-xxxx');
+        const result = await db.getDataBySigninId('xxxx-xxxx-xxxx') as RawTrasScheduleItem;
         expect(JSON.stringify(result)).toBe("{}");
     });
     afterAll((done)=>{
@@ -50,7 +53,7 @@ describe('getDataBySigninId',()=>{
             Key: {
                 id: 'test-001'
             }
-        }).promise().then(()=>{
+            }).promise().then(()=>{
             done();
         });
     });
@@ -376,7 +379,7 @@ describe("putAccessToken",()=>{
                 expect(data.Item!.user_id).toBe("id0001");
                 expect(data.Item!.client_id).toBe("alexa-skill");
                 // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
-                const expire = Math.ceil(Date.now()/1000) + 300; 
+                const expire = Math.ceil(Date.now()/1000) + 300;
                 expect(data.Item!.expires_in).toBeLessThan(expire+10);
                 expect(data.Item!.expires_in).toBeGreaterThan(expire-10);
             });
@@ -400,12 +403,12 @@ describe("putAccessToken",()=>{
             await firestore.collection(property.TOKEN_TABLE).doc(hasKey).get().then((doc)=>{
                 const data = doc.data();
                 console.log(JSON.stringify(data,null,2));
-                
+
                 expect(data).not.toBeUndefined();
                 expect(data!.user_id).toBe("id002");
                 expect(data!.client_id).toBe("google");
                 // expires_inは正確な時刻判定は難しいので現時刻の+-10秒以内であることとする。
-                const expire = Math.ceil(Date.now()/1000) + 300; 
+                const expire = Math.ceil(Date.now()/1000) + 300;
                 expect(data!.expires_in).toBeLessThan(expire+10);
                 expect(data!.expires_in).toBeGreaterThan(expire-10);
 
@@ -442,7 +445,7 @@ describe("putRefreshToken",()=>{
         await documentClient.get({
             TableName: property.REFRESH_TABLE,
             Key: {
-                refresh_token: hashKey 
+                refresh_token: hashKey
             }
         }).promise().then((data)=>{
             expect(data.Item).not.toBeUndefined();
