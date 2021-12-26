@@ -52,7 +52,7 @@ const requestGoogleProfile = (code: string,domain: string,stage: string): Promis
             if(decoded_token && typeof(decoded_token) != "string") {
                 return {id: decoded_token["sub"], name: decoded_token["name"]};
             }
-        } 
+        }
         logger.error(JSON.stringify(response));
         throw new Error("Signin Failed");
     }).catch(err=>{
@@ -65,8 +65,8 @@ export default async(params: any,session: SessionItem,domain: string,stage: stri
     let service_request = null;
     if (params.service === "amazon" && params.access_token && session) {
         service_request = requestAmazonProfile(params.access_token);
-    } else if(params.service === "google" 
-                && params.code && params.state 
+    } else if(params.service === "google"
+                && params.code && params.state
                 && session && params.state === session.googleState) {
         service_request = requestGoogleProfile(params.code,domain,stage);
     }  else {
@@ -100,7 +100,7 @@ export default async(params: any,session: SessionItem,domain: string,stage: stri
             }
         }
         return error_def.UserError;
-    } catch(err) {
+    } catch(err: any) {
         logger.error(err);
         return error_def.ServerError;
     }

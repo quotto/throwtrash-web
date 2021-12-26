@@ -112,7 +112,7 @@ export default async(body: any,session: SessionItem): Promise<BackendResponse>=>
                     "Cache-Control": "no-store"
                 }
             }
-        } catch(err) {
+        } catch(err: any) {
             logger.error(err);
             return {
                 statusCode: 500,

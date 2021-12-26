@@ -10,8 +10,8 @@
                 "hint": "Use Amazon or Googl Account and easily edit registered trashes"
             },
             "nextday": {
-                "title": "Tommorrow's Trashes",
-                "hint": "Tell you tommorrow's trashes, If Alexa skill is called by regular action in between 12 and 24 o'clock."
+                "title": "Tomorrow's Trashes",
+                "hint": "Tell you tomorrow's trashes, If Alexa skill is called by regular action in between 12 and 24 o'clock."
             },
             "other": {
                 "title": "QA",
