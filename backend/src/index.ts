@@ -72,7 +72,7 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent ,context: AWSL
            try {
                const body = JSON.parse(event.body);
                return register(body, session);
-           } catch(err){ 
+           } catch(err: any){
                logger.error(err);
            }
        }
@@ -112,7 +112,7 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent ,context: AWSL
             try {
                 const result =  await enable_skill(event.queryStringParameters,session, event.requestContext.stage);
                 return result;
-            } catch(err) {
+            } catch(err: any) {
                 logger.error(`Unexpected error(enable_skill)->${err.stack || err}`);
                 logger.error(JSON.stringify(event));
                 logger.error(JSON.stringify(session));

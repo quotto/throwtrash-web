@@ -2,6 +2,7 @@ import React from 'react';
 import {withTranslation} from 'react-i18next';
 import PropTypes from 'prop-types';
 import {DialogTitle,Dialog,DialogContent,DialogContentText,DialogActions,Button,withStyles} from '@material-ui/core';
+import introJs from 'intro.js';
 
 const styles = (theme)=> ({
     notificationMessage: {
@@ -18,21 +19,49 @@ const styles = (theme)=> ({
     }
 });
 
+const isShowedNotification = ()=>{
+    return document.cookie.indexOf('showedNotification=true') >= 0;
+};
+
 class NotificationDialog extends React.Component {
+    runIntroJs() {
+        const customIntroJs = introJs().setOptions({
+            'nextLabel':'>',
+            'prevLabel':'<',
+            'doneLabel': this.props.t('IntroJS.label.done')
+        });
+        customIntroJs.start();
+    }
+
     componentDidMount() {
         const ua = navigator.userAgent;
-        if(ua.indexOf('iPhone') === -1 && ua.indexOf('iPad') === -1 && document.cookie.indexOf('showedNotification=true') === -1)  {
-            //ダイアログの表示
+        if(!isShowedNotification())  {
+            if(ua.indexOf('iPhone') === -1 && ua.indexOf('iPad') === -1) {
+                //ダイアログの表示
+                this.props.onNotificationDialog(true);
+            } else {
+                // iOSの場合はcomponentDidUpdateがコールされないためここでcookie更新、IntroJS実行
+                document.cookie = 'showedNotification=true; ' + document.cookie;
+                this.runIntroJs();
+            }
+        }
+    }
+
+    componentDidUpdate() {
+        // iOS以外で通知ダイアログが閉じられた直後にIntroJSを開始する
+        if(!this.props.notificationDialog && !isShowedNotification()) {
             document.cookie = 'showedNotification=true; ' + document.cookie;
-            this.props.onNotificationDialog(true);
-        } 
+            this.runIntroJs();
+        }
     }
 
     render() {
         const {classes} = this.props;
         return(
             <Dialog
-                onClose={()=>{this.props.onNotificationDialog(false);}}
+                onClose={()=>{
+                    this.props.onNotificationDialog(false);
+                }}
                 open={this.props.notificationDialog}
                 arial-labelledby="notification-dialog-title">
                 <DialogTitle id="notification-dialog-title">
