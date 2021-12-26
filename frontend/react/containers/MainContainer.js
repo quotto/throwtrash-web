@@ -18,7 +18,8 @@ import {
     setErrorZipcode,
     setPreset,
     changePage,
-    changePerPage
+    changePerPage,
+    changeNextdayCheck
 } from '../actions';
 
 const mapPropsState = (state) => {
@@ -27,7 +28,8 @@ const mapPropsState = (state) => {
         submit_error: state.updateState.error,
         showErrorDialog: state.SubmitState.showErrorDialog,
         submitting: state.SubmitState.submitting,
-        zipcodeState: state.zipCodeReducer
+        zipcodeState: state.zipCodeReducer,
+        nextday_checked: state.nextdayCheckReducer.checked
     };
 };
 
@@ -51,7 +53,8 @@ const MainContainer = connect(
         setErrorZipcode,
         setPreset,
         changePerPage,
-        changePage
+        changePage,
+        onChangeNextdayCheck: changeNextdayCheck
     }
 )(Main);
 

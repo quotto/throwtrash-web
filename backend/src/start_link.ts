@@ -28,7 +28,7 @@ export default async(params: any,session: any,stage: string): Promise<BackendRes
                 },
                 body: JSON.stringify({url: loginUrl})
             }
-        } catch(err) {
+        } catch(err: any) {
             logger.error(err);
             return error_def.ServerError;
         }

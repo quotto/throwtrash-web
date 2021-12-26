@@ -12,7 +12,7 @@ interface TrashDataOnWeb {
 }
 
 /**
- * 隔週スケジュールの開始日(start_dateの直前の日曜日)を求める 
+ * 隔週スケジュールの開始日(start_dateの直前の日曜日)を求める
  * @param {string} start_date : yyyy-mm-dd形式の文字列
  */
 const calculateStartDate = (start_date: string) => {
@@ -43,7 +43,7 @@ export const adjustData = (input_data: TrashDataOnWeb[]) => {
                         value: schedule.value
                     };
                     if(regist_schedule.type === "evweek") {
-                        const evweekValue: EvweekValue = regist_schedule.value as EvweekValue; 
+                        const evweekValue: EvweekValue = regist_schedule.value as EvweekValue;
                         const start_date = calculateStartDate(evweekValue.start);
                         evweekValue.start = start_date;
                     }
@@ -88,10 +88,11 @@ export default async(body: any,session: SessionItem): Promise<BackendResponse>=>
             if(!item.id) {
                 item.id = await db.publishId();
             }
-            
+
             // データ登録
             item.description = JSON.stringify(regist_data, null, 2);
             item.platform  = session.platform;
+            item.nextdayflag = (typeof(body.nextdayflag) != "undefined") && (body.nextdayflag != null) && body.nextdayflag;
             await db.putTrashSchedule(item, regist_data);
 
             // authorization codeを発行しid（access_tokenとセットで保存する,期限は5分）
@@ -111,7 +112,7 @@ export default async(body: any,session: SessionItem): Promise<BackendResponse>=>
                     "Cache-Control": "no-store"
                 }
             }
-        } catch(err) {
+        } catch(err: any) {
             logger.error(err);
             return {
                 statusCode: 500,

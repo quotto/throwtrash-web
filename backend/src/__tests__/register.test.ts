@@ -53,6 +53,8 @@ describe('register', () => {
         expect(mockScheduleResult["id001"].id).toBe("id001");
         expect(mockScheduleResult["id001"].platform).toBe("amazon");
         expect(mockScheduleResult["id001"].description).toBe(JSON.stringify([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }], null, 2) );
+        // nextdayflagがパラメータにない場合はfalse
+        expect(mockScheduleResult["id001"].nextdayflag).toBeFalsy();
 
         // AuthorizationCodeに登録されたデータの確認
         const auth = mockAuthResult["12345"];
@@ -62,7 +64,7 @@ describe('register', () => {
         expect(auth.expires_in).toBe(Math.ceil(todayMillis/1000)+300);
     });
     it('サインイン済み,id無し', async () => {
-        const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
+        const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }], nextdayflag: false },
             {
                 id: 'sessionid-001', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon', expire: 9999999,
                 userInfo: {
@@ -85,6 +87,7 @@ describe('register', () => {
         expect(mockScheduleResult["id001"].description).toBe(JSON.stringify([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }],null,2));
         expect(mockScheduleResult["id001"].signinId).toBe("signinId002");
         expect(mockScheduleResult["id001"].signinService).toBe("google");
+        expect(mockScheduleResult["id001"].nextdayflag).toBeFalsy();
 
         // AuthorizationCodeに登録されたデータの確認
         const auth = mockAuthResult["12345"];
@@ -94,7 +97,7 @@ describe('register', () => {
         expect(auth.expires_in).toBe(Math.ceil(todayMillis/1000)+300);
     });
     it('サインイン済み,idあり', async () => {
-        const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] },
+        const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }],nextdayflag: true },
             {
                 id: 'sessionid-001', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon', expire: 9999999,
                 userInfo: {
@@ -117,6 +120,7 @@ describe('register', () => {
         expect(mockScheduleResult["id003"].description).toBe(JSON.stringify([{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }],null,2));
         expect(mockScheduleResult["id003"].signinId).toBe("signinId002");
         expect(mockScheduleResult["id003"].signinService).toBe("google");
+        expect(mockScheduleResult["id003"].nextdayflag).toBeTruthy();
 
         // AuthorizationCodeに登録されたデータの確認
         const auth = mockAuthResult["12345"];
