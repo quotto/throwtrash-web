@@ -9,7 +9,7 @@ const number = (value: number | string) => {
 };
 
 const minValue = (value: number,min=1) => {
-    return value && value < min ? 'wrongminnumber' : undefined;//`${min}以上の数字を入力してください`
+    return value < min ? 'wrongminnumber' : undefined;//`${min}以上の数字を入力してください`
 };
 
 const maxValue = (value: number,max=31) => {

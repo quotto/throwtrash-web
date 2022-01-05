@@ -1,7 +1,7 @@
-import {initialState} from '../reducers/TrashReducer';
-import TestReducer from '../reducers/TrashReducer';
-import SubmitReducer from '../reducers/SubmitReducer';
-import {ActionType} from '../actions/index.js';
+import {initialState, Trash} from '../react/reducers/TrashReducer';
+import TestReducer from '../react/reducers/TrashReducer';
+import SubmitReducer from '../react/reducers/SubmitReducer';
+import {ACTION_TYPE} from '../react/actions/index';
 const assert = require('assert');
 const _ = require('lodash');
 
@@ -11,20 +11,20 @@ multiInitialState.trashes.push(_.cloneDeep(initialState.trashes[0]));
 
 describe('updateState',()=>{
     it('Add Trash Type',()=>{
-        const state = TestReducer(undefined,{type:ActionType.ADD_TRASH});
+        const state = TestReducer(undefined,{type:ACTION_TYPE.ADD_TRASH});
         assert.deepStrictEqual(multiInitialState,state);
     });
     describe('change trash',()=>{
         it('single trash',()=>{
             let except = _.cloneDeep(initialState);
             except.trashes[0].type='bin';
-            const state = TestReducer(undefined,{type:ActionType.CHANGE_TRASH,value:'bin',index:0});
+            const state = TestReducer(undefined,{type:ACTION_TYPE.CHANGE_TRASH,value:'bin',index:0,validate:[]});
             assert.deepStrictEqual(except,state);
         });
         it('multi trash',()=>{
             let except = _.cloneDeep(multiInitialState);
             except.trashes[1].type='bin';
-            const state = TestReducer(multiInitialState,{type:ActionType.CHANGE_TRASH,value:'bin',index:1});
+            const state = TestReducer(multiInitialState,{type:ACTION_TYPE.CHANGE_TRASH,value:'bin',index:1,validate:[]});
             assert.deepStrictEqual(except,state);
         });
     });
@@ -34,7 +34,7 @@ describe('updateState',()=>{
             except.trashes[0].schedules.push({type: 'weekday', value: '0'});
             Object.assign(except.trashes[0].schedules[1],{error: undefined, type: 'month',value:''});
             except.error = true; //monthの場合は入力必須のため初期状態はエラー
-            const state = TestReducer(undefined,{type:ActionType.CHANGE_SCHEDULE,index:[0,1],value:'month'});
+            const state = TestReducer(undefined,{type:ACTION_TYPE.CHANGE_SCHEDULE,index:[0,1],value:'month'});
             assert.deepStrictEqual(except,state);
         });
         it('multi trash',()=>{
@@ -50,8 +50,8 @@ describe('updateState',()=>{
             teststate.trashes[0].schedules.push({error: undefined, type: 'weekday', value: '0'});
             teststate.trashes[0].schedules.push({error: undefined, type: 'weekday', value: '0'});
             teststate.trashes[1].schedules.push({error: undefined, type: 'weekday', value: '0'});
-            let state = TestReducer(teststate,{type:ActionType.CHANGE_SCHEDULE,index:[0,2],value:'biweek'});
-            state = TestReducer(state,{type:ActionType.CHANGE_SCHEDULE,index:[1,1],value:'weekday'});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.CHANGE_SCHEDULE,index:[0,2],value:'biweek'});
+            state = TestReducer(state,{type:ACTION_TYPE.CHANGE_SCHEDULE,index:[1,1],value:'weekday'});
             assert.deepStrictEqual(except,state);
         });
     });
@@ -63,7 +63,7 @@ describe('updateState',()=>{
             let teststate = _.cloneDeep(initialState);
             Object.assign(teststate.trashes[0].schedules[0],{type:'month'});
 
-            let state = TestReducer(teststate,{type:ActionType.CHANGE_INPUT,index:[0,0],value:'13'});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.CHANGE_INPUT,index:[0,0],value:'13'});
             assert.deepStrictEqual(except,state);
         });
         it('multi trash',()=>{
@@ -82,7 +82,7 @@ describe('updateState',()=>{
             Object.assign(teststate.trashes[0].schedules[1],{type:'biweek',value:'0-1',error: undefined});
             Object.assign(teststate.trashes[1].schedules[2],{type:'week',value:'3',error: undefined});
 
-            let state = TestReducer(teststate,{type:ActionType.CHANGE_INPUT,index:[0,1],value:'1-1'});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.CHANGE_INPUT,index:[0,1],value:'1-1'});
             assert.deepStrictEqual(except,state);
         });
         it('required error',()=>{
@@ -91,7 +91,7 @@ describe('updateState',()=>{
 
             teststate.trashes[0].schedules.push({type: 'weekday', value: '0'});
             teststate.trashes[0].schedules[1].type = 'month';
-            let state = TestReducer(teststate,{type:ActionType.CHANGE_INPUT,index:[0,1],value:''});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.CHANGE_INPUT,index:[0,1],value:''});
             assert.strictEqual(except,state.trashes[0].schedules[1].error);
             assert.strictEqual(true,state.error);
         });
@@ -100,7 +100,7 @@ describe('updateState',()=>{
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].schedules.push({type: 'weekday', value: '0'});
             teststate.trashes[0].schedules[1].type = 'month';
-            let state = TestReducer(teststate,{type:ActionType.CHANGE_INPUT,index:[0,1],value:'a'});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.CHANGE_INPUT,index:[0,1],value:'a'});
             assert.strictEqual(except,state.trashes[0].schedules[1].error);
             assert.strictEqual(true,state.error);
         });
@@ -109,7 +109,7 @@ describe('updateState',()=>{
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].schedules.push({type: 'weekday', value: '0'});
             teststate.trashes[0].schedules[1].type = 'month';
-            let state = TestReducer(teststate,{type:ActionType.CHANGE_INPUT,index:[0,1],value:'0'});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.CHANGE_INPUT,index:[0,1],value:'0'});
             assert.strictEqual(expect,state.trashes[0].schedules[1].error);
             assert.strictEqual(true,state.error);
         });
@@ -118,7 +118,7 @@ describe('updateState',()=>{
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].schedules.push({type: 'weekday', value: '0'});
             teststate.trashes[0].schedules[1].type = 'month';
-            let state = TestReducer(teststate,{type:ActionType.CHANGE_INPUT,index:[0,1],value:'32'});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.CHANGE_INPUT,index:[0,1],value:'32'});
             assert.strictEqual(expect,state.trashes[0].schedules[1].error);
             assert.strictEqual(true,state.error);
         });
@@ -131,7 +131,7 @@ describe('updateState',()=>{
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = TestReducer(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
             assert.deepStrictEqual(state.trashes[0],expect.trashes[0]);
         });
         it('right input alphabet,number',()=>{
@@ -141,7 +141,7 @@ describe('updateState',()=>{
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = TestReducer(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
             assert.deepStrictEqual(state.trashes[0],expect.trashes[0]);
         });
         it('right input kana',()=>{
@@ -151,7 +151,7 @@ describe('updateState',()=>{
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = TestReducer(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
             assert.deepStrictEqual(state.trashes[0],expect.trashes[0]);
         });
         it('right input whitespace',()=>{
@@ -161,7 +161,7 @@ describe('updateState',()=>{
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = TestReducer(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.INPUT_TRASH_TYPE,index: 0,value: input_value,maxlength:10});
             assert.deepStrictEqual(state.trashes[0],expect.trashes[0]);
         });
         it('requirement error',()=>{
@@ -170,7 +170,7 @@ describe('updateState',()=>{
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = TestReducer(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0,value: '',maxlength:10});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.INPUT_TRASH_TYPE,index: 0,value: '',maxlength:10});
             assert.deepStrictEqual(state.trashes[0],expect.trashes[0]);
         });
         it('elegular error script',()=>{
@@ -180,7 +180,7 @@ describe('updateState',()=>{
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = TestReducer(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0, value: input_value,maxlength:10});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.INPUT_TRASH_TYPE,index: 0, value: input_value,maxlength:10});
             assert.deepStrictEqual(state.trashes[0],expect.trashes[0]);
         });
         it('elegular error SQL injection',()=>{
@@ -190,36 +190,36 @@ describe('updateState',()=>{
 
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = TestReducer(teststate,{type:ActionType.INPUT_TRASH_TYPE,index: 0, value: input_value,maxlength:10});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.INPUT_TRASH_TYPE,index: 0, value: input_value,maxlength:10});
             assert.deepStrictEqual(state.trashes[0],expect.trashes[0]);
         });
         it('max length',()=>{
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = TestReducer(teststate,{type:ActionType.INPUT_TRASH_TYPE,index:0,value:'これは１０文字の入力',maxlength:10});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.INPUT_TRASH_TYPE,index:0,value:'これは１０文字の入力',maxlength:10});
             assert.strictEqual(state.trashes[0].input_trash_type_error,undefined);
         });
         it('max lengthの最大値変更',()=>{
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = TestReducer(teststate,{type:ActionType.INPUT_TRASH_TYPE,index:0,value:'１２文字の入力でも大丈夫',maxlength:20});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.INPUT_TRASH_TYPE,index:0,value:'１２文字の入力でも大丈夫',maxlength:20});
             assert.strictEqual(state.trashes[0].input_trash_type_error,undefined);
         });
         it('length over',()=>{
             let expect = 'wronglengthstring';
             let teststate = _.cloneDeep(initialState);
             teststate.trashes[0].type = 'other';
-            let state = TestReducer(teststate,{type:ActionType.INPUT_TRASH_TYPE,index:0,value:'これは１１文字の入力だ',maxlength:10});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.INPUT_TRASH_TYPE,index:0,value:'これは１１文字の入力だ',maxlength:10});
             assert.strictEqual(state.trashes[0].input_trash_type_error,expect);
         });
     });
     describe('delete trash',()=>{
         it('multi to single',()=>{
-            let state = TestReducer(multiInitialState,{type:ActionType.DEL_TRASH,index:0});
+            let state = TestReducer(multiInitialState,{type:ACTION_TYPE.DEL_TRASH,index:0});
             assert.deepStrictEqual(initialState,state);
         });
         it('single to zero',()=>{
-            let state = TestReducer(initialState,{type:ActionType.DEL_TRASH,index:0});
+            let state = TestReducer(initialState,{type:ACTION_TYPE.DEL_TRASH,index:0});
             assert.strictEqual(0,state.trashes.length);
         });
         it('multi delete',()=>{
@@ -227,15 +227,15 @@ describe('updateState',()=>{
             teststate.trashes[0].type='paper';
             let except = _.cloneDeep(initialState);
             except.trashes[0].type='paper';
-            let state = TestReducer(teststate,{type:ActionType.DEL_TRASH,index:1});
+            let state = TestReducer(teststate,{type:ACTION_TYPE.DEL_TRASH,index:1});
             assert.deepStrictEqual(except,state);
         });
     });
     describe('set preset', ()=>{
         it('has preset', ()=>{
-            const preset = [
-                {type:'burn',schedules:[{type:'weekday',value:'3'}], excludes:[{month: 12, date: 1}]}];
-            let state = TestReducer(initialState, {type:ActionType.SET_USER_INFO, preset: preset});
+            const preset: Trash[] = [
+                {type:'burn',trash_val: '',schedules:[{type:'weekday',value:'3'}], excludes:[{month: 12, date: 1}],is_excludes_error: false, is_excludes_submitted: false}];
+            let state = TestReducer(initialState, {type:ACTION_TYPE.SET_USER_INFO, preset: preset, user_info: {name: 'test'}});
             assert.strictEqual(state.trashes[0].schedules.length,1);
             assert.strictEqual(state.trashes[0].type,'burn');
             assert.strictEqual(state.trashes[0].schedules[0].type,'weekday');
@@ -246,9 +246,9 @@ describe('updateState',()=>{
             assert.deepStrictEqual(state.trashes[0].schedules[0],preset[0].schedules[0]);
         });
         it('excludesが無いプリセットは空配列で補完される', ()=>{
-            const preset = [
-                {type:'burn',schedules:[{type:'weekday',value:'3'}]}];
-            let state = TestReducer(initialState, {type:ActionType.SET_USER_INFO, preset: preset});
+            const preset: Trash[] = [
+                {type:'burn',trash_val: '',schedules:[{type:'weekday',value:'3'}],excludes:[],is_excludes_error: false, is_excludes_submitted: false}];
+            let state = TestReducer(initialState, {type:ACTION_TYPE.SET_USER_INFO, preset: preset, user_info: {name: 'test'}});
             assert.strictEqual(state.trashes[0].schedules.length,1);
             assert.strictEqual(state.trashes[0].type,'burn');
             assert.strictEqual(state.trashes[0].schedules[0].type,'weekday');
@@ -263,19 +263,19 @@ describe('updateState',()=>{
 describe('SubmitState',()=> {
     describe('submitting',()=>{
         it('submit true',()=>{
-            const state = SubmitReducer(undefined,{type:ActionType.SET_SUBMITTING,value:true});
+            const state = SubmitReducer(undefined,{type:ACTION_TYPE.SET_SUBMITTING,value:true});
             assert.strictEqual(true,state.submitting);
         });
         it('submit false',()=>{
-            const state = SubmitReducer({submitting:true},{type:ActionType.SET_SUBMITTING,value:false});
+            const state = SubmitReducer({submitting:true},{type:ACTION_TYPE.SET_SUBMITTING,value:false});
             assert.strictEqual(false,state.submitting);
         });
         it('open error Dialog', ()=>{
-            const state = SubmitReducer(undefined, {type:ActionType.ERROR_DIALOG, open: true});
+            const state = SubmitReducer(undefined, {type:ACTION_TYPE.ERROR_DIALOG, openDialog: true});
             assert.strictEqual(state.showErrorDialog, true);
         });
         it('close error Dialog', ()=>{
-            const state = SubmitReducer({showErrorDialog:true}, {type:ActionType.ERROR_DIALOG, open: false});
+            const state = SubmitReducer({submitting: false, showErrorDialog:true}, {type:ACTION_TYPE.ERROR_DIALOG, openDialog: false});
             assert.strictEqual(state.showErrorDialog, false);
         });
     });
