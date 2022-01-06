@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { MenuItem } from '@material-ui/core';
+import { MenuItem } from '@mui/material';
 
 const WeekdayType =  ['0','1','2','3','4','5','6'];
 export function WeekDayList(t: Function) {

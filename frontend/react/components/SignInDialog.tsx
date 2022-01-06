@@ -3,10 +3,10 @@
 import React from 'react';
 import {WithTranslation, withTranslation} from 'react-i18next';
 import PropTypes from 'prop-types';
-import { DialogTitle, withStyles, Button, Dialog, DialogContent, DialogContentText, DialogActions, Theme, StyleRules, createStyles } from '@material-ui/core';
+import { DialogTitle, Button, Dialog, DialogContent, DialogContentText, DialogActions, Theme } from '@mui/material';
 import axios from 'axios';
 import { AppBarProps } from '../containers/AppBarContainer';
-import { WithStyles } from '@material-ui/styles';
+import { withStyles, StyleRules, createStyles, WithStyles } from '@mui/styles';
 
 const styles = (theme:Theme): StyleRules=> createStyles({
     signinRoot:{

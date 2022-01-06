@@ -1,11 +1,9 @@
 import React, { ReactNode } from 'react';
-import PropTypes from 'prop-types';
-import { Grid,MenuItem, FormControl, InputLabel, Chip, Avatar, Select, FormHelperText, TextField } from '@material-ui/core';
-import Delete from '@material-ui/icons/Delete';
-import { withStyles, createStyles } from '@material-ui/core/styles';
+import { Grid,MenuItem, FormControl, InputLabel, Chip, Avatar, Select, FormHelperText, TextField } from '@mui/material';
+import Delete from '@mui/icons-material/Delete';
+import { withStyles, WithStyles, createStyles } from '@mui/styles';
 import { WithTranslation, withTranslation } from 'react-i18next';
 import { isError, TrashTypeList } from './common';
-import { WithStyles } from '@material-ui/styles';
 import { MainProps } from '../containers/MainContainer';
 import { Trash } from '../reducers/TrashReducer';
 

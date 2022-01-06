@@ -1,9 +1,9 @@
-import { Button, CircularProgress, createStyles, FormControl, FormGroup, FormLabel, Grid, InputAdornment, TextField, Theme, Tooltip, withStyles, WithStyles } from '@material-ui/core';
-import { Help } from '@material-ui/icons';
-import axios from 'axios';
-import PropTypes from 'prop-types';
 import React from 'react';
 import NumberFormat from 'react-number-format';
+import { Button, CircularProgress, createStyles, FormControl, FormGroup, FormLabel, Grid, InputAdornment, TextField, Tooltip } from '@mui/material';
+import { withStyles, WithStyles } from '@mui/styles';
+import { Help } from '@mui/icons-material';
+import axios from 'axios';
 import { MainProps } from '../../containers/MainContainer';
 import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
 import AddressSearchDialog from './AddressSearchDiallog';
@@ -47,7 +47,7 @@ class ZipcodeSearch extends React.Component<Props,{}> {
     render() {
         const {classes, zipcodeState, changeZipcode, submitZipcode, changeZipcodeStatus, setErrorZipcode } = this.props;
         return (
-            <Grid container item xs={12} justify='center' style={{marginBottom: '10px'}}>
+            <Grid container item xs={12} justifyContent='center' style={{marginBottom: '10px'}}>
                 {zipcodeState.submitting?
                     <CircularProgress /> :
                     <FormControl>

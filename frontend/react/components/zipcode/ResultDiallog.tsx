@@ -1,6 +1,6 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TablePagination, TableRow, Theme, withStyles } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TablePagination, TableRow, Theme } from '@mui/material';
+import { withStyles } from '@mui/styles';
 import React from 'react';
-import PropTypes from 'prop-types';
 import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
 import { MainProps } from '../../containers/MainContainer';
 
@@ -61,7 +61,7 @@ class ResultDialog extends React.Component<MainProps,{}> {
                         page={trash_page_state.current_page}
                         labelRowsPerPage='1ページあたりの行数'
                         onPageChange={(e,new_page)=>changePage(new_page)}
-                        onChangeRowsPerPage={(e)=>{
+                        onRowsPerPageChange={(e)=>{
                             console.log(e);
                             changePerPage(Number(e.target.value));
                             changePage(0);
@@ -71,7 +71,6 @@ class ResultDialog extends React.Component<MainProps,{}> {
                 <DialogActions>
                     <Button
                         onClick={()=>changeZipcodeStatus(ZipcodeStatus.None,[])}
-                        color='default'
                         variant='contained'>
                             戻る
                     </Button>

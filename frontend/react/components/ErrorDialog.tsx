@@ -1,7 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {withTranslation, WithTranslation} from 'react-i18next';
-import { DialogTitle, withStyles, Button, Dialog, DialogContent, DialogContentText, DialogActions } from '@material-ui/core';
+import { DialogTitle,  Button, Dialog, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import {MainProps} from '../containers/MainContainer'
 
 interface Props extends MainProps,WithTranslation{}

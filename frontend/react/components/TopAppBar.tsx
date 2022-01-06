@@ -1,13 +1,12 @@
 import React from 'react';
-import AppBar from '@material-ui/core/AppBar';
-import PropTypes from 'prop-types';
-import { withStyles,WithStyles } from '@material-ui/core/styles';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/material/Menu';
+import { Theme } from '@mui/material';
+import { withStyles, WithStyles, StyleRules, createStyles } from '@mui/styles';
 import { WithTranslation, withTranslation } from 'react-i18next';
-import { Theme, StyleRules, createStyles } from '@material-ui/core';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
 import SignInDialog from './SignInDialog';
 import NotificationDialog from './NotificationDialog';
 import BarMenu from './BarMenu';
@@ -50,7 +49,6 @@ class TopAppBar extends React.Component<Props, {}> {
                             aria-label="menu"
                             arial-control="menu"
                             onClick={(event)=>this.props.onChangeMenu(true,event.target as Element)}>
-                            <MenuIcon />
                         </IconButton>
                         <BarMenu {...this.props} />
                         <Typography variant="h6" className={classes.appBarTitle}>

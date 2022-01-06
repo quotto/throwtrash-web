@@ -1,11 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import {Grid} from '@material-ui/core';
+import {Grid} from '@mui/material';
 import MainContainer from '../containers/MainContainer';
 import TopAppBarContainer from '../containers/AppBarContainer';
 import ExcludeDate from './excludeDate/ExcludeDate';
-import {createMuiTheme, MuiThemeProvider} from '@material-ui/core/styles';
-import { useTranslation } from 'react-i18next';
 import {BrowserRouter as Router,Route,Switch} from 'react-router-dom';
 
 // const defaultTheme = createMuiTheme({
@@ -22,7 +19,7 @@ class App extends React.Component<{},{}> {
         return (
             <Grid container>
                 <TopAppBarContainer />
-                <Grid container justify='center' item xs={12}>
+                <Grid container justifyContent='center' item xs={12}>
                     <Router>
                         <Switch>
                             <Route path="/exclude/:trashIndex">

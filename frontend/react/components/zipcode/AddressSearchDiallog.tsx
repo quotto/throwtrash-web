@@ -1,6 +1,6 @@
-import { Button, CircularProgress, createStyles, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TablePagination, TableRow, Theme, withStyles } from '@material-ui/core';
+import { Button, CircularProgress,  Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TablePagination, TableRow, Theme } from '@mui/material';
+import { withStyles } from '@mui/styles';
 import React from 'react';
-import PropTypes from 'prop-types';
 import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
 import { MainProps } from '../../containers/MainContainer'
 import axios from 'axios';
@@ -62,13 +62,13 @@ class AddressSearchDialog extends React.Component<MainProps,{}> {
                             {/* TODO: ページネーションロジック未実装 */ }
                             {address_page_state.address_list.length > 5 && <TablePagination
                                 rowsPerPageOptions={[5, 10, 25, 50]}
-                                component="div"
+                                component={Paper}
                                 count={address_list.length}
                                 rowsPerPage={per_page}
                                 page={current_page}
                                 labelRowsPerPage='1ページあたりの行数'
                                 onPageChange={(e,new_page)=>changePage(new_page)}
-                                onChangeRowsPerPage={(e)=>{
+                                onRowsPerPageChange={(e)=>{
                                     changePerPage(Number(e.target.value));
                                     changePage(0);
                                 }}
@@ -79,7 +79,6 @@ class AddressSearchDialog extends React.Component<MainProps,{}> {
                 <DialogActions>
                     <Button
                         onClick={()=>changeZipcodeStatus(ZipcodeStatus.None,[])}
-                        color='default'
                         variant='contained'>
                             戻る
                     </Button>

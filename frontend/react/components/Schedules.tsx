@@ -1,12 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Grid, withStyles, Button, FormControl, FormLabel, FormGroup, IconButton, Theme, StyleRules, createStyles, WithStyles } from '@material-ui/core';
+import { Grid, Button, FormControl, FormLabel, FormGroup, IconButton, Theme } from '@mui/material';
+import { withStyles, StyleRules, createStyles, WithStyles} from '@mui/styles';
+import {CalendarToday, RadioButtonChecked, RadioButtonUnchecked,HighlightOff}  from '@mui/icons-material';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import WeekDay from './schedule-inputs/WeekDay';
 import EvWeek from './schedule-inputs/EvWeek';
 import BiWeek from './schedule-inputs/BiWeek';
 import Month from './schedule-inputs/Month';
-import {CalendarToday, RadioButtonChecked, RadioButtonUnchecked,HighlightOff}  from '@material-ui/icons';
 import { MainProps } from '../containers/MainContainer';
 import { Trash } from '../reducers/TrashReducer';
 
@@ -96,7 +96,7 @@ const ScheduleTypeButton = withStyles(styles)((props: ScheduleTypeButtonProps) =
         variant='contained'
         size='small'
         startIcon={selected_trash_type === schedule_type ? <RadioButtonChecked /> : <RadioButtonUnchecked />}
-        color={selected_trash_type === schedule_type ? 'primary' : 'default'}
+        color={selected_trash_type === schedule_type ? 'primary' : undefined }
         onClick={() => props.onChangeSchedule(trash_index, schedule_index, schedule_type)}
     >
         {props.t(`TrashSchedule.select.scheduletype.option.${schedule_type}`)}

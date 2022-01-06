@@ -1,9 +1,9 @@
 import React from 'react';
 import {WithTranslation, withTranslation} from 'react-i18next';
 import PropTypes from 'prop-types';
-import {DialogTitle,Dialog,DialogContent,DialogContentText,DialogActions,Button,withStyles, Theme, StyleRules, createStyles} from '@material-ui/core';
+import {DialogTitle,Dialog,DialogContent,DialogContentText,DialogActions,Button,Theme } from '@mui/material';
 import introJs from 'intro.js';
-import { WithStyles } from '@material-ui/styles';
+import { WithStyles, StyleRules, createStyles, withStyles } from '@mui/styles';
 import { AppBarProps } from '../containers/AppBarContainer';
 
 const styles = (theme: Theme): StyleRules=> createStyles({

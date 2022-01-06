@@ -1,4 +1,3 @@
-import { CardActionAreaTypeMap } from "@material-ui/core";
 import { Trash } from "../reducers/TrashReducer";
 
 export enum ACTION_TYPE {

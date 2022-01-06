@@ -1,6 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Grid, FormHelperText, Select, FormControl, InputLabel, withStyles, Theme, StyleRules, createStyles, WithStyles } from '@material-ui/core';
+import { FormHelperText, Select, FormControl, InputLabel, Theme } from '@mui/material';
+import { withStyles, WithStyles, StyleRules, createStyles } from '@mui/styles';
 import { WithTranslation, withTranslation } from 'react-i18next';
 import { getErrorMessage} from '../common';
 import { WeekDayList } from './WeekDayList';

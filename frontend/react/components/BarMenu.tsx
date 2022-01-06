@@ -1,10 +1,8 @@
 import axios from 'axios';
 import React from 'react';
-import PropTypes, { string } from 'prop-types';
 import {WithTranslation, withTranslation} from 'react-i18next';
-import { Menu, MenuItem, Divider } from '@material-ui/core';
+import { Menu, MenuItem, Divider } from '@mui/material';
 import { AppBarProps } from '../containers/AppBarContainer';
-import { WithStyles } from '@material-ui/styles';
 import i18next from 'i18next';
 
 interface Props extends AppBarProps,WithTranslation{}

@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
-import PropTypes from 'prop-types';
-import { Grid, FormControl, InputLabel, withStyles, Select, TextField, MenuItem, Theme, StyleRules, createStyles, WithStyles } from '@material-ui/core';
+import { Grid, FormControl, InputLabel, Select, TextField, MenuItem, Theme } from '@mui/material';
+import { withStyles, WithStyles, createStyles, StyleRules } from '@mui/styles'
 import { WithTranslation, withTranslation } from 'react-i18next';
 import { WeekDayList } from './WeekDayList';
 import { MainProps } from '../../containers/MainContainer';

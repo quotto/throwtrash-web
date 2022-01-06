@@ -1,6 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { TextField, withStyles, InputAdornment, WithStyles, Theme, StyleRules, createStyles } from '@material-ui/core';
+import { TextField,  InputAdornment, Theme } from '@mui/material';
+import { withStyles, WithStyles, StyleRules, createStyles} from '@mui/styles';
 import { WithTranslation, withTranslation } from 'react-i18next';
 import { getErrorMessage, isError } from '../common';
 import { MainProps } from '../../containers/MainContainer';

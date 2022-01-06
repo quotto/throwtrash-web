@@ -4,17 +4,15 @@ import {
     Button,
     Grid,
     Hidden,
-    StyleRules,
     Theme,
-    withStyles
-} from '@material-ui/core';
+} from '@mui/material';
 import TrashType from './TrashType';
 
 import {WithTranslation, withTranslation} from 'react-i18next';
 import Schedules from './Schedules';
 import {Link} from 'react-router-dom';
-import {Delete, NotInterested, CalendarToday} from '@material-ui/icons';
-import { createStyles,WithStyles } from '@material-ui/core';
+import {Delete, NotInterested, CalendarToday} from '@mui/icons-material';
+import { createStyles,WithStyles,withStyles,StyleRules } from '@mui/styles';
 import { MainProps } from '../containers/MainContainer';
 
 const styles = (theme: Theme): StyleRules=>createStyles({
