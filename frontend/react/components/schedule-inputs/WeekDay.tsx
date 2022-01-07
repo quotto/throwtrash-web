@@ -40,6 +40,7 @@ class WeekDay extends React.Component<Props,{}> {
                 </InputLabel>
                 <Select
                     id={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
+                    label={this.props.t('TrashSchedule.select.weekday.label')}
                     name={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
                     className={this.props.classes.OptionWeekSelect}
                     value={this.props.target_schedule.value}

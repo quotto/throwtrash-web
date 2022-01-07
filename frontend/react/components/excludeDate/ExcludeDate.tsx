@@ -8,6 +8,7 @@ import { StyleRules, createStyles, WithStyles, withStyles } from '@mui/styles';
 import { TrashReducerState } from '../../reducers/TrashReducer';
 import { ExcludeDateReducerState } from '../../reducers/ExcludeDateReducer';
 import {addExcludeDate, deleteExcludeDate, submitExcludeDate, changeExcludeDate, initExcludeDate,resetExcludeSubmit} from '../../actions';
+import { grey } from '@mui/material/colors';
 
 const styles = (_: Theme): StyleRules=>createStyles({
     button: {
@@ -89,7 +90,7 @@ const ExcludeDate = withStyles(styles)(
                             <IconButton
                                 className={this.props.classes.dateComponent}
                                 size='small'
-                                color='secondary'
+                                color='error'
                                 arial-label='delete date'
                                 component='span'
                                 onClick={()=>this.props.deleteExcludeDate(index)}>
@@ -118,7 +119,7 @@ const ExcludeDate = withStyles(styles)(
                             className={this.props.classes.addButtonRow}>
                             <label htmlFor='icon-button-add'>
                                 <IconButton
-                                    color='primary'
+                                    color='secondary'
                                     arial-label='add date'
                                     component='span'
                                     onClick={() => this.props.addExcludeDate()}>
@@ -141,6 +142,9 @@ const ExcludeDate = withStyles(styles)(
                             }}>設定する</Button>
                         <Button
                             className={this.props.classes.button}
+                            style={{
+                                backgroundColor: grey[500]
+                            }}
                             size='small'
                             variant='contained'
                             onClick={()=>{

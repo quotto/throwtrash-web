@@ -10,6 +10,7 @@ const styles = (theme: Theme): StyleRules=>createStyles({
     OptionEvweekFormControl: {
         textAlign:'center',
         marginRight: '10px',
+        marginBottom: '10px',
         [theme.breakpoints.down('xs')]: {
             width: '50%'
         }
@@ -47,6 +48,7 @@ class EvWeek extends React.Component<Props,{}> {
                     <Select
                         id={`interval-${this.props.trash_index}-${this.props.schedule_index}`}
                         name={`interval-${this.props.trash_index}-${this.props.schedule_index}`}
+                        label={this.props.t('TrashSchedule.select.evweek.interval')}
                         value={evweek_value.interval}
                         onChange={(e) => this.props.onChangeInput(this.props.trash_index, this.props.schedule_index, { weekday: evweek_value.weekday, start: evweek_value.start, interval: e.target.value as number })}
                     >

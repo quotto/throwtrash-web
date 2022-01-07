@@ -23,17 +23,17 @@ const styles = (theme: Theme): StyleRules=>createStyles({
         marginBottom: '10px'
     },
     ExcludeButton: {
-        color: theme.palette.success.main,
+        color: theme.palette.warning.main,
         backgroundColor: 'white',
-        borderColor: theme.palette.success.main,
+        borderColor: theme.palette.warning.main,
         '&:hover': {
             backgroundColor: '#e8f5e9',
-            borderColor: theme.palette.success.main,
+            borderColor: theme.palette.warning.main,
             boxShadow: 'none',
         },
         '&:active': {
             boxShadow: 'none',
-            backgroundColor: theme.palette.success.light,
+            backgroundColor: theme.palette.warning.light,
             borderColor: '#005cbf',
         },
         '&:focus': {
@@ -97,7 +97,8 @@ class TrashSchedule extends React.Component<Props,{}> {
                                 style={{textDecoration: 'none'}}
                             >
                                 <Button
-                                    className={classes.ExcludeButton}
+                                    // className={classes.ExcludeButton}
+                                    color='warning'
                                     variant='outlined'
                                     startIcon={<NotInterested />}>
                                     {this.props.t('TrashSchedule.button.exclude')}
@@ -105,7 +106,7 @@ class TrashSchedule extends React.Component<Props,{}> {
                             </Link>
                             <Button
                                 variant='outlined'
-                                color='secondary'
+                                color='error'
                                 startIcon={<Delete />}
                                 onClick={()=>this.props.onClickDelete(i)}>{this.props.t('TrashSchedule.button.delete')}</Button>
                         </Grid>

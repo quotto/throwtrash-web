@@ -40,6 +40,7 @@ class BiWeek extends React.Component<Props,{}> {
                 </InputLabel>
                 <Select
                     id={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
+                    label={this.props.t('TrashSchedule.select.weekday.label')}
                     name={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
                     value={this.props.target_schedule.value}
                     onChange={(e) => this.props.onChangeInput(this.props.trash_index, this.props.schedule_index, e.target.value as string)}

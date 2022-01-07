@@ -12,7 +12,7 @@ import { Trash } from '../reducers/TrashReducer';
 
 const styles = (theme: Theme): StyleRules=>createStyles({
     TrashScheduleContainer: {
-        paddingBottom: '20px'
+        marginBottom: '20px'
     },
     ScheduleTypeFormControl: {
         'vertical-align':'top',
@@ -30,8 +30,10 @@ const styles = (theme: Theme): StyleRules=>createStyles({
         margin: '5px',
     },
     ScheduleOptionsGrid: {
-        // スケジュール種類のボタンが開始位置から5pxマージンがっ設定されているため、それに合わせる
+        // スケジュール種類のボタンが開始位置から5pxマージンが設定されているため、それに合わせる
         marginLeft: '5px',
+        // Material-UI5ではSelectのInputLabel幅を親Gridで考慮しないので部品が重複して描画されないようにpaddingを設定する
+        paddingTop: '10px'
     },
     // FormLabelをInputLabelと同じ見た目とするための設定
     ScheduleTypeFormLabel: {
@@ -163,6 +165,7 @@ class Schedules extends React.Component<Props,{}> {
                             </FormControl>
                         </Grid>
                         <Grid item xs={12}
+                            height='auto'
                             className={this.props.classes.ScheduleOptionsGrid}>
                             <ScheduleOption
                                 schedule_index={i}
@@ -172,10 +175,14 @@ class Schedules extends React.Component<Props,{}> {
                             />
                         </Grid>
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid item container alignItems='center' justifyContent='center' xs={2}
+                        style={{
+                            alignItems: 'middle',
+                            textAlign: 'center'
+                        }}
+                    >
                         <IconButton
-                            edge='start'
-                            color='secondary'
+                            color='error'
                             onClick={()=>this.props.deleteSchedule(this.props.trash_index, i)}
                         >
                             <HighlightOff />

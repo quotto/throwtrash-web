@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Grid,MenuItem, FormControl, InputLabel, Chip, Avatar, Select, FormHelperText, TextField } from '@mui/material';
+import { Grid,MenuItem, FormControl, InputLabel, Chip, Avatar, Select, FormHelperText, TextField, Theme, FormLabel } from '@mui/material';
 import Delete from '@mui/icons-material/Delete';
 import { withStyles, WithStyles, createStyles } from '@mui/styles';
 import { WithTranslation, withTranslation } from 'react-i18next';
@@ -7,10 +7,21 @@ import { isError, TrashTypeList } from './common';
 import { MainProps } from '../containers/MainContainer';
 import { Trash } from '../reducers/TrashReducer';
 
-const styles = createStyles({
+const styles = (theme: Theme)=> createStyles({
     TrashTypeContainer: {
         marginBottom: '20px',
     },
+    // FormLabelをInputLabelと同じ見た目とするための設定
+    TrashTypeFormLabel: {
+        transform: 'scale(0.75)',
+        transformOrigin: 'top left'
+    },
+    TrashTypeText: {
+        color: theme.palette.secondary.main,
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+    }
 });
 
 interface Props extends MainProps, WithStyles<typeof styles>,WithTranslation{
@@ -43,18 +54,13 @@ class TrashType extends React.Component<Props,{}> {
             >
                 <Grid item xs={12}>
                     <FormControl>
-                        <InputLabel htmlFor={`trash${this.props.number}`} style={{ top: '-5' }}>
-                            <Chip
-                                avatar={
-                                    <Avatar style={{ background: 'none' }}>
-                                        <Delete fontSize='small' style={{ marginLeft: '8px', width: '20px' }} />
-                                    </Avatar>
-                                }
-                                label={this.props.t('TrashSchedule.select.trashtype.label') + (this.props.number + 1)}
-                                color='secondary'
-                                style={{ height: '25px' }}
-                            />
-                        </InputLabel>
+                        <FormLabel className={this.props.classes.TrashTypeFormLabel}>
+                            <div className={this.props.classes.TrashTypeText}>
+                                <span>
+                                    {this.props.t('TrashSchedule.select.trashtype.label') + (this.props.number + 1)}
+                                </span>
+                            </div>
+                        </FormLabel>
                         <Select
                             id={`trash${this.props.number}`}
                             name={`trash${this.props.number}`}
@@ -69,7 +75,7 @@ class TrashType extends React.Component<Props,{}> {
                         </FormHelperText>
                     </FormControl>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item style={{paddingTop: "10px"}} xs={12}>
                     {this.props.trash.type === 'other' && (
                         <TextField
                             id={`othertrashtype${this.props.number}`}
