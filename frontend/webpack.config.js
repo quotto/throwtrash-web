@@ -63,7 +63,7 @@ module.exports = (env)=>{
             }),
         ],
         optimization: {
-            minimize: env.stage != 'development',
+            minimize: env.stage != 'dev',
             minimizer: [
                 new TerserPlugin(),
                 new CssMinimizerPlugin()
