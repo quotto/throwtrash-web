@@ -22,7 +22,7 @@ commands:
 jobs:
   frontend-test:
     docker:
-      - image: circleci/node:10.1.0
+      - image: circleci/node:14.0.0
     steps:
       - set-stage-env
       - checkout
@@ -97,7 +97,7 @@ jobs:
           working_directory: api/src
   frontend-build:
     docker:
-      - image: circleci/node:10.1.0
+      - image: circleci/node:14.0.0
     steps:
       - set-stage-env
       - checkout
