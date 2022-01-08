@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { ACTION_TYPE, ExcludeReducerAction } from '../actions/index';
 import { Exclude } from './TrashReducer';
 const initialExcludeDate: Exclude = {
@@ -22,7 +23,7 @@ const ExcludeDateReducer = (state: ExcludeDateReducerState = initialState, actio
     case ACTION_TYPE.INIT_EXCLUDE:
         return {
             trashIndex: action.index,
-            excludes: action.excludes && action.excludes.length > 0 ? action.excludes : [initialExcludeDate]
+            excludes: action.excludes && action.excludes.length > 0 ? _.cloneDeep(action.excludes) : [initialExcludeDate]
         };
     case ACTION_TYPE.ADD_EXCLUDE:
         if(newState.excludes.length < 10) {
