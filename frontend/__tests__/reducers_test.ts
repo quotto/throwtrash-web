@@ -1,4 +1,4 @@
-import {initialState, Trash} from '../react/reducers/TrashReducer';
+import TrashReducer, {initialState, Trash} from '../react/reducers/TrashReducer';
 import TestReducer from '../react/reducers/TrashReducer';
 import SubmitReducer from '../react/reducers/SubmitReducer';
 import {ACTION_TYPE} from '../react/actions/index';
@@ -277,6 +277,162 @@ describe('updateState',()=>{
             expect(state.error).toBeFalsy();
             expect(state.trashes[0].schedules[0]).toStrictEqual(preset[0].schedules[0]);
         });
+    });
+});
+
+describe("RESET_EXCLUDE_SUBMIT",()=>{
+    it("例外日の状態をリセット",()=>{
+        const state = _.cloneDeep(initialState);
+        state.trashes[0].excludes = [
+            {month: 2, date: 3},
+            {month: 4, date: 3},
+        ]
+        state.trashes[0].is_excludes_error = true;
+        state.trashes[0].is_excludes_submitted = true;
+        const new_state = TrashReducer(state,{type: ACTION_TYPE.RESET_EXCLUDE_SUBMIT,index: 0});
+        expect(new_state.trashes[0].is_excludes_error).toBeFalsy();
+        expect(new_state.trashes[0].is_excludes_submitted).toBeFalsy();
+    });
+});
+describe("SUBMIT_EXCLUDE",()=>{
+    it("追加",()=>{
+        const state = _.cloneDeep(initialState);
+        state.trashes[0].excludes = [
+            {month: 2, date: 29},
+            {month: 4, date: 30},
+        ]
+        const new_state = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [
+            {month: 2, date: 29},
+            {month: 4, date: 30},
+            {month: 5, date: 31},
+            {month: 3, date: 1},
+            ],
+            index: 0
+        });
+        expect(new_state.trashes[0].excludes.length).toBe(4);
+        expect(new_state.trashes[0].excludes).toEqual(expect.arrayContaining([
+            {month: 2, date: 29},
+            {month: 4, date: 30},
+            {month: 5, date: 31},
+            {month: 3, date: 1},
+        ]));
+        expect(new_state.trashes[0].is_excludes_error).toBeFalsy();
+        expect(new_state.trashes[0].is_excludes_submitted).toBeTruthy();
+    });
+    it("削除",()=>{
+        const state = _.cloneDeep(initialState);
+        state.trashes[0].excludes = [
+            {month: 2, date: 3},
+            {month: 4, date: 3},
+        ]
+        const new_state = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [],index: 0});
+        expect(new_state.trashes[0].excludes.length).toBe(0);
+        expect(new_state.trashes[0].is_excludes_error).toBeFalsy();
+        expect(new_state.trashes[0].is_excludes_submitted).toBeTruthy();
+    });
+    it("エラー：月が0",()=>{
+        const state = _.cloneDeep(initialState);
+        state.trashes[0].excludes = []
+        const new_state = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 0, date: 3}, {month: 5, date: 5}],index: 0});
+        expect(new_state.trashes[0].excludes.length).toBe(0);
+        expect(new_state.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state.trashes[0].is_excludes_submitted).toBeFalsy();
+    });
+    it("エラー：月が13",()=>{
+        const state = _.cloneDeep(initialState);
+        state.trashes[0].excludes = []
+        const new_state = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 13, date: 3}, {month: 5, date: 5}],index: 0});
+        expect(new_state.trashes[0].excludes.length).toBe(0);
+        expect(new_state.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state.trashes[0].is_excludes_submitted).toBeFalsy();
+    });
+    it("エラー：日が0",()=>{
+        const state = _.cloneDeep(initialState);
+        state.trashes[0].excludes = []
+        const new_state = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 1, date: 0}, {month: 5, date: 5}],index: 0});
+        expect(new_state.trashes[0].excludes.length).toBe(0);
+        expect(new_state.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state.trashes[0].is_excludes_submitted).toBeFalsy();
+    });
+    it("エラー：2月で日が30",()=>{
+        const state = _.cloneDeep(initialState);
+        state.trashes[0].excludes = []
+        const new_state = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 2, date: 30}, {month: 5, date: 5}],index: 0});
+        expect(new_state.trashes[0].excludes.length).toBe(0);
+        expect(new_state.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state.trashes[0].is_excludes_submitted).toBeFalsy();
+    });
+    it("エラー：4,6,9,11月で日が31",()=>{
+        const state = _.cloneDeep(initialState);
+        state.trashes[0].excludes = []
+        const new_state_4 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 4, date: 31}, {month: 5, date: 5}],index: 0});
+        expect(new_state_4.trashes[0].excludes.length).toBe(0);
+        expect(new_state_4.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_4.trashes[0].is_excludes_submitted).toBeFalsy();
+
+        const new_state_6 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 6, date: 31}, {month: 5, date: 5}],index: 0});
+        expect(new_state_6.trashes[0].excludes.length).toBe(0);
+        expect(new_state_6.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_6.trashes[0].is_excludes_submitted).toBeFalsy();
+
+        const new_state_9 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 9, date: 31}, {month: 5, date: 5}],index: 0});
+        expect(new_state_9.trashes[0].excludes.length).toBe(0);
+        expect(new_state_9.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_9.trashes[0].is_excludes_submitted).toBeFalsy();
+
+        const new_state_11 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 11, date: 31}, {month: 5, date: 5}],index: 0});
+        expect(new_state_11.trashes[0].excludes.length).toBe(0);
+        expect(new_state_11.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_11.trashes[0].is_excludes_submitted).toBeFalsy();
+    });
+    it("エラー：1,3,5,7,8,10,12月で日が32",()=>{
+        const state = _.cloneDeep(initialState);
+        state.trashes[0].excludes = []
+        const new_state_1 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 1, date: 32}, {month: 5, date: 5}],index: 0});
+        expect(new_state_1.trashes[0].excludes.length).toBe(0);
+        expect(new_state_1.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_1.trashes[0].is_excludes_submitted).toBeFalsy();
+        const new_state_3 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 3, date: 32}, {month: 5, date: 5}],index: 0});
+        expect(new_state_3.trashes[0].excludes.length).toBe(0);
+        expect(new_state_3.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_3.trashes[0].is_excludes_submitted).toBeFalsy();
+        const new_state_5 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 5, date: 32}, {month: 5, date: 5}],index: 0});
+        expect(new_state_5.trashes[0].excludes.length).toBe(0);
+        expect(new_state_5.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_5.trashes[0].is_excludes_submitted).toBeFalsy();
+        const new_state_7 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 7, date: 32}, {month: 5, date: 5}],index: 0});
+        expect(new_state_7.trashes[0].excludes.length).toBe(0);
+        expect(new_state_7.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_7.trashes[0].is_excludes_submitted).toBeFalsy();
+        const new_state_8 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 8, date: 32}, {month: 5, date: 5}],index: 0});
+        expect(new_state_8.trashes[0].excludes.length).toBe(0);
+        expect(new_state_8.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_8.trashes[0].is_excludes_submitted).toBeFalsy();
+        const new_state_10 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 10, date: 32}, {month: 5, date: 5}],index: 0});
+        expect(new_state_10.trashes[0].excludes.length).toBe(0);
+        expect(new_state_10.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_10.trashes[0].is_excludes_submitted).toBeFalsy();
+        const new_state_12 = TrashReducer(state,{type: ACTION_TYPE.SUBMIT_EXCLUDE,
+            excludes: [{month: 2, date:3},{month: 12, date: 32}, {month: 5, date: 5}],index: 0});
+        expect(new_state_12.trashes[0].excludes.length).toBe(0);
+        expect(new_state_12.trashes[0].is_excludes_error).toBeTruthy();
+        expect(new_state_12.trashes[0].is_excludes_submitted).toBeFalsy();
     });
 });
 

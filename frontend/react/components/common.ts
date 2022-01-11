@@ -8,7 +8,7 @@ export function getErrorMessage(t: Function, message_id?: string, params = []) {
     return message;
 }
 
-export function isError(error: string | undefined) {
+export function isError(error: string | boolean | undefined) {
     return typeof(error) != 'undefined';
 }
 

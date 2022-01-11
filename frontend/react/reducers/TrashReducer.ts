@@ -152,11 +152,11 @@ const TrashReducer = (state: TrashReducerState=initialState,action: TrashReducer
         return new_state;
     }
     case ACTION_TYPE.SUBMIT_EXCLUDE: {
-        const check_result = new_state.trashes[action.index].excludes.every((value)=>{
+        const check_result = action.excludes.every((value)=>{
             if(value.month >=1 && value.month <= 12 && value.date >= 1) {
                 if((value.month == 2 && value.date <= 29) ||
-                    ([1,3,5,7,8,9].includes(value.month) && value.date <= 31) ||
-                    value.date <= 30) {
+                    ([1,3,5,7,8,10,12].includes(value.month) && value.date <= 31) ||
+                    [4,6,9,11].includes(value.month) && value.date <= 30) {
                     return true;
                 }
             }
