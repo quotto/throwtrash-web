@@ -11,13 +11,11 @@ const SubmitReducer  = (state: SubmitReducerState={submitting:false, showErrorDi
     const new_state = _.cloneDeep(state);
     switch(action.type) {
     case ACTION_TYPE.ERROR_DIALOG: {
-        // new_state =  Object.assign({}, state, { showErrorDialog: action.open });
         new_state.showErrorDialog=action.openDialog;
         new_state.submitting=false;
         break;
     }
     case ACTION_TYPE.SET_SUBMITTING: {
-        // new_state =  Object.assign({}, state, { submitting: action.value });
         new_state.submitting= action.value;
         new_state.showErrorDialog=false;
         break;
