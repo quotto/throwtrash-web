@@ -14,7 +14,8 @@ export default async(params: any,session: any,stage: string): Promise<BackendRes
             await db.saveSession(session);
 
             // platformに応じてAlexaログインURLを返す
-            let loginUrl = "";
+            // let loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&redirect_uri=https://backend.mythrowaway.net/dev/enable_skill&state=${session.state}`;
+            let loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&state=${session.state}`;
             if (params.platform === "android") {
                 loginUrl = `https://alexa.amazon.com/spa/skill-account-linking-consent?fragment=skill-account-linking-consent&client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&skill_stage=${stage==="dev" ? "development" : "live"}&response_type=code&state=${session.state}`
             }

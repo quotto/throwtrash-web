@@ -12,6 +12,9 @@ export default async(params: any,session: SessionItem,stage: string) => {
         logger.error(`Invalid State -> params=${params.state}, session=${session.state}`);
         return error_def.UserError;
     }
+    /* redirect_uri: Alexaアプリでアカウントリンクする場合はアプリ側でURIを指定するが、
+    LWAによるログインの場合はリダイレクト元で指定できないためデフォルト値（WebのアレクサURL）を設定する。 */
+    const redirect_uri = params.redirect_uri || process.env.ALEXA_REDIRECT_URI;
     // amazon access tokenを取得する
     const options = {
         uri: "https://api.amazon.com/auth/o2/token",
@@ -20,11 +23,12 @@ export default async(params: any,session: SessionItem,stage: string) => {
             code: params.code,
             client_id: process.env.ALEXA_CLIENT_ID,
             client_secret: process.env.ALEXA_CLIENT_SECRET,
-            redirect_uri: params.redirect_uri
+            redirect_uri: redirect_uri
         },
         method: "POST",
         json: true
     }
+    logger.debug(`Get amazon access token:\n${JSON.stringify(options)}`);
 
     try {
         const amazonAccessToken = await rp(options);
@@ -40,7 +44,7 @@ export default async(params: any,session: SessionItem,stage: string) => {
 
         // サービス側(今日のゴミ出し)のアクセストークン取得のためのauthorization codeを発行しておく
         // 認可サーバとサービスのバックエンドサーバ分離している場合にはここでもリクエスト送受信が発生する
-        const authorizationCode = await db.putAuthorizationCode(session.user_id, process.env.ALEXA_USER_CLIENT_ID!,params.redirect_uri,300);
+        const authorizationCode = await db.putAuthorizationCode(session.user_id, process.env.ALEXA_USER_CLIENT_ID!,redirect_uri,300);
 
         const skillStage = stage === "dev" ? "development" : "live";
         const enableSkillOptions = {
@@ -53,7 +57,7 @@ export default async(params: any,session: SessionItem,stage: string) => {
             body: {
                 stage: skillStage,
                 accountLinkRequest: {
-                    redirectUri: params.redirect_uri,
+                    redirectUri: redirect_uri,
                     authCode: authorizationCode.code,
                     type: "AUTH_CODE"
                 }
