@@ -10,15 +10,23 @@ export default async(params: any,session: any,stage: string): Promise<BackendRes
         session.user_id = params.id;
         session.state = common.generateRandomCode(20);
         try {
+
+            // デフォルトでLoginWithAmazonの認可エンドポイントを返す
+            let loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&state=${session.state}`;
+            let redirect_uri = `https://backend.mythrowaway.net/${stage}/enable_skill`;
+
+            if (params.platform === "android") {
+                // Androidでアレクサアプリを使う場合はアレクサアプリのアプリリンクを返す
+                redirect_uri = "https://mobileapp.mythrowaway.net/accountlink";
+                loginUrl = `https://alexa.amazon.com/spa/skill-account-linking-consent?fragment=skill-account-linking-consent&client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&skill_stage=${stage==="dev" ? "development" : "live"}&response_type=code&state=${session.state}`
+            }
+            loginUrl+=`&redirect_uri=${redirect_uri}`;
+
+            // redirect_uriはAmazonのアクセストークン取得要求に必要なのでセッションに保存しておく
+            session.redirect_uri = redirect_uri
             logger.info("save session on start_link\n"+JSON.stringify(session));
             await db.saveSession(session);
 
-            // platformに応じてAlexaログインURLを返す
-            // let loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&redirect_uri=https://backend.mythrowaway.net/dev/enable_skill&state=${session.state}`;
-            let loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&state=${session.state}`;
-            if (params.platform === "android") {
-                loginUrl = `https://alexa.amazon.com/spa/skill-account-linking-consent?fragment=skill-account-linking-consent&client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&skill_stage=${stage==="dev" ? "development" : "live"}&response_type=code&state=${session.state}`
-            }
             return {
                 // statusCode: 301,
                 statusCode: 200,
