@@ -32,8 +32,8 @@ class BarMenu extends React.Component<Props,{}> {
         let LogOutMenu = <div style={{display: 'none'}}/>;
         let UserName = <div style={{display: 'none'}}/>;
         let UserNameDivider = <div style={{display: 'none'}}/>;
-        if(this.props.signedIn) {
-            UserName = <MenuItem>{this.props.t('BarMenu.loginas').replace('%s',this.props.userInfo!.name)}</MenuItem>;
+        if(this.props.signedIn && this.props.userInfo) {
+            UserName = <MenuItem>{this.props.t('BarMenu.loginas').replace('%s',this.props.userInfo.name)}</MenuItem>;
             UserNameDivider = <Divider />;
             LogOutDivider = <Divider />;
             LogOutMenu = <MenuItem onClick={this.signOut}> {this.props.t('BarMenu.logout')} </MenuItem>;
