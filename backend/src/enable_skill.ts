@@ -8,11 +8,11 @@ import rp from "request-promise";
 
 export default async(params: any,session: SessionItem,stage: string) => {
     logger.debug(JSON.stringify(session));
-    if(params.state != session.state) {
-        logger.error(`Invalid State -> params=${params.state}, session=${session.state}`);
+    if(params.state != session.state || !session.redirect_uri) {
+        logger.error(`Invalid parameter -> \nparams:\n${JSON.stringify(params)}\nsession:\n${JSON.stringify(session)}`);
         return error_def.UserError;
     }
-    // amazon access tokenを取得する
+    // Amazonのアクセストークンを取得する
     const options = {
         uri: "https://api.amazon.com/auth/o2/token",
         form: {
@@ -20,11 +20,12 @@ export default async(params: any,session: SessionItem,stage: string) => {
             code: params.code,
             client_id: process.env.ALEXA_CLIENT_ID,
             client_secret: process.env.ALEXA_CLIENT_SECRET,
-            redirect_uri: params.redirect_uri
+            redirect_uri: session.redirect_uri
         },
         method: "POST",
         json: true
     }
+    logger.debug(`Get amazon access token:\n${JSON.stringify(options)}`);
 
     try {
         const amazonAccessToken = await rp(options);
@@ -40,7 +41,7 @@ export default async(params: any,session: SessionItem,stage: string) => {
 
         // サービス側(今日のゴミ出し)のアクセストークン取得のためのauthorization codeを発行しておく
         // 認可サーバとサービスのバックエンドサーバ分離している場合にはここでもリクエスト送受信が発生する
-        const authorizationCode = await db.putAuthorizationCode(session.user_id, process.env.ALEXA_USER_CLIENT_ID!,params.redirect_uri,300);
+        const authorizationCode = await db.putAuthorizationCode(session.user_id, process.env.ALEXA_USER_CLIENT_ID!,session.redirect_uri,300);
 
         const skillStage = stage === "dev" ? "development" : "live";
         const enableSkillOptions = {
@@ -53,7 +54,7 @@ export default async(params: any,session: SessionItem,stage: string) => {
             body: {
                 stage: skillStage,
                 accountLinkRequest: {
-                    redirectUri: params.redirect_uri,
+                    redirectUri: session.redirect_uri,
                     authCode: authorizationCode.code,
                     type: "AUTH_CODE"
                 }
