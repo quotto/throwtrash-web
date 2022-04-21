@@ -1,6 +1,6 @@
 import React from 'react';
 import NumberFormat from 'react-number-format';
-import { Button, CircularProgress, createStyles, FormControl, FormGroup, FormLabel, Grid, InputAdornment, TextField, Tooltip } from '@mui/material';
+import { Button, CircularProgress, createStyles, FormControl, FormGroup, FormLabel, Grid, InputAdornment, TextField, Theme, Tooltip } from '@mui/material';
 import { withStyles, WithStyles } from '@mui/styles';
 import { Help } from '@mui/icons-material';
 import axios from 'axios';
@@ -9,7 +9,7 @@ import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
 import AddressSearchDialog from './AddressSearchDiallog';
 import ResultDialog from './ResultDiallog';
 
-const styles = (_: any)=>createStyles({
+const styles = (_: Theme)=>createStyles({
     ZipcodeFormLabel: {
         display: 'flex',
         alignItems: 'center',
