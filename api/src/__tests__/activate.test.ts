@@ -1,6 +1,8 @@
 /* eslint-disable no-unused-vars */
-const logger = require("trash-common").getLogger();
-logger.LEVEL = logger.DEBUG;
+import { APIGatewayProxyStructuredResultV2 } from "aws-lambda";
+import * as common from "trash-common"
+const logger = common.getLogger();
+logger.setLevel_DEBUG();
 
 const mockData001 = [
     {
@@ -33,8 +35,8 @@ const mockData001 = [
 ];
 
 class mockClass {
-    constructor(config) { }
-    get(params) {
+    constructor(config: any) { }
+    get(params: any) {
         return {
             promise: async () => {
                 if(params.Key.code === "code001") {
@@ -47,7 +49,7 @@ class mockClass {
             }
         }
     }
-    delete(params) {
+    delete(params: any) {
         return {
             promise: async()=>{return {}}
         }
@@ -61,13 +63,13 @@ jest.mock("aws-sdk", () => (
     }
 ));
 
-jest.mock("../sync.js", () => (
-    async (params) => {
-        if (params.id === "id001") {
+jest.mock("../sync", () => (
+    async (params: any) => {
+        if (params.user_id === "id001") {
             return {
                 statusCode: 200,
                 body: JSON.stringify({
-                    id: params.id,
+                    id: params.user_id,
                     description: JSON.stringify(mockData001),
                     timestamp: 9999999,
                     platform: "android"
@@ -77,25 +79,25 @@ jest.mock("../sync.js", () => (
         return {};
     }
 ));
-const activate = require("../activate.js");
+import activate from "../activate";
 
 describe("activate_test",()=>{
-    it("Success",async()=>{
-        const result = await activate({ code: "code001" });
+    it("正常にゴミ捨てスケジュールが取得されるパターン",async()=>{
+        const result = await activate({ code: "code001" }) as APIGatewayProxyStructuredResultV2;
         console.log(result.body);
-        const body = JSON.parse(result.body);
         expect(result.statusCode).toBe(200);
+        const body = JSON.parse(result.body!);
         expect(body.id).toBe("id001");
         expect(body.description).toBe(JSON.stringify(mockData001));
         expect(body.timestamp).toBe(9999999);
         expect(body.platform).toBe("android");
     });
-    it("Activation Code Not Found",async()=>{
-        const result = await activate({code: "code002"});
+    it("指定したアアクティベーショコードがDB上に見つからない場合",async()=>{
+        const result = await activate({code: "code002"}) as APIGatewayProxyStructuredResultV2;
         expect(result.statusCode).toBe(400);
     });
-    it("DynamoDB Get Error",async()=>{
-        const result = await activate({code: "code003"});
+    it("DB処理が失敗する場合",async()=>{
+        const result = await activate({code: "code003"}) as APIGatewayProxyStructuredResultV2;
         expect(result.statusCode).toBe(400);
     });
 })

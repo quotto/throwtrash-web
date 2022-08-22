@@ -91,16 +91,16 @@ Resources:
       ContentUri: ../src/layer
       LayerName: !Sub "throwtrash-backend-layer-${Stage}"
       CompatibleRuntimes:
-        - nodejs12.x
+        - nodejs16.x
   LambdaFunction:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
     Properties:
-      CodeUri: ../src/dist
+      CodeUri: ../src/backend-dist
       FunctionName: !Sub "throwtrash-backend-${Stage}"
       Handler: index.handler
       Role: !GetAtt  LambdaExecRole.Arn
-      Runtime: nodejs12.x
+      Runtime: nodejs16.x
       Timeout: 30
       Layers:
         - !Ref FunctionLayer
@@ -200,6 +200,21 @@ Resources:
               - method.request.querystring.code:
                   Required: true
               - method.request.querystring.scope:
+                  Required: true
+              - method.request.querystring.redirect_uri:
+                  Required: true
+        RequestAuthrozationCode:
+          Type: Api
+          Properties:
+            Path: "/request_authorization_code"
+            Method: "GET"
+            RestApiId: !Ref Api
+            Auth:
+              ApiKeyRequired: true
+            RequestParameters:
+              - method.request.querystring.user_id:
+                  Required: true
+              - method.request.querystring.client_id:
                   Required: true
               - method.request.querystring.redirect_uri:
                   Required: true

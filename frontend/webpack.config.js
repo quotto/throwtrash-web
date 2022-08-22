@@ -8,7 +8,7 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
 module.exports = (env)=>{
     const filename = 'bundle.js';
-    const build_path = `${app_root.path}/dist/${env.stage}`;
+    const build_path = `${app_root.path}/frontend-dist/${env.stage}`;
     console.log(build_path);
     const api_host = 'backend.mythrowaway.net';
     return {

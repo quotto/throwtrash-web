@@ -3,24 +3,24 @@
 {
 	"name": "throwtrash/web development",
 
-	"dockerComposeFile": "docker-compose.yml",
-
-	"service": "web-development",
-
-	"shutdownAction": "stopCompose",
-
-	// Set *default* container specific settings.json values on container create.
-	"settings": { 
-		"terminal.integrated.shell.linux": "/bin/bash"
-	},
-
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": ["dbaeumer.vscode-eslint","msjsdiag.debugger-for-chrome","ritwickdey.liveserver","aws-scripting-guy.cform"],
 
-	"workspaceFolder": "/app"
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
+	"mounts": [
+      "source=${localEnv:USERPROFILE}/.aws,target=/root/.aws,type=bind,consistency=cached",
+      "target=/app/backend/src/node_modules",
+      "target=/app/api/src/node_modules",
+      "target=/app/frontend/node_modules"
+	],
+	"workspaceFolder": "/app",
+	"onCreateCommand": "git config --local core.editor \"code --wait\"",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	"forwardPorts": [9005,5500]
 
 	// Uncomment the next line to run commands after the container is created - for example installing git.
 	// "postCreateCommand": "apt-get update && apt-get install -y git",

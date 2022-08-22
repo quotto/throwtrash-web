@@ -3,8 +3,6 @@ const logger = common.getLogger();
 logger.setLevel_DEBUG();
 import error_def from "../error_def";
 
-import { mocked } from "ts-jest/utils";
-
 jest.mock("request-promise",()=>(async(option: any)=>{
     if(option.uri === "https://api.amazon.com/auth/o2/token") {
         return {
@@ -36,7 +34,7 @@ jest.mock("request-promise",()=>(async(option: any)=>{
 jest.mock("../dbadapter");
 import db from "../dbadapter";
 const mockPutAuthorizationCodeResult: any = {};
-mocked(db.putAuthorizationCode).mockImplementation(async(user_id: string,client_id: string,redirect_uri: string,expires_in: number)=>{
+jest.mocked(db.putAuthorizationCode).mockImplementation(async(user_id: string,client_id: string,redirect_uri: string,expires_in: number)=>{
     if(user_id === "id001") {
         mockPutAuthorizationCodeResult[user_id] =
         {
@@ -51,7 +49,7 @@ mocked(db.putAuthorizationCode).mockImplementation(async(user_id: string,client_
         throw new Error("PutAuthorizationCode Error");
     }
 });
-mocked(db.deleteSession).mockImplementation(async(session_id: string)=>{
+jest.mocked(db.deleteSession).mockImplementation(async(session_id: string)=>{
     if(session_id === "session_id001") {
         return true;
     }
@@ -64,7 +62,7 @@ describe("enable_skill",()=>{
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-dev";
             const result = await enable_skill({state: "12345",redirect_uri: "https://backend.mythrowaway.net/dev/enable_skill",code:"12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"dev");
-            
+
             expect(result.statusCode).toBe(301);
             expect(result.headers.Location).toBe("https://accountlink.mythrowaway.net/dev/accountlink-complete.html");
 
@@ -81,7 +79,7 @@ describe("enable_skill",()=>{
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
             const result = await enable_skill({state: "12345", redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill",code:"12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"v1");
-            
+
             expect(result.statusCode).toBe(301);
             expect(result.headers.Location).toBe("https://accountlink.mythrowaway.net/v1/accountlink-complete.html");
 
@@ -112,7 +110,7 @@ describe("enable_skill",()=>{
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
             const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"v1");
-            
+
             expect(result.statusCode).toBe(301);
             expect(result.headers.Location).toBe(error_def.ServerError.headers.Location);
         });

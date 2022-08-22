@@ -1,6 +1,5 @@
 import db from "../dbadapter";
 import * as common from "trash-common";
-import { mocked } from "ts-jest/utils";
 import { SessionItem } from "../interface";
 import google_signin from "../google_signin";
 
@@ -15,7 +14,7 @@ jest.spyOn(common, "generateRandomCode").mockImplementation((length: any)=>{
 
 describe("google_signin", () => {
     const mockResult: {[key:string]: SessionItem} = {};
-    mocked(db.saveSession).mockImplementation(async (session) => { 
+    jest.mocked(db.saveSession).mockImplementation(async (session) => {
         mockResult[session.id] = session;
         return true;
      });

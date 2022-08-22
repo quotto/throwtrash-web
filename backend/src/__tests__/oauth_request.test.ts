@@ -5,12 +5,11 @@ import oauth_request from "../oauth_request";
 import db from "../dbadapter";
 import error_def from "../error_def";
 
-import { mocked } from "ts-jest/utils";
 import { SessionItem } from "../interface";
 
 const mockResult: {[key:string]: SessionItem} = {};
 jest.mock("../dbadapter");
-mocked(db.saveSession).mockImplementation(async(session)=>{
+jest.mocked(db.saveSession).mockImplementation(async(session)=>{
     mockResult[session.id] = session;
     if (session.id === "sessionid-001" || session.id === "sessionid-002") {
         return true;
@@ -49,7 +48,7 @@ describe("oauth_request", () => {
             client_id: "alexa-skill",
             redirect_uri: "https://xxxx.com",
             platform: "amazon"
-        }, 
+        },
             { id: "sessionid-002", expire: 99999999 },
             false,
             "v5");
@@ -73,7 +72,7 @@ describe("oauth_request", () => {
             client_id: "alexa-skill",
             redirect_uri: "https://xxxx.com",
             platform: "amazon"
-        }, 
+        },
             { id: "sessionid-003", expire: 99999999 },
             false,
             "v5");

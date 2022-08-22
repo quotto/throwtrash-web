@@ -5,7 +5,6 @@ logger.setLevel_DEBUG();
 
 import db from "../dbadapter";
 
-import { mocked } from "ts-jest/utils";
 import { SessionItem } from "../interface";
 
 const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
@@ -18,7 +17,7 @@ const mockData = [
     ]
 ]
 jest.mock("../dbadapter")
-mocked(db.getDataBySigninId).mockImplementation(async (signinId) => {
+jest.mocked(db.getDataBySigninId).mockImplementation(async (signinId) => {
     if (signinId === "signinid-error") {
         throw new Error("Test Exception");
     }else if(signinId === "amazon-xxxxx") {
@@ -29,7 +28,7 @@ mocked(db.getDataBySigninId).mockImplementation(async (signinId) => {
     }
     return {};
 });
-mocked(db.saveSession).mockImplementation(async (session) => {
+jest.mocked(db.saveSession).mockImplementation(async (session) => {
     mockResult[session.id] = session;
     return true;
 });
@@ -172,14 +171,14 @@ describe('signin', () => {
     it('requestAmazonProfileで異常終了',async ()=>{
         try {
             const response = await signin({ access_token: 'token-003', service: 'amazon' }, { id: 'session-id001', expire: 999998}, 'backend.mythrowaway.net', 'dev');
-        } catch(err) {
+        } catch(err: any) {
             expect(err.message).toBe("Amazon Signin Failed")
         }
     });
     it("requestGoogleProfileで異常終了",async()=>{
         try {
             const response = await signin({ code: 'code-003', state: 'google-state-value', service: 'google' }, { id: 'session-id002',  googleState: 'google-state-value',expire: 9999999 },'backend.mythrowaway.net', 'test');
-        } catch(err) {
+        } catch(err: any) {
             expect(err.message).toBe("Google Signin Failed")
         }
     });
