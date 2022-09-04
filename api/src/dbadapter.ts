@@ -24,7 +24,7 @@ const getAccountLinkItemByToken = async (token: string): Promise<AccountLinkItem
                 token: item.Item.token,
                 user_id: item.Item.user_id,
                 state: item.Item.state,
-                redirect_url: item.Item.redirect_uri,
+                redirect_url: item.Item.redirect_url,
                 TTL: item.Item.TTL
             };
             return resultItem;
