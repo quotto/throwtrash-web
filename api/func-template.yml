@@ -19,6 +19,8 @@ Parameters:
     Type: "String"
   ResourceEndpoint:
     Type: "String"
+  BackendApiKey:
+    Type: "String"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -90,6 +92,7 @@ Resources:
           ALEXA_CLIENT_ID: !Ref AlexaClientID
           ALEXA_CLIENT_SECRET: !Ref AlexaClientSecret
           RESOURCE_ENDPOINT: !Ref ResourceEndpoint
+          BACKEND_API_KEY: !Ref BackendApiKey
       Tags:
         Group: throwtrash
         Purpose: MobileBackend

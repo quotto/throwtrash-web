@@ -14,19 +14,20 @@ jest.mock("request-promise",()=>(async(option: any)=>{
                 "alexa.endpoint.com"
             ]
         }
-    } else if(option.uri === "https://alexa.endpoint.com/v1/users/~current/skills/test-skill-id-dev/enablement") {
-        if(option.body.stage === "development" && option.body.accountLinkRequest.redirectUri === "https://backend.mythrowaway.net/dev/enable_skill" && option.body.accountLinkRequest.authCode.length > 0 && option.body.accountLinkRequest.type === "AUTH_CODE" && option.headers.Authorization === "Bearer amazon-accesstoken001") {
+    } else if(option.uri === "https://alexa.endpoint.com/v1/users/~current/skills/test-skill-id/enablement" &&
+        option.body.stage === "development" && option.body.accountLinkRequest.redirectUri === "https://backend.mythrowaway.net/dev/enable_skill" && option.body.accountLinkRequest.authCode.length > 0 && option.body.accountLinkRequest.type === "AUTH_CODE" && option.headers.Authorization === "Bearer amazon-accesstoken001") {
             return {
                 result: "success"
             }
-        }
-    } else if(option.uri === "https://alexa.endpoint.com/v1/users/~current/skills/test-skill-id-prod/enablement"){
-        if((option.body.stage === "live" || option.body.stage === "dev") && option.body.accountLinkRequest.redirectUri === "https://backend.mythrowaway.net/v1/enable_skill" && option.body.accountLinkRequest.authCode.length > 0 && option.body.accountLinkRequest.type === "AUTH_CODE" && option.headers.Authorization === "Bearer amazon-accesstoken001"){
+    } else if(option.uri === "https://alexa.endpoint.com/v1/users/~current/skills/test-skill-id/enablement" &&
+        option.body.stage === "live" && option.body.accountLinkRequest.redirectUri === "https://backend.mythrowaway.net/v1/enable_skill" && option.body.accountLinkRequest.authCode.length > 0 && option.body.accountLinkRequest.type === "AUTH_CODE" && option.headers.Authorization === "Bearer amazon-accesstoken001"){
             return {
                 result: "success"
             }
-        }
-    } else if(/^https:\/\/backend\.throwtrash\.net\/dev\/request_authorization_code\?.+$/.exec(option.uri)) {
+    } else if(
+        /^https:\/\/backend\.throwtrash\.net\/dev\/request_authorization_code\?.+$/.exec(option.uri) &&
+        option.headers["x-api-key"].length > 0
+        ) {
         return {
             code: "12345"
         };
@@ -43,8 +44,13 @@ const mockedDeleteAccountLinkItemByToken = jest.mocked(db.deleteAccountLinkItemB
 import enable_skill from "../enable_skill";
 import error_def from "../error_def";
 import { CodeItem } from "../interface";
-process.env.RESOURCE_ENDPOINT="https://backend.throwtrash.net/dev"
 describe("enable_skill",()=>{
+    beforeEach(()=>{
+        process.env.RESOURCE_ENDPOINT="https://backend.throwtrash.net/dev"
+        process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
+        process.env.ALEXA_SKILL_ID = "test-skill-id";
+        process.env.BACKEND_API_KEY = "api-key";
+    })
     describe("正常系",()=>{
         it("開発:正常終了,paramsはtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
 
@@ -60,8 +66,6 @@ describe("enable_skill",()=>{
                 }
             });
 
-            process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
-            process.env.ALEXA_SKILL_ID = "test-skill-id-dev";
             const result = await enable_skill({token:"token-dev",state: "12345",redirect_uri: "https://backend.mythrowaway.net/dev/enable_skill",code:"12345"},"dev") as APIGatewayProxyStructuredResultV2;
 
             expect(result.statusCode).toBe(301);
@@ -84,8 +88,6 @@ describe("enable_skill",()=>{
                 }
             });
 
-            process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
-            process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
             const result = await enable_skill({token: "token-prod",state: "12345", redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill",code:"12345"},"v1") as APIGatewayProxyStructuredResultV2;
 
             expect(result.statusCode).toBe(301);
@@ -103,8 +105,6 @@ describe("enable_skill",()=>{
                 return null;
             });
 
-            process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
-            process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
             const result = await enable_skill({token: "token-prod",state: "12345", redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill",code:"12345"},"v1") as APIGatewayProxyStructuredResultV2;
 
             expect(result.statusCode).toBe(301);
@@ -122,8 +122,6 @@ describe("enable_skill",()=>{
                 };
             });
 
-            process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
-            process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
             const result = await enable_skill({token: "token-prod",state: "12345", redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill",code:"12345"},"v1") as APIGatewayProxyStructuredResultV2;
 
             expect(result.statusCode).toBe(301);
@@ -149,8 +147,6 @@ describe("enable_skill",()=>{
             expect(headers!.Location).toBe(error_def.UserError.headers.Location);
         });
         it("params.redirect_uriがない場合はユーザーエラー",async()=>{
-            process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
-            process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
             const result = await enable_skill({state: "12345"},"v1") as APIGatewayProxyStructuredResultV2;
 
             expect(result.statusCode).toBe(301);
