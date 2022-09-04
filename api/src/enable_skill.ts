@@ -55,6 +55,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
                 "x-api-key": process.env.BACKEND_API_KEY
             },
             method: "GET",
+            json: true
         }
         const authorizationCodeResponse = await rp(authorizationOptions);
         logger.debug(`Response Authorization Code: ${JSON.stringify(authorizationCodeResponse)}`);
