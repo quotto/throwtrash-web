@@ -50,11 +50,10 @@ describe("enable_skill",()=>{
         process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
         process.env.ALEXA_SKILL_ID = "test-skill-id";
         process.env.BACKEND_API_KEY = "api-key";
+        process.env.SKILL_STAGE = "development";
     })
     describe("正常系",()=>{
         it("開発:正常終了,paramsはtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
-
-
             const mockedGetAccountLinkItemByToken = jest.mocked(db.getAccountLinkItemByToken);
             mockedGetAccountLinkItemByToken.mockImplementation(async (token: String) => {
                 return {
@@ -76,7 +75,7 @@ describe("enable_skill",()=>{
             expect(mockedDeleteAccountLinkItemByToken).toBeCalledWith("token-dev");
         });
         it("本番:正常終了,paramsのtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
-
+            process.env.SKILL_STAGE="live";
             const mockedGetAccountLinkItemByToken = jest.mocked(db.getAccountLinkItemByToken);
             mockedGetAccountLinkItemByToken.mockImplementation(async (token: String) => {
                 return {
@@ -111,6 +110,7 @@ describe("enable_skill",()=>{
             expect(result.headers!.Location).toBe(error_def.UserError.headers.Location);
         });
         it("authorization codeの取得に失敗した場合はサーバエラー",async()=>{
+            // ダミーのRESOURCE_ENDPOINTを指定することでmockしたrpでErrorを発生させる
             process.env.RESOURCE_ENDPOINT="https://dummy.net";
             jest.mocked(db.getAccountLinkItemByToken).mockImplementation(async (token: String) => {
                 return {
@@ -121,6 +121,14 @@ describe("enable_skill",()=>{
                     TTL: 123456789
                 };
             });
+
+            const result = await enable_skill({token: "token-prod",state: "12345", redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill",code:"12345"},"v1") as APIGatewayProxyStructuredResultV2;
+
+            expect(result.statusCode).toBe(301);
+            expect(result.headers!.Location).toBe(error_def.ServerError.headers.Location);
+        })
+        it("環境変数SKILL_STAGEが不正の場合はサーバーエラー",async()=>{
+            process.env.SKILL_STAGE = "invalid-stage";
 
             const result = await enable_skill({token: "token-prod",state: "12345", redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill",code:"12345"},"v1") as APIGatewayProxyStructuredResultV2;
 

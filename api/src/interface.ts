@@ -69,3 +69,6 @@ export interface ActivationCodeItem {
 export interface ApiResponse {
     statusCode: 301
 }
+
+// TypeScriptのenumbは型安全ではないためユニオンを使う
+export type  SKILL_STAGE =  "development" | "live";

@@ -1,12 +1,9 @@
 import db from "./dbadapter";
-import {AccountLinkItem} from "./interface";
+import {AccountLinkItem, SKILL_STAGE} from "./interface";
 import * as common from "trash-common";
 import property from "./property";
 import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResultV2 } from "aws-lambda";
 const logger = common.getLogger();
-
-// TypeScriptのenumbは型安全ではないためユニオンを使う
-type  SKILL_STAGE =  "development" | "live";
 
 export default async(params: APIGatewayProxyEventQueryStringParameters ,stage: string): Promise<APIGatewayProxyResultV2> => {
     if (params.user_id && params.platform) {

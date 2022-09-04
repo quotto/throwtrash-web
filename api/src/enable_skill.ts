@@ -1,4 +1,4 @@
-import { CodeItem } from "./interface";
+import { CodeItem, SKILL_STAGE } from "./interface";
 
 import * as request from "request";
 import * as common from "trash-common";
@@ -59,7 +59,11 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
         const authorizationCodeResponse = await rp(authorizationOptions);
         logger.debug(`Response Authorization Code: ${JSON.stringify(authorizationCodeResponse)}`);
 
-        const skillStage = stage === "dev" ? "development" : "live";
+
+        const skill_stage = process.env.SKILL_STAGE as SKILL_STAGE;
+        if (skill_stage != "development" && skill_stage != "live") {
+            throw Error("SKILL_STAGE is invalid");
+        }
         const enableSkillOptions = {
             uri: `https://${alexaEndpoint.endpoints[0]}/v1/users/~current/skills/${process.env.ALEXA_SKILL_ID}/enablement`,
             headers: {
@@ -68,7 +72,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
             json: true,
             method: "POST",
             body: {
-                stage: skillStage,
+                stage: skill_stage,
                 accountLinkRequest: {
                     redirectUri: accountLinkItem.redirect_url,
                     authCode: authorizationCodeResponse.code,
