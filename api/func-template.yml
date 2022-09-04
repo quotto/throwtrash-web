@@ -13,6 +13,8 @@ Parameters:
   SkillStage:
     Type: "String"
     Default: "development"
+  AlexaSkillID:
+    Type: "String"
   AlexaClientID:
     Type: "String"
   AlexaClientSecret:
@@ -89,6 +91,7 @@ Resources:
           DB_REGION: !Ref DBRegion
           RUNLEVEL: !Ref RunLevel
           SKILL_STAGE: !Ref SkillStage
+          ALEXA_SKILL_ID: !Ref AlexaSkillID
           ALEXA_CLIENT_ID: !Ref AlexaClientID
           ALEXA_CLIENT_SECRET: !Ref AlexaClientSecret
           RESOURCE_ENDPOINT: !Ref ResourceEndpoint
