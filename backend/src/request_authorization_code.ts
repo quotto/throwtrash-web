@@ -1,6 +1,4 @@
 import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
-import { CodeItem } from "./interface";
-import property from "./property";
 import dbadapter from "./dbadapter";
 
 export default async(params: APIGatewayProxyEventQueryStringParameters): Promise<APIGatewayProxyStructuredResultV2> => {

@@ -17,6 +17,7 @@ import enable_skill from "./enable_skill";
 import { SessionItem } from "./interface";
 
 import AWSLambda from "aws-lambda";
+import request_authorization_code from "./request_authorization_code";
 
 const extractSessionId = (cookie:string | undefined)=>{
     if(cookie) {
@@ -119,6 +120,8 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent ,context: AWSL
                 logger.error(JSON.stringify(context));
             }
         }
+    } else if(event.resource === "/request_authorization_code") {
+        return await request_authorization_code(event.queryStringParameters || {});
     }
     return error_def.UserError;
 };
