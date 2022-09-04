@@ -4,7 +4,7 @@ const logger = common.getLogger();
 logger.setLevel_DEBUG();
 
 jest.mock("request-promise",()=>(async(option: any)=>{
-    if(option.uri === "https://api.amazon.com/auth/o2/token") {
+    if(option.uri === "https://api.amazon.com/auth/o2/token" && option.form.grant_type === "authorization_code" && option.form.code === "12345" && option.form.client_id==="alexa-client-id" && option.form.client_secret === "secret" && /^https:\/\/backend\.mythrowaway\.net\/.+$/.exec(option.form.redirect_uri) && option.method === "POST") {
         return {
             access_token: "amazon-accesstoken001"
         }
@@ -49,6 +49,8 @@ describe("enable_skill",()=>{
         process.env.RESOURCE_ENDPOINT="https://backend.throwtrash.net/dev"
         process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
         process.env.ALEXA_SKILL_ID = "test-skill-id";
+        process.env.ALEXA_CLIENT_ID = "alexa-client-id";
+        process.env.ALEXA_CLIENT_SECRET="secret"
         process.env.BACKEND_API_KEY = "api-key";
         process.env.SKILL_STAGE = "development";
     })

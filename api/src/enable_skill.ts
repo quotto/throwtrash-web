@@ -9,7 +9,7 @@ import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResultV2, API
 import error_def from "./error_def";
 
 export default async(params: APIGatewayProxyEventQueryStringParameters,stage: string): Promise<APIGatewayProxyResultV2> => {
-    logger.debug(JSON.stringify(params));
+    logger.debug(`enable_skill parameters: ${JSON.stringify(params)}`);
     if(
         params.code === null || typeof(params.code) === "undefined" ||
         params.token === null || typeof(params.token) === "undefined" ||
@@ -18,6 +18,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
         return error_def.UserError;
     }
     const accountLinkItem = await db.getAccountLinkItemByToken(params.token);
+    logger.debug(`get accountlink item: ${JSON.stringify(accountLinkItem)}`);
     if(accountLinkItem === null || params.state != accountLinkItem.state) {
         logger.error("invalid parameters");
         return error_def.UserError;
@@ -30,7 +31,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
             code: params.code,
             client_id: process.env.ALEXA_CLIENT_ID,
             client_secret: process.env.ALEXA_CLIENT_SECRET,
-            redirect_uri: params.redirec_uri
+            redirect_uri: params.redirect_uri
         },
         method: "POST",
         json: true
