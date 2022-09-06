@@ -19,6 +19,8 @@ Parameters:
     Type: "String"
   AlexaClientSecret:
     Type: "String"
+  AlexaUserClientID:
+    Type: "String"
   AuthorizationEndpoint:
     Type: "String"
   BackendApiKey:
@@ -94,6 +96,7 @@ Resources:
           ALEXA_SKILL_ID: !Ref AlexaSkillID
           ALEXA_CLIENT_ID: !Ref AlexaClientID
           ALEXA_CLIENT_SECRET: !Ref AlexaClientSecret
+          ALEXA_USER_CLIENT_ID: !Ref AlexaUserClientID
           AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
           BACKEND_API_KEY: !Ref BackendApiKey
       Tags:
