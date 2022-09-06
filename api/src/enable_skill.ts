@@ -5,7 +5,7 @@ import * as common from "trash-common";
 const logger = common.getLogger();
 import db from "./dbadapter";
 import rp from "request-promise";
-import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResultV2, APIGatewayProxyStructuredResultV2, ProxyResult } from "aws-lambda";
+import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResultV2 } from "aws-lambda";
 import error_def from "./error_def";
 
 export default async(params: APIGatewayProxyEventQueryStringParameters,stage: string): Promise<APIGatewayProxyResultV2> => {
