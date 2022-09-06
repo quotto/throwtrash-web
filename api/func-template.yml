@@ -19,7 +19,7 @@ Parameters:
     Type: "String"
   AlexaClientSecret:
     Type: "String"
-  ResourceEndpoint:
+  AuthorizationEndpoint:
     Type: "String"
   BackendApiKey:
     Type: "String"
@@ -94,7 +94,7 @@ Resources:
           ALEXA_SKILL_ID: !Ref AlexaSkillID
           ALEXA_CLIENT_ID: !Ref AlexaClientID
           ALEXA_CLIENT_SECRET: !Ref AlexaClientSecret
-          RESOURCE_ENDPOINT: !Ref ResourceEndpoint
+          AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
           BACKEND_API_KEY: !Ref BackendApiKey
       Tags:
         Group: throwtrash

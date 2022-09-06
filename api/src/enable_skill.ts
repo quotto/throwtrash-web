@@ -51,7 +51,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
         });
 
         const authorizationOptions:request.RequiredUriUrl & rp.RequestPromiseOptions = {
-            uri: `${process.env.RESOURCE_ENDPOINT}/request_authorization_code?user_id=${accountLinkItem.user_id}&client_id=${process.env.ALEXA_USER_CLIENT_ID}&redirect_uri=${accountLinkItem.redirect_url}`,
+            uri: `${process.env.AUTHORIZATION_ENDPOINT}/request_authorization_code?user_id=${accountLinkItem.user_id}&client_id=${process.env.ALEXA_USER_CLIENT_ID}&redirect_uri=${accountLinkItem.redirect_url}`,
             headers: {
                 "x-api-key": process.env.BACKEND_API_KEY
             },

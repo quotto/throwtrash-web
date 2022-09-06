@@ -46,7 +46,7 @@ import error_def from "../error_def";
 import { CodeItem } from "../interface";
 describe("enable_skill",()=>{
     beforeEach(()=>{
-        process.env.RESOURCE_ENDPOINT="https://backend.throwtrash.net/dev"
+        process.env.AUTHORIZATION_ENDPOINT="https://backend.throwtrash.net/dev"
         process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
         process.env.ALEXA_SKILL_ID = "test-skill-id";
         process.env.ALEXA_CLIENT_ID = "alexa-client-id";
@@ -112,8 +112,8 @@ describe("enable_skill",()=>{
             expect(result.headers!.Location).toBe(error_def.UserError.headers.Location);
         });
         it("authorization codeの取得に失敗した場合はサーバエラー",async()=>{
-            // ダミーのRESOURCE_ENDPOINTを指定することでmockしたrpでErrorを発生させる
-            process.env.RESOURCE_ENDPOINT="https://dummy.net";
+            // ダミーのAUTHORIZATION_ENDPOINTを指定することでmockしたrpでErrorを発生させる
+            process.env.AUTHORIZATION_ENDPOINT="https://dummy.net";
             jest.mocked(db.getAccountLinkItemByToken).mockImplementation(async (token: String) => {
                 return {
                     token: "token-prod",
