@@ -16,7 +16,7 @@ commands:
               echo "export SKILL_STAGE=live" >> $BASH_ENV
             else
               echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
-              echo "export FRONT_STAGE=dev" >> $BASH_ENV
+              echo "export FRONT_STAGE=${BRANCH_HASH:0:8}" >> $BASH_ENV
               echo "export BACK_STAGE=dev" >> $BASH_ENV
               echo "export DBREGION=us-west-2" >> $BASH_ENV
               BRANCH_HASH=$(echo ${CIRCLE_BRANCH} | sha256sum)
