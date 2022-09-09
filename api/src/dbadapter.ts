@@ -62,7 +62,7 @@ const deleteAccountLinkItemByToken = async(token: string): Promise<boolean>=>{
     });
 }
 
-const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleItem | null> => {
+const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleItem&{timestamp: number} | null> => {
     return documentClient.get({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Key: {
@@ -73,7 +73,8 @@ const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleI
             return {
                 id: item.Item.id,
                 description: item.Item.description,
-                platform: item.Item.platform
+                platform: item.Item.platform,
+                timestamp: item.Item.timestamp
             }
         }
         logger.error(`user id not found ${user_id}`)

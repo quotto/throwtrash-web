@@ -42,7 +42,7 @@ describe("sync",()=>{
                 }
             ]),
             platform: "android",
-            timestamp: "99999999"
+            timestamp: 99999999
         };
         const mockedGetTrashSchedule = jest.mocked(dbadapter.getTrashScheduleByUserId).mockImplementation(async(user_id: string)=>{
             return trashScheduleData;
