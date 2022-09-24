@@ -43,7 +43,6 @@ const mockedDeleteAccountLinkItemByToken = jest.mocked(db.deleteAccountLinkItemB
 
 import enable_skill from "../enable_skill";
 import error_def from "../error_def";
-import { CodeItem } from "../interface";
 describe("enable_skill",()=>{
     beforeEach(()=>{
         process.env.AUTHORIZATION_ENDPOINT="https://backend.throwtrash.net/dev"

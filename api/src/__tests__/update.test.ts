@@ -35,22 +35,84 @@ const mockData001 = [
         ]
     }
 ];
+const mockSharedData001 = [
+    {
+        id: "7654321",
+        type: "paper",
+        trash_val: "",
+        schedules: [
+            {
+                type: "weekday",
+                value: "0"
+            },{
+                type: "biweek",
+                value: "1-1"
+            }
+        ]
+    },{
+        id: "010101010",
+        type: "other",
+        trash_val: "資源ゴミ",
+        schedules: [
+            {
+                type: "evweek",
+                value: {
+                    weekday: "2",
+                    start: "2020-03-10"
+                }
+            }
+        ]
+    }
+];
+
 
 import update from "../update";
 
 describe("update",()=>{
-    it("正常終了",async()=>{
-        const mockedUpdateTrashSchedule = jest.mocked(dbadapter.updateTrashSchdeule).mockImplementation(async(trashScheduleItem: TrashScheduleItem)=>{
-           return true;
+    beforeEach(()=>{
+        jest.mocked(dbadapter.getTrashScheduleByUserId).mockImplementation(async(user_id: string)=>{
+            return {
+                id: user_id,
+                description: JSON.stringify(mockData001),
+                platform: "android",
+                timestamp: 1234567
+            }
         });
+        jest.mocked(dbadapter.putExistTrashSchedule).mockImplementation(async(trashScheduleItem: TrashScheduleItem)=>true);
+        jest.mocked(dbadapter.transactionUpdateSchedule).mockImplementation(async(shared_id: string, trashScheduleItem: TrashScheduleItem, timestamp: number)=>true);
+    });
+    afterEach(()=>{
+        jest.resetAllMocks();
+    });
+    it("shared_idが設定されていない場合の更新",async()=>{
         const result = await update({ description: JSON.stringify(mockData001), platform: "android", id: "id001" }) as APIGatewayProxyStructuredResultV2;
         const body = JSON.parse(result.body!);
         expect(result.statusCode).toBe(200);
         expect(body.timestamp).toBeGreaterThan(0);
-        expect(mockedUpdateTrashSchedule).toBeCalledWith(expect.objectContaining({
+        expect(jest.mocked(dbadapter.putExistTrashSchedule)).toBeCalledWith(expect.objectContaining({
             id: "id001",
             platform: "android",
             description: JSON.stringify(mockData001)
+        }),expect.any(Number));
+    });
+    it("shared_idが設定されている場合の更新",async()=>{
+        jest.mocked(dbadapter.getTrashScheduleByUserId).mockImplementationOnce(async(user_id: string)=>{
+            return {
+                id: user_id,
+                shared_id: "share001",
+                description: JSON.stringify(mockSharedData001),
+                platform: "android",
+                timestamp: 1234567
+            }
+        })
+        const result = await update({ description: JSON.stringify(mockData001), platform: "android", id: "id001" }) as APIGatewayProxyStructuredResultV2;
+        const body = JSON.parse(result.body!);
+        expect(result.statusCode).toBe(200);
+        expect(body.timestamp).toBeGreaterThan(0);
+        expect(jest.mocked(dbadapter.transactionUpdateSchedule)).toBeCalledWith("share001",expect.objectContaining({
+            description: JSON.stringify(mockData001),
+            platform: "android",
+            id: "id001"
         }),expect.any(Number));
     });
     it("登録データが異常の場合はユーザーエラー",async()=>{
@@ -58,9 +120,25 @@ describe("update",()=>{
         platform: "android"}) as APIGatewayProxyStructuredResultV2;
         expect(result.statusCode).toBe(400);
     });
-    it("DB登録異常の場合はサーバーエラー",async()=>{
-        jest.mocked(dbadapter.updateTrashSchdeule).mockImplementation(async(_: TrashScheduleItem)=>false);
+    it("putExistTrashScheduleがエラーの場合はサーバーエラー",async()=>{
+        const mockedPutExistTrashSchedule = jest.mocked(dbadapter.putExistTrashSchedule).mockImplementationOnce(async(_: TrashScheduleItem)=>false);
         const result = await update({id: "id002", description: JSON.stringify(mockData001), platform: "android"}) as APIGatewayProxyStructuredResultV2;
+        expect(mockedPutExistTrashSchedule).toBeCalled();
+        expect(result.statusCode).toBe(500);
+    });
+    it("transactionUpdateScheduleがエラーの場合はサーバーエラー",async()=>{
+        jest.mocked(dbadapter.getTrashScheduleByUserId).mockImplementationOnce(async(user_id: string)=>{
+            return {
+                id: user_id,
+                shared_id: "share001",
+                description: JSON.stringify(mockSharedData001),
+                platform: "android",
+                timestamp: 1234567
+            }
+        })
+        const mockedTransactionUpdateSchedule = jest.mocked(dbadapter.transactionUpdateSchedule).mockImplementationOnce(async(shared_id: string, scheduleItem: TrashScheduleItem,timestamp: number)=>false);
+        const result = await update({id: "id002", description: JSON.stringify(mockData001), platform: "android"}) as APIGatewayProxyStructuredResultV2;
+        expect(mockedTransactionUpdateSchedule).toBeCalled();
         expect(result.statusCode).toBe(500);
     });
 })

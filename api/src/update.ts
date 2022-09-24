@@ -12,7 +12,16 @@ export default async (trashScheduleItem: TrashScheduleItem): Promise<APIGatewayP
         if (common.checkTrashes(JSON.parse(trashScheduleItem.description))) {
             const timestamp = new Date().getTime()
             logger.debug(`update trash schedule -> ${JSON.stringify(trashScheduleItem)}`);
-            if(await dbadapter.updateTrashSchdeule(trashScheduleItem, timestamp)) {
+            const currentTrashSchedule = await dbadapter.getTrashScheduleByUserId(trashScheduleItem.id);
+            let updateResult = false;
+            if(currentTrashSchedule?.shared_id) {
+                // shared_idが設定されてい場合はTrashScheduleとSharedScheduleをトランザクション内で更新する
+                updateResult = await dbadapter.transactionUpdateSchedule(currentTrashSchedule.shared_id, trashScheduleItem, timestamp);
+
+            } else {
+                updateResult = await dbadapter.putExistTrashSchedule(trashScheduleItem, timestamp);
+            }
+            if(updateResult) {
                 return { statusCode: 200, body: JSON.stringify({ timestamp: timestamp } )};
             } else {
                 return { statusCode: 500 }

@@ -1,5 +1,6 @@
 export default {
     TRASH_SCHEDULE_TABLE: "TrashSchedule",
+    SHARED_SCHEDULE_TABLE: "throwtrash-shared-schedule",
     ACTIVATE_TABLE: "throwtrash-activation",
     ACCOUNT_LINK_TABLE: "throwtrash-accountlink",
     AUTHORIZE_TABLE: "throwtrash-backend-authorization",

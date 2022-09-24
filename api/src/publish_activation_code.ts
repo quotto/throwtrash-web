@@ -2,6 +2,7 @@ import property from "./property";
 import * as common from "trash-common";
 import dbadapter from './dbadapter';
 import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResultV2 } from 'aws-lambda';
+import { randomUUID } from "crypto";
 const logger = common.getLogger();
 
 const generateActivationCode = (): string=>{
@@ -13,12 +14,30 @@ const generateActivationCode = (): string=>{
     return activation_code;
 }
 
+const generateSharedId = (): string=>{
+    return randomUUID().replace("-","");
+}
+
 export default async(params: APIGatewayProxyEventQueryStringParameters): Promise<APIGatewayProxyResultV2>=>{
     logger.debug(`publish activation code params: ${JSON.stringify(params)}`);
 
     if(params.user_id) {
         const trashScheduleItem = await dbadapter.getTrashScheduleByUserId(params.user_id);
         if (trashScheduleItem != null) {
+            let shared_id = trashScheduleItem?.shared_id || "";
+            if(typeof(trashScheduleItem.shared_id) === "undefined") {
+                shared_id = generateSharedId();
+                if(!await dbadapter.setSharedIdToTrashSchedule(trashScheduleItem.id, shared_id)) {
+                    return {
+                        statusCode: 500
+                    };
+                }
+                if(!await dbadapter.putSharedSchedule(shared_id, trashScheduleItem)) {
+                    return {
+                        statusCode: 500
+                    }
+                }
+            }
             let limit = 0;
             while(limit < 5) {
                 const code = generateActivationCode();
@@ -26,7 +45,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters): Promise
                 const ttl = Math.ceil(new Date().getTime() / 1000 + property.ACTIVATION_CODE_EXPIRE_SECONDS);
                 if (await dbadapter.putActivationCode({
                     code: code,
-                    user_id: params.user_id,
+                    shared_id: shared_id,
                     TTL: ttl
                 })) {
                     return { statusCode: 200, body: JSON.stringify({ code: code }) };

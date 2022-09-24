@@ -17,6 +17,9 @@ Parameters:
   TrashScheduleTableName:
     Type: "String"
     Default: "TrashSchedule"
+  SharedScheduleTableName:
+    Type: "String"
+    Default: "throwtrash-shared-schedule"
   SigninIdIndexName:
     Type: "String"
     Default: "signinId-index"
@@ -33,10 +36,10 @@ Resources:
           Key: Purpose
           Value: WebBackend/MobileBackend/Skill
       AttributeDefinitions:
-        - 
+        -
           AttributeName: "id"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "signinId"
           AttributeType: "S"
       KeySchema:
@@ -47,7 +50,7 @@ Resources:
         -
           IndexName: !Ref SigninIdIndexName
           KeySchema:
-            - 
+            -
               AttributeName: "signinId"
               KeyType: "HASH"
           Projection:
@@ -158,6 +161,24 @@ Resources:
           Key: Purpose
           Value: OAuthBackend
     DeletionPolicy: Retain
+  SharedScheduleTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "shared_id"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "shared_id"
+          KeyType: HASH
+      TableName: !Ref SharedScheduleTableName
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+      DeletionPolicy: Retain
 Outputs:
   AuthorizationTable:
     Export:

@@ -52,7 +52,15 @@ export interface AccountLinkItem {
 export interface TrashScheduleItem {
     id: string,
     description: string,
-    platform?: string
+    platform?: string,
+    shared_id?: string,
+    timestamp?: number
+}
+
+export interface SharedScheduleItem {
+    shared_id: string,
+    description: string,
+    timestamp: number
 }
 
 export interface RegisteredTrashScheduleItem {
@@ -62,7 +70,7 @@ export interface RegisteredTrashScheduleItem {
 
 export interface ActivationCodeItem {
     code: string,
-    user_id: string,
+    shared_id: string,
     TTL: number
 }
 

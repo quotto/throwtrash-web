@@ -4,11 +4,35 @@ const logger = common.getLogger();
 import AWS, { Account, AWSError } from "aws-sdk";
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: process.env.DB_REGION });
 import crypto from "crypto";
-import {  AccountLinkItem, ActivationCodeItem, CodeItem, TrashScheduleItem } from "./interface";
+import {  AccountLinkItem, ActivationCodeItem, CodeItem, SharedScheduleItem, TrashScheduleItem } from "./interface";
 
 
 const toHash = (value: string): string => {
     return crypto.createHash("sha512").update(value).digest("hex");
+}
+
+const SharedSchedulePutOperation = (shared_id: string, description: string, timestamp: number): AWS.DynamoDB.DocumentClient.Put => {
+   return {
+        TableName: property.SHARED_SCHEDULE_TABLE,
+        Item: {
+            shared_id: shared_id,
+            description: description,
+            timestamp: timestamp
+        }
+    }
+}
+
+const ExistTrashSchedulePutOperation = (user_id: string, description: string, platform: string, timestamp: number): AWS.DynamoDB.DocumentClient.Put => {
+   return  {
+        TableName: property.TRASH_SCHEDULE_TABLE,
+        Item: {
+            id: user_id,
+            description: description,
+            platform: platform,
+            timestamp: timestamp
+        },
+        ConditionExpression: "attribute_exists(id)"
+    }
 }
 
 
@@ -62,7 +86,7 @@ const deleteAccountLinkItemByToken = async(token: string): Promise<boolean>=>{
     });
 }
 
-const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleItem&{timestamp: number} | null> => {
+const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleItem | null> => {
     return documentClient.get({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Key: {
@@ -86,12 +110,66 @@ const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleI
     });
 }
 
+const setSharedIdToTrashSchedule = async(user_id: string, shared_id: string): Promise<boolean> => {
+    return documentClient.update({
+        TableName: property.TRASH_SCHEDULE_TABLE,
+        Key: {
+            id: user_id
+        },
+        UpdateExpression: "set #shared_id = :shared_id",
+        ExpressionAttributeNames: {"#shared_id": "shared_id"},
+        ExpressionAttributeValues: {":shared_id": shared_id}
+    }).promise().then(_=>true).catch((err)=>{
+        logger.error("failed update trash schedule");
+        logger.error(err);
+        return false;
+    })
+
+}
+
+const putSharedSchedule = async(shared_id: string, schedule: TrashScheduleItem): Promise<boolean> => {
+    return documentClient.put({
+        TableName: property.SHARED_SCHEDULE_TABLE,
+        Item: {
+            shared_id: shared_id,
+            description: schedule.description,
+            timestamp: schedule.timestamp
+        }
+    }).promise().then(_=>true).catch((err)=>{
+        logger.error("failed put shared schedule");
+        logger.error(err);
+        return false;
+    });
+}
+
+const getSharedScheduleBySharedId = async(shared_id: string): Promise<SharedScheduleItem|null> => {
+    return documentClient.get({
+        TableName: property.SHARED_SCHEDULE_TABLE,
+        Key: {
+            shared_id: shared_id
+        }
+    }).promise().then((value)=>{
+        if(value.Item) {
+            return {
+               shared_id: value.Item.shared_id ,
+               description: value.Item.description,
+               timestamp: value.Item.timestamp
+            }
+        }
+        return null;
+    }).catch((err)=>{
+        logger.error("failed get shared schedule");
+        logger.error(err)
+        return null;
+    });
+}
+
 const putActivationCode = async(activationCodeItem: ActivationCodeItem): Promise<boolean> => {
     return await documentClient.put({
         TableName: property.ACTIVATE_TABLE,
         Item: {
             code: activationCodeItem.code,
-            user_id: activationCodeItem.user_id,
+            user_id: activationCodeItem.shared_id,
             TTL: activationCodeItem.TTL
         }
     }).promise().then(_=>{return true}).catch(e=>{
@@ -100,7 +178,7 @@ const putActivationCode = async(activationCodeItem: ActivationCodeItem): Promise
     });
 }
 
-const deleteActivationCode = async(code: String): Promise<boolean> => {
+const deleteActivationCode = async(code: string): Promise<boolean> => {
     return await documentClient.delete({
         TableName: property.ACTIVATE_TABLE,
         Key: {
@@ -125,7 +203,7 @@ const getActivationCode = async(code: string): Promise<ActivationCodeItem | null
         if(item.Item) {
             return {
                 code: item.Item.code,
-                user_id: item.Item.user_id,
+                shared_id: item.Item.shared_id,
                 TTL: item.Item.TTL
             }
         }
@@ -153,7 +231,7 @@ const insertTrashSchedule = async(trashScheduleItem: TrashScheduleItem, timestam
     });
 }
 
-const updateTrashSchdeule = async(trashScheduleItem: TrashScheduleItem, timestamp: number): Promise<boolean> => {
+const putExistTrashSchedule = async(trashScheduleItem: TrashScheduleItem, timestamp: number): Promise<boolean> => {
     return documentClient.put({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Item: {
@@ -166,6 +244,29 @@ const updateTrashSchdeule = async(trashScheduleItem: TrashScheduleItem, timestam
     }).promise().then(_=>{return true}).catch((e: any)=>{
        logger.error(e);
        return false;
+    });
+}
+
+const updateTrashSchedule = async(user_id: string, description: string, timestamp: number): Promise<boolean> =>{
+    return documentClient.update({
+        TableName: property.TRASH_SCHEDULE_TABLE,
+        Key: {
+            id: user_id
+        },
+        UpdateExpression: "set #description = :description, #timestamp = :timestmap",
+        ExpressionAttributeNames: {
+            "#description": "description",
+            "#timestamp": "timestamp"
+        },
+        ExpressionAttributeValues: {
+            ":description": description,
+            ":timestamp": timestamp
+        },
+        ConditionExpression: "attribute_exists(id)"
+    }).promise().then(_=>true).catch((err)=> {
+        logger.error("failed update trash schedule");
+        logger.error(err);
+        return false;
     });
 }
 
@@ -182,6 +283,23 @@ const putAuthorizationCode = async(codeItem: CodeItem): Promise<boolean> =>{
     });
 }
 
+const transactionUpdateSchedule = async(shared_id: string, scheduleItem: TrashScheduleItem, timestamp: number): Promise<boolean> => {
+    return documentClient.transactWrite({
+        TransactItems: [
+            {
+                Put: SharedSchedulePutOperation(shared_id, scheduleItem.description, timestamp),
+            },
+            {
+                Put: ExistTrashSchedulePutOperation(scheduleItem.id, scheduleItem.description, scheduleItem.platform || "web", timestamp)
+            }
+        ]
+    }).promise().then(_=> true).catch((err)=>{
+        logger.error("failed transaction update schedule");
+        logger.error(err);
+        return false;
+    })
+}
+
 export default {
     putAccountLinkItem: putAccountLinkItem,
     getAccountLinkItemByToken: getAccountLinkItemByToken,
@@ -191,6 +309,11 @@ export default {
     deleteActivationCode: deleteActivationCode,
     getActivationCode: getActivationCode,
     insertTrashSchedule: insertTrashSchedule,
-    updateTrashSchdeule: updateTrashSchdeule,
+    putExistTrashSchedule: putExistTrashSchedule,
+    updateTrashSchedule: updateTrashSchedule,
     putAuthorizationCode: putAuthorizationCode,
+    setSharedIdToTrashSchedule: setSharedIdToTrashSchedule,
+    putSharedSchedule: putSharedSchedule,
+    getSharedScheduleBySharedId: getSharedScheduleBySharedId,
+    transactionUpdateSchedule: transactionUpdateSchedule
 }

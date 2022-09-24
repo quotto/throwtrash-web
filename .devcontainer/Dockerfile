@@ -1,7 +1,7 @@
-FROM node:14.0.0
+FROM node:16.17.0
 USER root
 
-RUN apt-get update && apt-get -y install git
+RUN apt update && apt -y install git
 
 # aws cliの導入
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
