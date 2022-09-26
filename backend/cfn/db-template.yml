@@ -178,7 +178,7 @@ Resources:
         -
           Key: Group
           Value: throwtrash
-      DeletionPolicy: Retain
+    DeletionPolicy: Retain
 Outputs:
   AuthorizationTable:
     Export:
