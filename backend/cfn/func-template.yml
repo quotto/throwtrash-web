@@ -68,7 +68,7 @@ Resources:
               - Fn::Join:
                 - /
                 - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
-                  - Fn::ImportValue: throwtrash-shared-schedule
+                  - Fn::ImportValue: throwtrash-db-shared-schedule
       PolicyName: !Sub "throwtrash-backend-lambda-policy-${Stage}"
       Roles:
         - !Ref LambdaExecRole

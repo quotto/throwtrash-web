@@ -204,3 +204,7 @@ Outputs:
     Export:
       Name: !Sub "throwtrash-db-schedule-signinIndex"
     Value: !Ref SigninIdIndexName
+  SharedSchedule:
+    Export:
+      Name: !Sub "throwtrash-db-shared-schedule"
+    Value: !Ref SharedScheduleTable
