@@ -49,6 +49,7 @@ Resources:
                 - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
                   #TODO: 東東リージョンのDB更新時にImportValueに置き換える
                   - "throwtrash-accountlink"
+              - Fn::Join:
                 - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
                   #TODO: 東東リージョンのDB更新時にImportValueに置き換える
                   - "throwtrash-shared-schedule"
