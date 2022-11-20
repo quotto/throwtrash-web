@@ -13,6 +13,13 @@ export default async (trashScheduleItem: TrashScheduleItem): Promise<APIGatewayP
             const timestamp = new Date().getTime()
             logger.debug(`update trash schedule -> ${JSON.stringify(trashScheduleItem)}`);
             const currentTrashSchedule = await dbadapter.getTrashScheduleByUserId(trashScheduleItem.id);
+            // リクエストパラメータのタイムスタンプと現在のDBタイムスタンプが一致しない場合はエラー
+            if(currentTrashSchedule?.timestamp != trashScheduleItem.timestamp) {
+                logger.error(`invalid timestamp parameters: ${currentTrashSchedule?.timestamp}(remote) <-> ${trashScheduleItem.timestamp}(params)`);
+                return {
+                    statusCode: 400
+                }
+            }
             let updateResult = false;
             if(currentTrashSchedule?.shared_id) {
                 // shared_idが設定されてい場合はTrashScheduleとSharedScheduleをトランザクション内で更新する
