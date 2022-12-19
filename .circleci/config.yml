@@ -9,9 +9,9 @@ commands:
           command: |
             if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
               echo "export RUNLEVEL=INFO" >> $BASH_ENV
-              echo "export BACK_STAGE=v4" >> $BASH_ENV
-              echo "export FRONT_STAGE=v4" >> $BASH_ENV
-              echo "export MOBILE_API_STAGE=v4" >> $BASH_ENV
+              echo "export BACK_STAGE=v5" >> $BASH_ENV
+              echo "export FRONT_STAGE=v5" >> $BASH_ENV
+              echo "export MOBILE_API_STAGE=v5" >> $BASH_ENV
               echo "export DBREGION=ap-northeast-1" >> $BASH_ENV
               echo "export SKILL_STAGE=live" >> $BASH_ENV
             else
