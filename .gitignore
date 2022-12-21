@@ -7,5 +7,7 @@ backend/src/node_modules
 backend/src/serviceAccountKey.json
 backend/src/dist
 backend/cfn/package-template.yml
+frontend/dist
+frontend/coverage
 api/src/node_modules
 api/package-template.yml

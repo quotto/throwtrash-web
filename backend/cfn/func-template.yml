@@ -201,8 +201,6 @@ Resources:
                   Required: true
               - method.request.querystring.scope:
                   Required: true
-              - method.request.querystring.redirect_uri:
-                  Required: true
   Api:
     Type: "AWS::Serverless::Api"
     DeletionPolicy: Retain
