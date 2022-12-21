@@ -95,24 +95,24 @@ describe("enable_skill",()=>{
     })
     describe("異常系",()=>{
         it("params.stateとsession.stateが一致しなければユーザーエラー",async()=>{
-            const result = await enable_skill({state: "not_match_state"}, {id: "session_id002", user_id: "id002",state: "12345",expire:999999999}, "v1");
+            const result = await enable_skill({state: "not_match_state"}, {id: "session_id002", user_id: "id002",state: "12345",expire:999999999,redirect_uri: "https://test.com"}, "v1");
             expect(result.statusCode).toBe(301);
             const headers = result.headers;
             expect(headers.Location).toBe(error_def.UserError.headers.Location);
         });
         it("DB処理が異常の場合はサーバーエラー",async()=>{
-            const result = await enable_skill({state: "12345"},{state: "12345", id: "session_id002",user_id: "id002", expire:999999999}, "v1");
+            const result = await enable_skill({state: "12345"},{state: "12345", id: "session_id002",user_id: "id002", expire:999999999, redirect_uri: "https://test.com"}, "v1");
             expect(result.statusCode).toBe(301);
             const headers = result.headers;
             expect(headers.Location).toBe(error_def.ServerError.headers.Location);
         });
-        it("params.redirect_uriがない場合はユーザーエラー",async()=>{
+        it("session.redirect_uriがない場合はユーザーエラー",async()=>{
             process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
             process.env.ALEXA_SKILL_ID = "test-skill-id-prod";
             const result = await enable_skill({state: "12345"},{id: "session_id001",state: "12345", user_id: "id001", expire:999999999},"v1");
 
             expect(result.statusCode).toBe(301);
-            expect(result.headers.Location).toBe(error_def.ServerError.headers.Location);
+            expect(result.headers.Location).toBe(error_def.UserError.headers.Location);
         });
     });
 });

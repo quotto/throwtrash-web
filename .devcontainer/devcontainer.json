@@ -19,6 +19,7 @@
 	"workspaceFolder": "/app",
 	"onCreateCommand": "git config --local core.editor \"code --wait\"",
 
+
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [9005,5500]
 
