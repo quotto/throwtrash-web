@@ -188,30 +188,6 @@ Resources:
             Path: "/request_accesstoken"
             Method: "POST"
             RestApiId: !Ref Api
-        StartLink:
-          Type: Api
-          Properties:
-            Path: "/start_link"
-            Method: "GET"
-            RestApiId: !Ref Api
-            RequestParameters:
-              - method.request.querystring.platform:
-                  Required: true
-        ExchangeAmazonCode:
-          Type: Api
-          Properties:
-            Path: "/enable_skill"
-            Method: "GET"
-            RestApiId: !Ref Api
-            RequestParameters:
-              - method.request.querystring.state:
-                  Required: true
-              - method.request.querystring.code:
-                  Required: true
-              - method.request.querystring.scope:
-                  Required: true
-              - method.request.querystring.redirect_uri:
-                  Required: true
         RequestAuthrozationCode:
           Type: Api
           Properties:

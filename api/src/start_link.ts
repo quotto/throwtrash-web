@@ -23,9 +23,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters ,stage: s
                     throw Error("SKILL_STAGE is invalid");
                 }
                 // Androidでアレクサアプリを使う場合はアレクサアプリのアプリリンクを返す
-                // redirect_uri = "https://mobileapp.mythrowaway.net/accountlink";
-                // TODO: あとで戻します
-                redirect_uri = "https://mobileapp-fluter.mythrowaway.net/accountlink";
+                redirect_uri = "https://mobileapp.mythrowaway.net/accountlink";
                 loginUrl = `https://alexa.amazon.com/spa/skill-account-linking-consent?fragment=skill-account-linking-consent&client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&skill_stage=${skill_stage.toString()}&response_type=code&state=${state}`
             }
             loginUrl+=`&redirect_uri=${redirect_uri}`;
