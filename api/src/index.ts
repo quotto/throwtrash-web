@@ -30,7 +30,7 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent,_context: AWSL
             }
         }
         return await update(JSON.parse(event.body));
-    } if(event.resource === '/start_link') {
+    } else if(event.resource === '/start_link') {
         return await start_link(event.queryStringParameters || {}, event.requestContext.stage);
     } else if(event.resource === '/sync') {
         // データ同期処理

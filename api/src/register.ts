@@ -22,6 +22,7 @@ export default async(trashScheduleItem: RegisteredTrashScheduleItem): Promise<AP
                 platform: trashScheduleItem.platform
             }
 
+            logger.info(`register user: ${JSON.stringify(registeredItem)}, timestamp: ${timestamp}`);
             if(await dbadapter.insertTrashSchedule(registeredItem, timestamp)) {
                 return {statusCode:200, body: JSON.stringify({id: id, timestamp: timestamp})};
             } else {

@@ -13,6 +13,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters): Promise
             if(trashScheduleItem.shared_id) {
                 const sharedSchedule = await dbadapter.getSharedScheduleBySharedId(trashScheduleItem.shared_id);
                 if(sharedSchedule === null) {
+                    logger.error(`TrashScheduleItem id=${params.user_id} has shared_id: ${trashScheduleItem.shared_id}, but SharedSchedule is not exist.`);
                     return {
                         statusCode: 500
                     }
@@ -20,13 +21,17 @@ export default async(params: APIGatewayProxyEventQueryStringParameters): Promise
 
                 let syncResult = true;
                 if(typeof(trashScheduleItem.timestamp) === "undefined" || sharedSchedule?.timestamp >= trashScheduleItem.timestamp) {
-                    logger.debug("sync SharedSchedule to TrashSchedule");
+                    logger.info("sync SharedSchedule to TrashSchedule");
+                    logger.info(`SharedSchedule-> ${JSON.stringify(sharedSchedule)}`);
+                    logger.info(`TrashSchedule-> ${JSON.stringify(trashScheduleItem)}`);
                     trashScheduleItem.description = sharedSchedule?.description;
                     trashScheduleItem.timestamp = sharedSchedule.timestamp;
 
                     syncResult = await dbadapter.putExistTrashSchedule(trashScheduleItem, sharedSchedule.timestamp);
                 } else {
-                    logger.debug("sync TrashSchedule to SharedSchedule ");
+                    logger.info("sync TrashSchedule to SharedSchedule ");
+                    logger.info(`TrashSchedule-> ${JSON.stringify(trashScheduleItem)}`);
+                    logger.info(`SharedSchedule-> ${JSON.stringify(sharedSchedule)}`);
                     syncResult = await dbadapter.putSharedSchedule(sharedSchedule.shared_id, trashScheduleItem);
                 }
                 if(!syncResult) {
