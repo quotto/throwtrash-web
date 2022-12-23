@@ -240,7 +240,8 @@ const putExistTrashSchedule = async(trashScheduleItem: TrashScheduleItem, timest
             id: trashScheduleItem.id,
             description: trashScheduleItem.description,
             platform: trashScheduleItem.platform,
-            timestamp: timestamp
+            timestamp: timestamp,
+            shared_id: trashScheduleItem.shared_id
         },
         ConditionExpression: "attribute_exists(id)"
     }).promise().then(_=>{return true}).catch((e: any)=>{
