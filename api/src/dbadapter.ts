@@ -253,7 +253,7 @@ const updateTrashSchedule = async(user_id: string, description: string, timestam
         Key: {
             id: user_id
         },
-        UpdateExpression: "set #description = :description, #timestamp = :timestmap",
+        UpdateExpression: "set #description = :description, #timestamp = :timestamp",
         ExpressionAttributeNames: {
             "#description": "description",
             "#timestamp": "timestamp"
