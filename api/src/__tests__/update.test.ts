@@ -116,9 +116,12 @@ describe("update",()=>{
         }),expect.any(Number));
     });
     it("タイムスタンプが一致しない場合はユーザーエラー",async()=>{
-        const result = await update({id: "id001", description: JSON.stringify([{type: "burn"}]),
+        const result = await update({id: "id001", description: JSON.stringify([{id: "100", type: "burn", trash_val: "", schedules: [{ type: "weekday", value: "0"}]}]),
         platform: "android",timestamp: 0}) as APIGatewayProxyStructuredResultV2;
         expect(result.statusCode).toBe(400);
+        console.log(result.body)
+        const body = JSON.parse(result.body!);
+        expect(body.timestamp).toBe(1234567);
     });
     it("タイムスタンプがnullの場合はユーザーエラー",async()=>{
         const result = await update({id: "id001", description: JSON.stringify([{type: "burn"}]),

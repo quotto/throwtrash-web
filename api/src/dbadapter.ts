@@ -169,7 +169,7 @@ const putActivationCode = async(activationCodeItem: ActivationCodeItem): Promise
         TableName: property.ACTIVATE_TABLE,
         Item: {
             code: activationCodeItem.code,
-            user_id: activationCodeItem.shared_id,
+            shared_id: activationCodeItem.shared_id,
             TTL: activationCodeItem.TTL
         }
     }).promise().then(_=>{return true}).catch(e=>{

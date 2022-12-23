@@ -17,7 +17,10 @@ export default async (trashScheduleItem: TrashScheduleItem): Promise<APIGatewayP
             if(currentTrashSchedule?.timestamp != trashScheduleItem.timestamp) {
                 logger.error(`invalid timestamp parameters: ${currentTrashSchedule?.timestamp}(remote) <-> ${trashScheduleItem.timestamp}(params)`);
                 return {
-                    statusCode: 400
+                    statusCode: 400,
+                    body: JSON.stringify({
+                        timestamp: currentTrashSchedule?.timestamp
+                    })
                 }
             }
             let updateResult = false;
