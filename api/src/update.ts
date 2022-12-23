@@ -26,11 +26,11 @@ export default async (trashScheduleItem: TrashScheduleItem): Promise<APIGatewayP
             let updateResult = false;
             if(currentTrashSchedule?.shared_id) {
                 // shared_idが設定されてい場合はTrashScheduleとSharedScheduleをトランザクション内で更新する
-                logger.info(`update shared schedule item-> shared_id:${currentTrashSchedule.shared_id}, schedule: ${JSON.stringify(trashScheduleItem)}, timestamp: timestamp`);
-                updateResult = await dbadapter.transactionUpdateSchedule(currentTrashSchedule.shared_id, trashScheduleItem, timestamp);
+                logger.info(`update shared schedule item-> shared_id:${currentTrashSchedule.shared_id}, schedule: ${JSON.stringify(trashScheduleItem)}, timestamp: ${timestamp}`);
+                updateResult = await dbadapter.transactionUpdateScheduleAndSharedSchedule(currentTrashSchedule.shared_id, trashScheduleItem, timestamp);
 
             } else {
-                logger.info(`update trash schedule item-> schedule: ${JSON.stringify(trashScheduleItem)}, timestamp: timestamp`);
+                logger.info(`update trash schedule item-> schedule: ${JSON.stringify(trashScheduleItem)}, timestamp: ${timestamp}`);
                 updateResult = await dbadapter.putExistTrashSchedule(trashScheduleItem, timestamp);
             }
             if(updateResult) {

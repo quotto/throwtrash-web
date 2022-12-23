@@ -22,14 +22,15 @@ const SharedSchedulePutOperation = (shared_id: string, description: string, time
     }
 }
 
-const ExistTrashSchedulePutOperation = (user_id: string, description: string, platform: string, timestamp: number): AWS.DynamoDB.DocumentClient.Put => {
+const ExistTrashScheduleWithSharedIdPutOperation = (user_id: string, description: string, platform: string, timestamp: number, shared_id: string): AWS.DynamoDB.DocumentClient.Put => {
    return  {
         TableName: property.TRASH_SCHEDULE_TABLE,
         Item: {
             id: user_id,
             description: description,
             platform: platform,
-            timestamp: timestamp
+            timestamp: timestamp,
+            shared_id: shared_id
         },
         ConditionExpression: "attribute_exists(id)"
     }
@@ -98,7 +99,8 @@ const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleI
                 id: item.Item.id,
                 description: item.Item.description,
                 platform: item.Item.platform,
-                timestamp: item.Item.timestamp
+                timestamp: item.Item.timestamp,
+                shared_id: item.Item.shared_id
             }
         }
         logger.error(`user id not found ${user_id}`)
@@ -283,14 +285,14 @@ const putAuthorizationCode = async(codeItem: CodeItem): Promise<boolean> =>{
     });
 }
 
-const transactionUpdateSchedule = async(shared_id: string, scheduleItem: TrashScheduleItem, timestamp: number): Promise<boolean> => {
+const transactionUpdateScheduleAndSharedSchedule = async(shared_id: string, scheduleItem: TrashScheduleItem, timestamp: number): Promise<boolean> => {
     return documentClient.transactWrite({
         TransactItems: [
             {
                 Put: SharedSchedulePutOperation(shared_id, scheduleItem.description, timestamp),
             },
             {
-                Put: ExistTrashSchedulePutOperation(scheduleItem.id, scheduleItem.description, scheduleItem.platform || "web", timestamp)
+                Put: ExistTrashScheduleWithSharedIdPutOperation(scheduleItem.id, scheduleItem.description, scheduleItem.platform || "web", timestamp, shared_id)
             }
         ]
     }).promise().then(_=> true).catch((err)=>{
@@ -315,5 +317,5 @@ export default {
     setSharedIdToTrashSchedule: setSharedIdToTrashSchedule,
     putSharedSchedule: putSharedSchedule,
     getSharedScheduleBySharedId: getSharedScheduleBySharedId,
-    transactionUpdateSchedule: transactionUpdateSchedule
+    transactionUpdateScheduleAndSharedSchedule: transactionUpdateScheduleAndSharedSchedule
 }

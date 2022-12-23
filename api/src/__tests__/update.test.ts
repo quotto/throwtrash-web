@@ -79,7 +79,7 @@ describe("update",()=>{
             }
         });
         jest.mocked(dbadapter.putExistTrashSchedule).mockImplementation(async(trashScheduleItem: TrashScheduleItem)=>true);
-        jest.mocked(dbadapter.transactionUpdateSchedule).mockImplementation(async(shared_id: string, trashScheduleItem: TrashScheduleItem, timestamp: number)=>true);
+        jest.mocked(dbadapter.transactionUpdateScheduleAndSharedSchedule).mockImplementation(async(shared_id: string, trashScheduleItem: TrashScheduleItem, timestamp: number)=>true);
     });
     afterEach(()=>{
         jest.resetAllMocks();
@@ -109,7 +109,7 @@ describe("update",()=>{
         const body = JSON.parse(result.body!);
         expect(result.statusCode).toBe(200);
         expect(body.timestamp).toBeGreaterThan(0);
-        expect(jest.mocked(dbadapter.transactionUpdateSchedule)).toBeCalledWith("share001",expect.objectContaining({
+        expect(jest.mocked(dbadapter.transactionUpdateScheduleAndSharedSchedule)).toBeCalledWith("share001",expect.objectContaining({
             description: JSON.stringify(mockData001),
             platform: "android",
             id: "id001"
@@ -149,7 +149,7 @@ describe("update",()=>{
                 timestamp: 1234567
             }
         })
-        const mockedTransactionUpdateSchedule = jest.mocked(dbadapter.transactionUpdateSchedule).mockImplementationOnce(async(shared_id: string, scheduleItem: TrashScheduleItem,timestamp: number)=>false);
+        const mockedTransactionUpdateSchedule = jest.mocked(dbadapter.transactionUpdateScheduleAndSharedSchedule).mockImplementationOnce(async(shared_id: string, scheduleItem: TrashScheduleItem,timestamp: number)=>false);
         const result = await update({id: "id002", description: JSON.stringify(mockData001), platform: "android", timestamp: 1234567}) as APIGatewayProxyStructuredResultV2;
         expect(mockedTransactionUpdateSchedule).toBeCalled();
         expect(result.statusCode).toBe(500);
