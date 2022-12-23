@@ -154,6 +154,15 @@ Resources:
                   Required: true
               - method.request.querystring.redirect_uri:
                   Required: true
+        MigrationV2:
+          Type: Api
+          Properties:
+            Path: "/migration/v2"
+            Method: "GET"
+            RestApiId: !Ref Api
+            RequestParameters:
+              - method.request.querystring.user_id:
+                  Required: true
         Register:
           Type: Api
           Properties:

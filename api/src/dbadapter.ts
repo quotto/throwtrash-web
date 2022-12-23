@@ -303,6 +303,26 @@ const transactionUpdateScheduleAndSharedSchedule = async(shared_id: string, sche
     })
 }
 
+const updateTrashScheduleTimestamp = async(user_id: string, timestamp: number): Promise<boolean> => {
+    return documentClient.update({
+        TableName: property.TRASH_SCHEDULE_TABLE,
+        Key: {
+            id: user_id
+        },
+        UpdateExpression: "set #timestamp = :timestamp",
+        ExpressionAttributeNames: {
+            "#timestamp": "timestamp"
+        },
+        ExpressionAttributeValues: {
+            ":timestamp": timestamp
+        }
+    }).promise().then(_=>true).catch(err=>{
+        logger.error("failed update TrashSchedule timestamp");
+        logger.error(err);
+        return false;
+    });
+}
+
 export default {
     putAccountLinkItem: putAccountLinkItem,
     getAccountLinkItemByToken: getAccountLinkItemByToken,
@@ -318,5 +338,6 @@ export default {
     setSharedIdToTrashSchedule: setSharedIdToTrashSchedule,
     putSharedSchedule: putSharedSchedule,
     getSharedScheduleBySharedId: getSharedScheduleBySharedId,
-    transactionUpdateScheduleAndSharedSchedule: transactionUpdateScheduleAndSharedSchedule
+    transactionUpdateScheduleAndSharedSchedule: transactionUpdateScheduleAndSharedSchedule,
+    updateTrashScheduleTimestamp: updateTrashScheduleTimestamp
 }

@@ -7,6 +7,7 @@ import activate from "./activate";
 import * as common from "trash-common";
 import start_link from "./start_link";
 import enable_skill from "./enable_skill";
+import migrationV2 from "./migration/v2";
 const logger = common.getLogger();
 process.env.RUNLEVEL === "INFO" ? logger.setLevel_INFO() : logger.setLevel_DEBUG();
 
@@ -43,5 +44,7 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent,_context: AWSL
         return await activate(event.queryStringParameters || {});
     } else if(event.resource === '/enable_skill') {
         return await enable_skill(event.queryStringParameters || {}, event.requestContext.stage);
+    } else if(event.resource === '/migration/v2') {
+        return await migrationV2(event.queryStringParameters || {});
     }
 }
