@@ -2,7 +2,6 @@ import * as common from "trash-common";
 import dbadapter from "./dbadapter";
 import { TrashScheduleItem } from "./interface";
 import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResultV2 } from "aws-lambda";
-import update from "./update";
 const logger = common.getLogger();
 export default async(params: APIGatewayProxyEventQueryStringParameters): Promise<APIGatewayProxyResultV2>=> {
     logger.debug(`sync parameters: ${JSON.stringify(params)}`);

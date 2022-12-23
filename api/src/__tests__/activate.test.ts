@@ -71,6 +71,7 @@ describe("activate_test",()=>{
         expect(result.statusCode).toBe(200);
         const body = JSON.parse(result.body!);
         expect(body.description).toBe(JSON.stringify(mockData001));
+        expect(body.timestamp).toBe(123456)
     });
     it("shared_idの設定に失敗した場合はサーバーエラー", async()=>{
         jest.mocked(dbadapter.setSharedIdToTrashSchedule).mockImplementationOnce(async(user_id: string, shared_id: string)=>false);

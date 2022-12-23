@@ -7,12 +7,13 @@ export default async(params: APIGatewayProxyEventQueryStringParameters): Promise
     if(params.code && params.user_id) {
         const activationCode = await dbadapter.getActivationCode(params.code);
         if(activationCode) {
+            logger.debug(`receive activation Code -> ${JSON.stringify(activationCode)}`);
             if(!await dbadapter.setSharedIdToTrashSchedule(params.user_id, activationCode.shared_id)) {
                 return {
                     statusCode: 500
                 }
             }
-            logger.debug(`Get Activation Code -> ${JSON.stringify(activationCode)}`);
+            logger.info(`set shared_id ${activationCode.shared_id} to user_id ${params.user_id}`);
             const sharedSchedule = await dbadapter.getSharedScheduleBySharedId(activationCode.shared_id);
             if(sharedSchedule === null) {
                 return {
@@ -29,7 +30,8 @@ export default async(params: APIGatewayProxyEventQueryStringParameters): Promise
                 return {
                     statusCode: 200,
                     body: JSON.stringify({
-                        description: sharedSchedule.description
+                        description: sharedSchedule.description,
+                        timestamp: sharedSchedule.timestamp
                     })
                 };
             } else {
