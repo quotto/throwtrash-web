@@ -1,12 +1,19 @@
-import { APIGatewayProxyResultV2, APIGatewayProxyEventQueryStringParameters } from "aws-lambda";
+import { APIGatewayProxyResultV2, APIGatewayProxyEventQueryStringParameters, APIGatewayEventDefaultAuthorizerContext, APIGatewayProxyEventBase } from "aws-lambda";
 import * as  common from "trash-common";
 import dbadapter from "./dbadapter";
 import { RegisteredTrashScheduleItem } from "./interface";
 const logger = common.getLogger();
 
-export default async (params: APIGatewayProxyEventQueryStringParameters): Promise<APIGatewayProxyResultV2> => {
-    if(typeof(params.platform) === "undefined" || params.platform === null || params.platform.length === 0) {
-        logger.error(`invalid parameter: platform -> ${params.platform}`);
+export default async (event_body_str: string) => {
+    let event_body;
+    try {
+        event_body =JSON.parse(event_body_str)
+        if(typeof(event_body.platform) === "undefined" || event_body.platform.length === 0) {
+            logger.error(`invalid parameter: platform -> ${event_body.platform}`);
+            return { statusCode: 400 };
+        }
+    } catch (e: any) {
+        logger.error(e)
         return { statusCode: 400 };
     }
     const id = common.generateUUID("-");
@@ -15,8 +22,8 @@ export default async (params: APIGatewayProxyEventQueryStringParameters): Promis
     const timestamp = new Date().getTime();
     const registeredItem = {
         id: id,
-            description: JSON.stringify([]),
-        platform: params.platform
+        description: JSON.stringify([]),
+        platform: event_body.platform
     }
 
     logger.info(`register user: ${JSON.stringify(registeredItem)}, timestamp: ${timestamp}`);

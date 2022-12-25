@@ -15,13 +15,7 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent,_context: AWSL
     logger.debug(JSON.stringify(event));
     if(event.resource === '/register') {
         // 新規登録処理
-        if(event.body === null) {
-            logger.error("/register error: body is null");
-            return {
-                sttatusCode: 400
-            };
-        }
-        return await register(JSON.parse(event.body))
+        return await register(event.body || "");
     } else if(event.resource === '/update') {
         // 更新処理
         if(event.body === null) {
