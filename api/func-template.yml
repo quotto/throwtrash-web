@@ -10,6 +10,21 @@ Parameters:
     Default: "dev"
   DBRegion:
     Type: "String"
+  SkillStage:
+    Type: "String"
+    Default: "development"
+  AlexaSkillID:
+    Type: "String"
+  AlexaClientID:
+    Type: "String"
+  AlexaClientSecret:
+    Type: "String"
+  AlexaUserClientID:
+    Type: "String"
+  AuthorizationEndpoint:
+    Type: "String"
+  BackendApiKey:
+    Type: "String"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -29,6 +44,16 @@ Resources:
                 - /
                 - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
                   - Fn::ImportValue: throwtrash-db-activation
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  #TODO: 東東リージョンのDB更新時にImportValueに置き換える
+                  - "throwtrash-accountlink"
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  #TODO: 東東リージョンのDB更新時にImportValueに置き換える
+                  - "throwtrash-shared-schedule"
       PolicyName: !Sub "throwtrash-mobile-policy-${Stage}"
       Roles:
         - !Ref LambdaExecRole
@@ -49,20 +74,36 @@ Resources:
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
       RoleName: !Sub "throwtrash-mobile-lambda-role-${Stage}"
     DeletionPolicy: Retain
+  FunctionLayer:
+    Type: "AWS::Serverless::LayerVersion"
+    Properties:
+      ContentUri: ./src/layer
+      LayerName: !Sub "throwtrash-mobile-layer-${Stage}"
+      CompatibleRuntimes:
+        - nodejs16.x
   LambdaFunction:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
     Properties:
-      CodeUri: ./src
+      CodeUri: ./src/api-dist
       FunctionName: !Sub "throwtrash-mobile-${Stage}"
       Handler: index.handler
       Role: !GetAtt LambdaExecRole.Arn
-      Runtime: nodejs12.x
+      Runtime: nodejs16.x
       Timeout: 30
+      Layers:
+        - !Ref FunctionLayer
       Environment:
         Variables:
           DB_REGION: !Ref DBRegion
           RUNLEVEL: !Ref RunLevel
+          SKILL_STAGE: !Ref SkillStage
+          ALEXA_SKILL_ID: !Ref AlexaSkillID
+          ALEXA_CLIENT_ID: !Ref AlexaClientID
+          ALEXA_CLIENT_SECRET: !Ref AlexaClientSecret
+          ALEXA_USER_CLIENT_ID: !Ref AlexaUserClientID
+          AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
+          BACKEND_API_KEY: !Ref BackendApiKey
       Tags:
         Group: throwtrash
         Purpose: MobileBackend
@@ -84,6 +125,43 @@ Resources:
             RestApiId: !Ref Api
             RequestParameters:
               - method.request.querystring.id:
+                  Required: true
+        StartLink:
+          Type: Api
+          Properties:
+            Path: "/start_link"
+            Method: "GET"
+            RestApiId: !Ref Api
+            RequestParameters:
+              - method.request.querystring.user_id:
+                  Required: true
+              - method.request.querystring.platform:
+                  Required: true
+        EnableSkill:
+          Type: Api
+          Properties:
+            Path: "/enable_skill"
+            Method: "GET"
+            RestApiId: !Ref Api
+            RequestParameters:
+              - method.request.querystring.token:
+                  Required: true
+              - method.request.querystring.state:
+                  Required: true
+              - method.request.querystring.code:
+                  Required: true
+              - method.request.querystring.scope:
+                  Required: true
+              - method.request.querystring.redirect_uri:
+                  Required: true
+        MigrationV2:
+          Type: Api
+          Properties:
+            Path: "/migration/v2"
+            Method: "GET"
+            RestApiId: !Ref Api
+            RequestParameters:
+              - method.request.querystring.user_id:
                   Required: true
         Register:
           Type: Api

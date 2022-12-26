@@ -3,11 +3,12 @@ import * as common from "trash-common";
 const logger = common.getLogger();
 import AWS, { AWSError } from "aws-sdk";
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: process.env.DB_REGION });
-import firebase_admin from "firebase-admin";
-firebase_admin.initializeApp({
-    credential: firebase_admin.credential.applicationDefault()
+import {initializeApp,applicationDefault} from "firebase-admin/app";
+import {getFirestore} from "firebase-admin/firestore";
+initializeApp({
+    credential: applicationDefault()
 });
-const firestore = firebase_admin.firestore();
+const firestore = getFirestore();
 import crypto from "crypto";
 import { AccessTokenItem, CodeItem, RawTrasScheduleItem, RefreshTokenItem, SessionItem } from "./interface";
 

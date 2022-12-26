@@ -3,7 +3,6 @@ import {getLogger,EvweekValue} from "trash-common";
 const logger = getLogger();
 logger.setLevel_DEBUG();
 
-import {mocked} from "ts-jest/utils";
 import property from "../property";
 import db from "../dbadapter";
 
@@ -19,13 +18,13 @@ const mockScheduleResult: any = {};
 const mockAuthResult: any = {};
 describe('register', () => {
     beforeEach(()=>{
-        mocked(db.publishId).mockImplementation((): Promise<any> =>{return new Promise((resolve,reject)=>resolve("id001"))});
-        mocked(db.putTrashSchedule).mockImplementation(async(item: any)=>{
+        jest.mocked(db.publishId).mockImplementation((): Promise<any> =>{return new Promise((resolve,reject)=>resolve("id001"))});
+        jest.mocked(db.putTrashSchedule).mockImplementation(async(item: any)=>{
                     mockScheduleResult[item.id] = item;
                     return true;
                 });
-        mocked(db.deleteSession).mockImplementation(async(_sessionid: string)=>{return true});
-        mocked(db.putAuthorizationCode).mockImplementation(async(user_id: string,client_id: string,redirect_uri: string,expire: number)=>{
+        jest.mocked(db.deleteSession).mockImplementation(async(_sessionid: string)=>{return true});
+        jest.mocked(db.putAuthorizationCode).mockImplementation(async(user_id: string,client_id: string,redirect_uri: string,expire: number)=>{
             const result = {
                 code: "12345",
                 user_id: user_id,
@@ -143,7 +142,7 @@ describe('register', () => {
         expect(response.body).toBe("Bad Data");
     });
     it("DB処理でエラー",async()=>{
-        mocked(db.putTrashSchedule).mockImplementation(()=>{throw new Error("putTrashSchedule Error")});
+        jest.mocked(db.putTrashSchedule).mockImplementation(()=>{throw new Error("putTrashSchedule Error")});
         db.publishId = async()=>{throw new Error("Test Exception")}
         const response = await register({ data: [{ type: 'burn', schedules: [{ type: 'weekday', value: '0' }] }] }, { id: 'sessionid-005', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon', expire: 9999999 })
 

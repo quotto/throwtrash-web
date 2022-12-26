@@ -65,6 +65,15 @@ Resources:
                 - /
                 - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
                   - Fn::ImportValue: throwtrash-db-session
+              # - Fn::Join:
+              #   - /
+              #   - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+              #     - Fn::ImportValue: throwtrash-db-shared-schedule
+              - Fn::Join:
+                - /
+                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
+                  #TODO: 東東リージョンのDB更新時にImportValueに置き換える
+                  - "throwtrash-shared-schedule"
       PolicyName: !Sub "throwtrash-backend-lambda-policy-${Stage}"
       Roles:
         - !Ref LambdaExecRole
@@ -91,16 +100,16 @@ Resources:
       ContentUri: ../src/layer
       LayerName: !Sub "throwtrash-backend-layer-${Stage}"
       CompatibleRuntimes:
-        - nodejs12.x
+        - nodejs16.x
   LambdaFunction:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
     Properties:
-      CodeUri: ../src/dist
+      CodeUri: ../src/backend-dist
       FunctionName: !Sub "throwtrash-backend-${Stage}"
       Handler: index.handler
       Role: !GetAtt  LambdaExecRole.Arn
-      Runtime: nodejs12.x
+      Runtime: nodejs16.x
       Timeout: 30
       Layers:
         - !Ref FunctionLayer
@@ -179,27 +188,20 @@ Resources:
             Path: "/request_accesstoken"
             Method: "POST"
             RestApiId: !Ref Api
-        StartLink:
+        RequestAuthrozationCode:
           Type: Api
           Properties:
-            Path: "/start_link"
+            Path: "/request_authorization_code"
             Method: "GET"
             RestApiId: !Ref Api
+            Auth:
+              ApiKeyRequired: true
             RequestParameters:
-              - method.request.querystring.platform:
+              - method.request.querystring.user_id:
                   Required: true
-        ExchangeAmazonCode:
-          Type: Api
-          Properties:
-            Path: "/enable_skill"
-            Method: "GET"
-            RestApiId: !Ref Api
-            RequestParameters:
-              - method.request.querystring.state:
+              - method.request.querystring.client_id:
                   Required: true
-              - method.request.querystring.code:
-                  Required: true
-              - method.request.querystring.scope:
+              - method.request.querystring.redirect_uri:
                   Required: true
   Api:
     Type: "AWS::Serverless::Api"
