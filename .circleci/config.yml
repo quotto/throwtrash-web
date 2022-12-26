@@ -14,6 +14,7 @@ commands:
               echo "export MOBILE_API_STAGE=v5" >> $BASH_ENV
               echo "export DBREGION=ap-northeast-1" >> $BASH_ENV
               echo "export SKILL_STAGE=live" >> $BASH_ENV
+              echo "export BACKEND_API_KEY=${BACKEND_PROD_API_KEY}" >> $BASH_ENV
             else
               echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
               echo "export BACK_STAGE=dev" >> $BASH_ENV
@@ -22,6 +23,7 @@ commands:
               echo "export FRONT_STAGE=${BRANCH_HASH:0:8}" >> $BASH_ENV
               echo "export MOBILE_API_STAGE=${BRANCH_HASH:0:8}" >> $BASH_ENV
               echo "export SKILL_STAGE=development" >> $BASH_ENV
+              echo "export BACKEND_API_KEY=${BACKEND_DEV_API_KEY}" >> $BASH_ENV
             fi
 
 jobs:
