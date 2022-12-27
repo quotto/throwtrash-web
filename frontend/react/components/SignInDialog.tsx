@@ -66,7 +66,7 @@ class SignInDialog extends React.Component<Props,{}> {
     componentDidMount() {
         if(document.getElementById('amazon-root')) {
             window.onAmazonLoginReady = function () {
-                amazon.Login.setClientId('amzn1.application-oa2-client.8b1fd843af554c6891d9e48fc3c75be7');
+                amazon.Login.setClientId('amzn1.application-oa2-client.ecccefb79d0e48ba8682285bf243b4f2');
                 amazon.Login.setRegion(amazon.Login.Region.AsiaPacific);
 
             };
