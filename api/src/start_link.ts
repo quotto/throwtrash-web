@@ -15,7 +15,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters ,stage: s
             }
             // デフォルトでLoginWithAmazonの認可エンドポイントを返す
             let loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&response_type=code&state=${state}`;
-            let redirect_uri = `https://mobileapp.mythrowaway.net/${stage}/enable_skill?token=${token}`;
+            let redirect_uri = `https://mobile.mythrowaway.net/${stage}/enable_skill`;
 
             if (params.platform === "android") {
                 const skill_stage = process.env.SKILL_STAGE as SKILL_STAGE;
