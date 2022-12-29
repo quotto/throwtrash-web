@@ -8,7 +8,8 @@ import { AccountLinkItem } from "../interface";
 import start_link from "../start_link";
 describe("start_link",()=>{
     it("正常終了：LoginWithAmazonによるアカウントリンク",async()=>{
-        process.env.ALEXA_CLIENT_ID="dummy_client_id"
+        process.env.SKILL_STAGE = "development";
+        process.env.ALEXA_CLIENT_ID="dummy_client_id";
         const mockedPutAccountLinkItem = jest.mocked(dbadapter.putAccountLinkItem).mockImplementation(async(_: AccountLinkItem)=>true);
 
         const result = await start_link({user_id: "id001", platform: "web"}, "dev") as APIGatewayProxyStructuredResultV2;
@@ -17,13 +18,13 @@ describe("start_link",()=>{
         const body = JSON.parse(result.body!);
         // UUIDv4フフォーマッののハイフ無しであること
         expect(body.token.length).toBe(32);
-        const loginMatchRe = /^https:\/\/www\.amazon\.com\/ap\/oa\?client_id=dummy_client_id&scope=alexa::skills:account_linking&response_type=code&state=.+&redirect_uri=https:\/\/mobileapp.mythrowaway.net\/dev\/enable_skill\?token=.+$/;
+        const loginMatchRe = /^https:\/\/www\.amazon\.com\/ap\/oa\?client_id=dummy_client_id&scope=alexa::skills:account_linking&skill_stage=development&response_type=code&state=.+&redirect_uri=https:\/\/mobile.mythrowaway.net\/dev\/enable_skill$/;
         expect(loginMatchRe.exec(body.url)).toBeTruthy();
         expect(mockedPutAccountLinkItem).toBeCalledWith(expect.objectContaining({
             token: expect.any(String),
             user_id: "id001",
             state: expect.any(String),
-            redirect_url: expect.stringMatching(/^https:\/\/mobileapp\.mythrowaway\.net\/dev\/enable_skill\?token=.+$/),
+            redirect_url: expect.stringMatching(/^https:\/\/mobile\.mythrowaway\.net\/dev\/enable_skill$/),
             TTL: expect.any(Number)
         }));
     });

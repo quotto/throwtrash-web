@@ -14,7 +14,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
         params.code === null || typeof(params.code) === "undefined" ||
         params.token === null || typeof(params.token) === "undefined" ||
         params.redirect_uri === null || typeof(params.redirect_uri) === "undefined") {
-        logger.error("parameter not contains token");
+        logger.error("parameter not contains token or code or redirect_uri");
         return error_def.UserError;
     }
     const accountLinkItem = await db.getAccountLinkItemByToken(params.token);
