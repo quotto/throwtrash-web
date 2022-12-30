@@ -12,11 +12,10 @@ import signout from "./signout";
 import signin from "./signin";
 import oauth_request from "./oauth_request";
 import google_signin from "./google_signin";
-import start_link from "./start_link";
-import enable_skill from "./enable_skill";
 import { SessionItem } from "./interface";
 
 import AWSLambda from "aws-lambda";
+import request_authorization_code from "./request_authorization_code";
 
 const extractSessionId = (cookie:string | undefined)=>{
     if(cookie) {
@@ -100,25 +99,8 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent ,context: AWSL
         return result;
        }
        logger.error("RequestAccessTokenError: event.body is null");
-   } else if (event.resource === "/start_link") {
-        // アカウントリンクURLの通知
-        if(!session) {
-            session = await db.publishSession();
-        }
-        return await start_link(event.queryStringParameters, session, event.requestContext.stage);
-    }
-    else if(event.resource === "/enable_skill") {
-        if(session) {
-            try {
-                const result =  await enable_skill(event.queryStringParameters,session, event.requestContext.stage);
-                return result;
-            } catch(err: any) {
-                logger.error(`Unexpected error(enable_skill)->${err.stack || err}`);
-                logger.error(JSON.stringify(event));
-                logger.error(JSON.stringify(session));
-                logger.error(JSON.stringify(context));
-            }
-        }
+    } else if(event.resource === "/request_authorization_code") {
+        return await request_authorization_code(event.queryStringParameters || {});
     }
     return error_def.UserError;
 };

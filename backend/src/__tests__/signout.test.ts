@@ -6,12 +6,11 @@ import signout from "../signout";
 import db from "../dbadapter";
 import property from "../property";
 
-import { mocked } from "ts-jest/utils";
 import { SessionItem } from "../interface";
 const mockResult: {[key:string]:SessionItem} = {}
 
 jest.mock("../dbadapter");
-mocked(db.saveSession).mockImplementation(async(_session)=>{
+jest.mocked(db.saveSession).mockImplementation(async(_session)=>{
     mockResult[_session.id] = _session;
     return true;
 });

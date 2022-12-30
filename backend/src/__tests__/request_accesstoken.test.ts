@@ -4,14 +4,13 @@ const logger = common.getLogger();
 logger.setLevel_DEBUG();
 import error_def from "../error_def";
 
-import { mocked } from "ts-jest/utils";
 
 const mockDate = Date.UTC(2020,3,1,12,0,0,0);
 const mockResult: any = { };
 
 jest.mock("../dbadapter");
 
-mocked(db.getAuthorizationCode).mockImplementation(async (code: string) => {
+jest.mocked(db.getAuthorizationCode).mockImplementation(async (code: string) => {
     if (code === "12345") {
         return {
             code: code, user_id: "id001", client_id: "alexa-skill", redirect_uri: "https://alexa.amazon.co.jp/api/skill/link/XXXXXX",expires_in: 99999
@@ -34,10 +33,10 @@ mocked(db.getAuthorizationCode).mockImplementation(async (code: string) => {
         return undefined;
     }
 });
-mocked(db.deleteAuthorizationCode).mockImplementation(async(code: string)=>{
+jest.mocked(db.deleteAuthorizationCode).mockImplementation(async(code: string)=>{
     return true;
 });
-mocked(db.putAccessToken).mockImplementation(async (user_id: string, client_id: string, expires_in: number) => {
+jest.mocked(db.putAccessToken).mockImplementation(async (user_id: string, client_id: string, expires_in: number) => {
     if (user_id === "id001") {
         mockResult["accesstoken001"] = {
             client_id: client_id,
@@ -61,7 +60,7 @@ mocked(db.putAccessToken).mockImplementation(async (user_id: string, client_id: 
     }
     return "";
 });
-mocked(db.putRefreshToken).mockImplementation(async (user_id: string, client_id: string, expires_in: number) => {
+jest.mocked(db.putRefreshToken).mockImplementation(async (user_id: string, client_id: string, expires_in: number) => {
     if (user_id === "id001") {
         mockResult["refreshtoken001"] = {
             client_id: client_id,
@@ -85,7 +84,7 @@ mocked(db.putRefreshToken).mockImplementation(async (user_id: string, client_id:
     }
     return "";
 });
-mocked(db.getRefreshToken).mockImplementation(async(refresh_token: string) => {
+jest.mocked(db.getRefreshToken).mockImplementation(async(refresh_token: string) => {
     if (refresh_token === "refreshtoken004") {
         return {
             user_id: "id004",
@@ -126,7 +125,7 @@ describe("request_accesstoken",()=>{
 
        const date = new Date(body.expires_in);
        expect(body.expires_in).toBe(30 * 24 * 60 * 60);
-       
+
        expect(mockResult["accesstoken001"].client_id).toBe("alexa-skill");
        expect(mockResult["accesstoken001"].expires_in).toBe(Math.ceil(mockDate/1000)+(30 * 24 * 60 * 60));
        expect(mockResult["refreshtoken001"].client_id).toBe("alexa-skill");

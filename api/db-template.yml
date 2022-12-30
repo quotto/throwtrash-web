@@ -5,19 +5,46 @@ Parameters:
   ActivationTableName:
     Type: String
     Default: throwtrash-activation
+  AccountLinkTableName:
+    Type: String
+    Default: throwtrash-accountlink
 Resources:
   ActivationTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
       AttributeDefinitions:
         -
-          AttributeName: "code" 
+          AttributeName: "code"
           AttributeType: "S"
       KeySchema:
         -
           AttributeName: "code"
           KeyType: HASH
-      TableName: !Ref ActivationTableName 
+      TableName: !Ref ActivationTableName
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        -
+          Key: Group
+          Value: throwtrash
+        -
+          Key: Purpose
+          Value: MobileBackend
+    DeletionPolicy: Retain
+  AccountLinkTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "token"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "token"
+          KeyType: HASH
+      TableName: !Ref AccountLinkTableName
       TimeToLiveSpecification:
         AttributeName: TTL
         Enabled: true
@@ -35,3 +62,7 @@ Outputs:
     Export:
       Name: "throwtrash-db-activation"
     Value: !Ref ActivationTableName
+  AccountLinkTable:
+    Export:
+      Name: "throwtrash-db-accountlink"
+    Value: !Ref AccountLinkTable
