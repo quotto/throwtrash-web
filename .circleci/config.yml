@@ -214,6 +214,8 @@ jobs:
             - npm-deps-front-{{ .Branch }}
             - npm-deps-front
       - aws-cli/install
+      - aws-cli/setup:
+          profile-name: default
       - run:
           name: set-script
           command: |
