@@ -41,7 +41,6 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
     try {
         const amazonAccessToken = await rp(options);
         logger.debug(`Response Amazon AccessToken${JSON.stringify(amazonAccessToken)}`);
-
         const alexaEndpoint = await rp({
             uri: "https://api.amazonalexa.com/v1/alexaApiEndpoint",
             headers: {

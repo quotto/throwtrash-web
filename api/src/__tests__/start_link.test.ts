@@ -72,6 +72,48 @@ describe("start_link",()=>{
             }));
         });
     });
+    describe("正常終了：iOSアプリによるアカウントリンク", () => {
+        it("開発用スキル", async () => {
+            process.env.SKILL_STAGE = "development";
+            process.env.ALEXA_CLIENT_ID = "dummy_client_id";
+            const mockedPutAccountLinkItem = jest.mocked(dbadapter.putAccountLinkItem).mockImplementation(async (_: AccountLinkItem) => true);
+            const result = await start_link({ user_id: "id001", platform: "ios" }, "dev") as APIGatewayProxyStructuredResultV2;
+            expect(result.statusCode).toBe(200);
+            expect(result.headers!["Cache-Control"]).toBe("no-store");
+            const body = JSON.parse(result.body!);
+            // UUIDv4フォーマットのハイフン無しであること
+            expect(body.token.length).toBe(32);
+            const loginMatchRe = /^https:\/\/alexa\.amazon\.com\/spa\/skill-account-linking-consent\?fragment=skill-account-linking-consent&client_id=dummy_client_id&scope=alexa::skills:account_linking&skill_stage=development&response_type=code&state=.{20}&redirect_uri=https:\/\/mobileapp.mythrowaway.net\/accountlink$/
+            expect(loginMatchRe.exec(body.url)).toBeTruthy();
+            expect(mockedPutAccountLinkItem).toBeCalledWith(expect.objectContaining({
+                token: expect.any(String),
+                user_id: "id001",
+                state: expect.any(String),
+                redirect_url: expect.stringMatching(/^https:\/\/mobileapp\.mythrowaway\.net\/accountlink$/),
+                TTL: expect.any(Number)
+            }));
+        });
+        it("本番用スキル", async () => {
+            process.env.SKILL_STAGE = "live";
+            process.env.ALEXA_CLIENT_ID = "dummy_client_id";
+            const mockedPutAccountLinkItem = jest.mocked(dbadapter.putAccountLinkItem).mockImplementation(async (_: AccountLinkItem) => true);
+            const result = await start_link({ user_id: "id001", platform: "ios" }, "v4") as APIGatewayProxyStructuredResultV2;
+            expect(result.statusCode).toBe(200);
+            expect(result.headers!["Cache-Control"]).toBe("no-store");
+            const body = JSON.parse(result.body!);
+            // UUIDv4フォーマットのハイフン無しであること
+            expect(body.token.length).toBe(32);
+            const loginMatchRe = /^https:\/\/alexa\.amazon\.com\/spa\/skill-account-linking-consent\?fragment=skill-account-linking-consent&client_id=dummy_client_id&scope=alexa::skills:account_linking&skill_stage=live&response_type=code&state=.{20}&redirect_uri=https:\/\/mobileapp.mythrowaway.net\/accountlink$/
+            expect(loginMatchRe.exec(body.url)).toBeTruthy();
+            expect(mockedPutAccountLinkItem).toBeCalledWith(expect.objectContaining({
+                token: expect.any(String),
+                user_id: "id001",
+                state: expect.any(String),
+                redirect_url: expect.stringMatching(/^https:\/\/mobileapp\.mythrowaway\.net\/accountlink$/),
+                TTL: expect.any(Number)
+            }));
+        });
+    });
     describe("異常系",()=>{
         it("パラメータuser_idが無い場合はユーザーエラー", async () => {
             process.env.SKILL_STAGE = "live";
