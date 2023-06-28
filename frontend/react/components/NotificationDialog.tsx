@@ -44,7 +44,7 @@ class NotificationDialog extends React.Component<Props, {}> {
     }
 
     componentDidUpdate() {
-        // iOS以外で通知ダイアログが閉じられた直後にIntroJSを開始する
+        // 通知ダイアログが閉じられた直後にIntroJSを開始する
         if(!this.props.notificationDialog && !isShowedNotification()) {
             document.cookie = 'showedNotification=true; ' + document.cookie;
             this.runIntroJs();
