@@ -39,14 +39,7 @@ class NotificationDialog extends React.Component<Props, {}> {
     componentDidMount() {
         const ua = navigator.userAgent;
         if(!isShowedNotification())  {
-            if(ua.indexOf('iPhone') === -1 && ua.indexOf('iPad') === -1) {
-                //ダイアログの表示
-                this.props.onNotificationDialog(true);
-            } else {
-                // iOSの場合はcomponentDidUpdateがコールされないためここでcookie更新、IntroJS実行
-                document.cookie = 'showedNotification=true; ' + document.cookie;
-                this.runIntroJs();
-            }
+            this.props.onNotificationDialog(true);
         }
     }
 
