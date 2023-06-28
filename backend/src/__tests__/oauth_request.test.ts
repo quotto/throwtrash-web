@@ -17,7 +17,7 @@ jest.mocked(db.saveSession).mockImplementation(async(session)=>{
     return false;
 });
 describe("oauth_request", () => {
-    it("セッションID新規発行", async () => {
+    it("セッションID新規発行されること,フロントエンドステージの環境変数がない場合はAPI上のパスをステージに使用すること", async () => {
         // パラメータはqueryStringParameters,セッション情報,セッション新規発行フラグ,API Gatewayのstage
         const response = await oauth_request({
             state: "123456",
@@ -42,7 +42,8 @@ describe("oauth_request", () => {
         expect(session.platform).toBe("amazon");
         expect(session.expire).toBe(99999999);
     });
-    it("有効なセッションIDを既に利用している場合", async () => {
+    it("有効なセッションIDを既に利用している場合はセッションIDを継続すること", async () => {
+        // 環境変数を設定する
         const response = await oauth_request({
             state: "123456",
             client_id: "alexa-skill",

@@ -16,9 +16,9 @@ const styles = (theme: Theme): StyleRules=> createStyles({
         textAlign: 'center',
         width: '100%'
     },
-    googleplayImg: {
-        width: '50%'
-    }
+    storeButtonImage: {
+        width: '50%',
+    },
 });
 
 const isShowedNotification = ()=>{
@@ -39,19 +39,12 @@ class NotificationDialog extends React.Component<Props, {}> {
     componentDidMount() {
         const ua = navigator.userAgent;
         if(!isShowedNotification())  {
-            if(ua.indexOf('iPhone') === -1 && ua.indexOf('iPad') === -1) {
-                //ダイアログの表示
-                this.props.onNotificationDialog(true);
-            } else {
-                // iOSの場合はcomponentDidUpdateがコールされないためここでcookie更新、IntroJS実行
-                document.cookie = 'showedNotification=true; ' + document.cookie;
-                this.runIntroJs();
-            }
+            this.props.onNotificationDialog(true);
         }
     }
 
     componentDidUpdate() {
-        // iOS以外で通知ダイアログが閉じられた直後にIntroJSを開始する
+        // 通知ダイアログが閉じられた直後にIntroJSを開始する
         if(!this.props.notificationDialog && !isShowedNotification()) {
             document.cookie = 'showedNotification=true; ' + document.cookie;
             this.runIntroJs();
@@ -83,7 +76,12 @@ class NotificationDialog extends React.Component<Props, {}> {
                 <DialogContent>
                     <div className={classes.notificationMainContent}>
                         <a href='https://play.google.com/store/apps/details?id=net.my.throwtrash&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'>
-                            <img className={classes.googleplayImg} alt='Google Play で手に入れよう' src='https://play.google.com/intl/en_us/badges/static/images/badges/ja_badge_web_generic.png' />
+                            <img className={classes.storeButtonImage} alt='Google Play で手に入れよう' src='img/btn_google_play_ja.png' />
+                        </a>
+                    </div>
+                    <div className={classes.notificationMainContent}>
+                        <a href='https://apps.apple.com/jp/app/%E4%BB%8A%E6%97%A5%E3%81%AE%E3%82%B4%E3%83%9F%E5%87%BA%E3%81%97-%E3%82%B9%E3%83%9E%E3%83%BC%E3%83%88%E3%82%B9%E3%83%94%E3%83%BC%E3%82%AB%E3%83%BC%E9%80%A3%E6%90%BA/id6450391257'>
+                            <img className={classes.storeButtonImage} alt='App Store で手に入れよう' src='img/btn_app_store_ja.svg' />
                         </a>
                     </div>
                 </DialogContent>
