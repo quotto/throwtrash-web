@@ -4,6 +4,7 @@ import error_def from "./error_def";
 import {BackendResponse, SessionItem} from "./interface";
 
 export default async (params: any,session: SessionItem,new_flg: boolean,stage: string): Promise<BackendResponse>=> {
+    const front_end_stage = process.env.FRONT_END_STAGE || stage;
     if(params && params.state && params.client_id && params.redirect_uri && params.platform && stage) {
         session.state = params.state;
         session.client_id = params.client_id;
@@ -14,7 +15,7 @@ export default async (params: any,session: SessionItem,new_flg: boolean,stage: s
             const response: BackendResponse =  {
                 statusCode: 301,
                 headers: {
-                    Location: `https://accountlink.mythrowaway.net/${stage}/index.html`
+                    Location: `https://accountlink.mythrowaway.net/${front_end_stage}/index.html`
                 }
             };
             if(new_flg) {
@@ -24,6 +25,6 @@ export default async (params: any,session: SessionItem,new_flg: boolean,stage: s
         }
         return error_def.ServerError;
 
-    } 
+    }
     return error_def.UserError;
 };
