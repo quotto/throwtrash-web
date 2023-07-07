@@ -93,13 +93,14 @@ class SignInDialog extends React.Component<Props,{}> {
             popup: false
         };
 
-        amazon.Login.authorize(options, (response)=>{
-            if(response.error) {
-                console.error('amazonログインエラー:' + response.error);
-                return;
-            }
-            document.location.href = `https://${API_HOST}/${API_STAGE}/signin?service=amazon&access_token=${encodeURIComponent((response as AccessTokenRequest).access_token)}`;
-        });
+        // amazon.Login.authorize(options, (response)=>{
+        //     if(response.error) {
+        //         console.error('amazonログインエラー:' + response.error);
+        //         return;
+        //     }
+        //     document.location.href = `https://${API_HOST}/${API_STAGE}/signin?service=amazon&access_token=${encodeURIComponent((response as AccessTokenRequest).access_token)}`;
+        // });
+        amazon.Login.authorize(options, `https://${API_HOST}/${API_STAGE}/signin?service=amazon&access_token=${encodeURIComponent((response as AccessTokenRequest).access_token)}`);
         return false;
     }
 
