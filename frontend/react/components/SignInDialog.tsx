@@ -83,7 +83,13 @@ class SignInDialog extends React.Component<Props,{}> {
     }
 
     loginWithAmazon() {
-        var options: AuthorizeOptions = { scope: 'profile' };
+        var options: AuthorizeOptions = {
+            scope: 'profile',
+            scope_data: {
+                essential: false
+            },
+            popup: false
+        };
 
         amazon.Login.authorize(options, (response)=>{
             if(response.error) {
