@@ -100,7 +100,7 @@ class SignInDialog extends React.Component<Props,{}> {
         //     }
         //     document.location.href = `https://${API_HOST}/${API_STAGE}/signin?service=amazon&access_token=${encodeURIComponent((response as AccessTokenRequest).access_token)}`;
         // });
-        amazon.Login.authorize(options, `https://${API_HOST}/${API_STAGE}/signin?service=amazon&access_token=${encodeURIComponent((response as AccessTokenRequest).access_token)}`);
+        amazon.Login.authorize(options, `https://${API_HOST}/${API_STAGE}/signin?service=amazon`);
         return false;
     }
 
