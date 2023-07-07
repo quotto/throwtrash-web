@@ -86,7 +86,9 @@ class SignInDialog extends React.Component<Props,{}> {
         var options: AuthorizeOptions = {
             scope: 'profile',
             scope_data: {
-                essential: false
+                profile: {
+                    essential: false
+                }
             },
             popup: false
         };
