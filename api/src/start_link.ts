@@ -9,7 +9,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters ,stage: s
     if (params.user_id && params.platform) {
         const token = common.generateUUID();
         const state = common.generateRandomCode(20);
-        const redirect_uri = "https://mobile.mythrowaway.net/accountlink";
+        const redirect_uri = "https://mobileapp.mythrowaway.net/accountlink";
         try {
             if(typeof process.env.ALEXA_CLIENT_ID === "undefined") {
                 throw Error("ALEXA_CLIENT_ID is undfined");

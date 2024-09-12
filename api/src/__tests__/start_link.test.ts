@@ -18,13 +18,13 @@ describe("start_link",()=>{
         const body = JSON.parse(result.body!);
         // UUIDv4フフォーマッののハイフ無しであること
         expect(body.token.length).toBe(32);
-        const loginMatchRe = /^https:\/\/www\.amazon\.com\/ap\/oa\?client_id=dummy_client_id&scope=alexa::skills:account_linking&skill_stage=development&response_type=code&state=.+&redirect_uri=https:\/\/mobile.mythrowaway.net\/accountlink$/;
+        const loginMatchRe = /^https:\/\/www\.amazon\.com\/ap\/oa\?client_id=dummy_client_id&scope=alexa::skills:account_linking&skill_stage=development&response_type=code&state=.+&redirect_uri=https:\/\/mobileapp.mythrowaway.net\/accountlink$/;
         expect(loginMatchRe.exec(body.url)).toBeTruthy();
         expect(mockedPutAccountLinkItem).toBeCalledWith(expect.objectContaining({
             token: expect.any(String),
             user_id: "id001",
             state: expect.any(String),
-            redirect_url: expect.stringMatching(/^https:\/\/mobile\.mythrowaway\.net\/accountlink$/),
+            redirect_url: expect.stringMatching(/^https:\/\/mobileapp\.mythrowaway\.net\/accountlink$/),
             TTL: expect.any(Number)
         }));
     });
