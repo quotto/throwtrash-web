@@ -9,6 +9,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters ,stage: s
     if (params.user_id && params.platform) {
         const token = common.generateUUID();
         const state = common.generateRandomCode(20);
+        const redirect_uri = "https://mobileapp.mythrowaway.net/accountlink";
         try {
             if(typeof process.env.ALEXA_CLIENT_ID === "undefined") {
                 throw Error("ALEXA_CLIENT_ID is undfined");
@@ -19,14 +20,11 @@ export default async(params: APIGatewayProxyEventQueryStringParameters ,stage: s
             }
             // デフォルトでLoginWithAmazonの認可エンドポイントを返す
             let loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&skill_stage=${skill_stage.toString()}&response_type=code&state=${state}`;
-            let redirect_uri = `https://mobile.mythrowaway.net/${stage}/enable_skill`;
-
             if (params.platform === "android" || params.platform === "ios") {
                 // AndroidまたはiOSからアカウントリンクする場合はアレクサアプリのアプリリンクを返す
-                redirect_uri = "https://mobileapp.mythrowaway.net/accountlink";
                 loginUrl = `https://alexa.amazon.com/spa/skill-account-linking-consent?fragment=skill-account-linking-consent&client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&skill_stage=${skill_stage.toString()}&response_type=code&state=${state}`
             }
-            loginUrl+=`&redirect_uri=${redirect_uri}`;
+            loginUrl += `&redirect_uri=${redirect_uri}`;
 
             // redirect_uriはAmazonのアクセストークン取得要求に必要なのでセッションに保存しておく
             const accountLinkItem : AccountLinkItem = {
