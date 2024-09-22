@@ -40,13 +40,13 @@ describe("start_link",()=>{
             const body = JSON.parse(result.body!);
             // UUIDv4フォーマットのハイフン無しであること
             expect(body.token.length).toBe(32);
-            const loginMatchRe = /^https:\/\/alexa\.amazon\.com\/spa\/skill-account-linking-consent\?fragment=skill-account-linking-consent&client_id=dummy_client_id&scope=alexa::skills:account_linking&skill_stage=development&response_type=code&state=.{20}&redirect_uri=https:\/\/mobileapp.mythrowaway.net\/accountlink$/
+            const loginMatchRe = /^https:\/\/alexa\.amazon\.com\/spa\/skill-account-linking-consent\?fragment=skill-account-linking-consent&client_id=dummy_client_id&scope=alexa::skills:account_linking&skill_stage=development&response_type=code&state=.{20}&redirect_uri=https:\/\/mobileapp.dev.mythrowaway.net\/accountlink$/
             expect(loginMatchRe.exec(body.url)).toBeTruthy();
             expect(mockedPutAccountLinkItem).toBeCalledWith(expect.objectContaining({
                 token: expect.any(String),
                 user_id: "id001",
                 state: expect.any(String),
-                redirect_url: expect.stringMatching(/^https:\/\/mobileapp\.mythrowaway\.net\/accountlink$/),
+                redirect_url: expect.stringMatching(/^https:\/\/mobileapp\.dev\.mythrowaway\.net\/accountlink$/),
                 TTL: expect.any(Number)
             }));
         });

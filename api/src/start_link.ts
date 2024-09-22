@@ -9,7 +9,6 @@ export default async(params: APIGatewayProxyEventQueryStringParameters ,stage: s
     if (params.user_id && params.platform) {
         const token = common.generateUUID();
         const state = common.generateRandomCode(20);
-        const redirect_uri = "https://mobileapp.mythrowaway.net/accountlink";
         try {
             if(typeof process.env.ALEXA_CLIENT_ID === "undefined") {
                 throw Error("ALEXA_CLIENT_ID is undfined");
@@ -18,6 +17,9 @@ export default async(params: APIGatewayProxyEventQueryStringParameters ,stage: s
             if (skill_stage != "development" && skill_stage != "live") {
                 throw Error("SKILL_STAGE is invalid");
             }
+            const app_link_host = skill_stage === "development" && params.platform === "android" ? "mobileapp.dev.mythrowaway.net" : "mobileapp.mythrowaway.net"
+            const redirect_uri = `https://${app_link_host}/accountlink`;
+
             // デフォルトでLoginWithAmazonの認可エンドポイントを返す
             let loginUrl = `https://www.amazon.com/ap/oa?client_id=${process.env.ALEXA_CLIENT_ID}&scope=alexa::skills:account_linking&skill_stage=${skill_stage.toString()}&response_type=code&state=${state}`;
             if (params.platform === "android" || params.platform === "ios") {
