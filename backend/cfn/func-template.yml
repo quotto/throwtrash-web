@@ -11,7 +11,6 @@ Parameters:
     Type: "String"
   Stage:
     Type: "String"
-    Default: "dev"
   AlexaClientID:
     Type: "String"
   AlexaClientSecret:
@@ -26,9 +25,9 @@ Parameters:
     Type: "String"
   AlexaSkillID:
     Type: "String"
-  DBRegion:
-    Type: "String"
   FrontendStage:
+    Type: "String"
+  ApiGatewayOrigin:
     Type: "String"
 Resources:
   LambdaExecPolicy:
@@ -41,41 +40,13 @@ Resources:
             Effect: "Allow"
             Action: "dynamodb:*"
             Resource:
-              - Fn::Join:
-                - /
-                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
-                  - Fn::ImportValue: throwtrash-db-schedule
-              - Fn::Join:
-                - /
-                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
-                  - Fn::ImportValue: throwtrash-db-schedule
-                  - "index"
-                  - Fn::ImportValue: throwtrash-db-schedule-signinIndex
-              - Fn::Join:
-                - /
-                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
-                  - Fn::ImportValue: throwtrash-db-accesstoken
-              - Fn::Join:
-                - /
-                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
-                  - Fn::ImportValue: throwtrash-db-refreshtoken
-              - Fn::Join:
-                - /
-                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
-                  - Fn::ImportValue: throwtrash-db-authorization
-              - Fn::Join:
-                - /
-                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
-                  - Fn::ImportValue: throwtrash-db-session
-              # - Fn::Join:
-              #   - /
-              #   - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
-              #     - Fn::ImportValue: throwtrash-db-shared-schedule
-              - Fn::Join:
-                - /
-                - - Fn::Sub: arn:aws:dynamodb:${DBRegion}:${AWS::AccountId}:table
-                  #TODO: 東東リージョンのDB更新時にImportValueに置き換える
-                  - "throwtrash-shared-schedule"
+              - Fn::ImportValue: throwtrash-db-schedule
+              - Fn::ImportValue: throwtrash-db-schedule-signinIndex
+              - Fn::ImportValue: throwtrash-db-accesstoken
+              - Fn::ImportValue: throwtrash-db-refreshtoken
+              - Fn::ImportValue: throwtrash-db-authorization
+              - Fn::ImportValue: throwtrash-db-session
+              - Fn::ImportValue: throwtrash-db-shared-schedule
       PolicyName: !Sub "throwtrash-backend-lambda-policy-${Stage}"
       Roles:
         - !Ref LambdaExecRole
@@ -117,7 +88,6 @@ Resources:
         - !Ref FunctionLayer
       Environment:
         Variables:
-          DB_REGION: !Ref DBRegion
           RUNLEVEL: !Ref RunLevel
           GOOGLE_CLIENT_ID: !Ref GoogleClientID
           GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
@@ -217,7 +187,7 @@ Resources:
       StageName: !Ref Stage
       Cors:
         AllowMethods: "'GET,POST'"
-        AllowOrigin: "'https://accountlink.mythrowaway.net'"
+        AllowOrigin: !Sub "'${ApiGatewayOrigin}'"
         AllowHeaders: "'Content-Type'"
         AllowCredentials: true
       MethodSettings:

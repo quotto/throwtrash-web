@@ -183,28 +183,28 @@ Outputs:
   AuthorizationTable:
     Export:
       Name: !Sub "throwtrash-db-authorization"
-    Value: !Ref AuthorizationTableName
+    Value: !GetAtt AuthorizationTable.Arn
   AccessTokenTable:
     Export:
       Name: !Sub "throwtrash-db-accesstoken"
-    Value: !Ref AccessTokenTableName
+    Value: !GetAtt AccessTokenTable.Arn
   RefreshTokenTable:
     Export:
       Name: !Sub "throwtrash-db-refreshtoken"
-    Value: !Ref RefreshTokenTableName
+    Value: !GetAtt RefreshTokenTable.Arn
   SessionTable:
     Export:
       Name: !Sub "throwtrash-db-session"
-    Value: !Ref SessionTableName
+    Value: !GetAtt SessionTable.Arn
   TrashScheduleTable:
     Export:
       Name: !Sub "throwtrash-db-schedule"
-    Value: !Ref TrashScheduleTableName
+    Value: !GetAtt TrashScheduleTable.Arn
   SigninIdIndex:
     Export:
       Name: !Sub "throwtrash-db-schedule-signinIndex"
-    Value: !Ref SigninIdIndexName
+    Value: !Sub "${TrashScheduleTable.Arn}/index/${SigninIdIndexName}"
   SharedSchedule:
     Export:
       Name: !Sub "throwtrash-db-shared-schedule"
-    Value: !Ref SharedScheduleTable
+    Value: !GetAtt SharedScheduleTable.Arn

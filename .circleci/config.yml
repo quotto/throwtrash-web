@@ -12,18 +12,20 @@ commands:
               echo "export BACK_STAGE=v5" >> $BASH_ENV
               echo "export FRONT_STAGE=v5" >> $BASH_ENV
               echo "export MOBILE_API_STAGE=v5" >> $BASH_ENV
-              echo "export DBREGION=ap-northeast-1" >> $BASH_ENV
               echo "export SKILL_STAGE=live" >> $BASH_ENV
-              echo "export BACKEND_API_KEY=${BACKEND_PROD_API_KEY}" >> $BASH_ENV
+              echo "export MOBILE_API_KEY=${BACKEND_PROD_API_KEY}" >> $BASH_ENV
+              echo "export BACKEND_API_ENDPOINT=https://backend.mythrowaway.net" >> $BASH_ENV
+              echo "export BACKEND_API_GATEWAY_ORIGIN=https://accountlink.mythrowaway.net" >> $BASH_ENV
             else
               echo "export RUNLEVEL=DEBUG" >> $BASH_ENV
-              echo "export BACK_STAGE=dev" >> $BASH_ENV
-              echo "export DBREGION=us-west-2" >> $BASH_ENV
               BRANCH_HASH=$(echo ${CIRCLE_BRANCH} | sha256sum)
+              echo "export BACK_STAGE=${BRANCH_HASH:0:8}" >> $BASH_ENV
               echo "export FRONT_STAGE=${BRANCH_HASH:0:8}" >> $BASH_ENV
               echo "export MOBILE_API_STAGE=${BRANCH_HASH:0:8}" >> $BASH_ENV
               echo "export SKILL_STAGE=development" >> $BASH_ENV
-              echo "export BACKEND_API_KEY=${BACKEND_DEV_API_KEY}" >> $BASH_ENV
+              echo "export MOBILE_API_KEY=${BACKEND_DEV_API_KEY}" >> $BASH_ENV
+              echo "export BACKEND_API_ENDPOINT=https://dev.backend.mythrowaway.net" >> $BASH_ENV
+              echo "export BACKEND_API_GATEWAY_ORIGIN=https://dev.accountlink.mythrowaway.net" >> $BASH_ENV
             fi
 
 jobs:
@@ -55,6 +57,10 @@ jobs:
       - image: cimg/node:16.17
     steps:
       - set-stage-env
+      - aws-cli/setup:
+          profile_name: default
+          role_arn: arn:aws:iam::${AWS_ACCOUNT_ID}:role/throwtrash-api-tester-role
+          role_session_name: throwtrash-api-tester-role-session
       - checkout
       - restore_cache:
           keys:
@@ -190,6 +196,10 @@ jobs:
     executor: aws-cli/default
     steps:
       - set-stage-env
+      - aws-cli/setup:
+          profile_name: default
+          role_arn: arn:aws:iam::${AWS_ACCOUNT_ID}:role/throwtrash-api-deploy-role
+          role_session_name: throwtrash-api-deploy-role-session
       - checkout
       - attach_workspace:
           at: frontend
@@ -225,7 +235,7 @@ jobs:
       - run:
           name: frontend deploy
           command: |
-            aws s3 sync frontend/frontend-dist/${FRONT_STAGE} s3://throwtrash/${FRONT_STAGE}
+            aws s3 sync frontend/frontend-dist/${FRONT_STAGE} s3://${AWS_FRONTEND_BUCKET}/${FRONT_STAGE}
             # 本番デプロイ時はデプロイステージのキャッシュをクリア
             if [ "${CIRCLE_BRANCH}" == "deploy" ]; then
               aws cloudfront create-invalidation --distribution-id ${AWS_CLOUDFRONT_DST_ID} --paths /${FRONT_STAGE}/*
@@ -240,7 +250,7 @@ jobs:
             fi
 
             # DBのデプロイ
-            aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --region=${DBREGION}
+            aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --region=${AWS_DEFAULT_REGION}
 
             # lambdaでは1980年以前のタイムスタンプを持つファイルをzipできないためざっくりと1981年以前のファイル日時を更新する
             YEAR_DIFF=$(expr `date +%Y` - 1981)
@@ -252,67 +262,62 @@ jobs:
             mv backend/src/node_modules backend/src/layer/nodejs
 
             # API/Lambdaのパッケージングとデプロイ
-            aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashbackend
+            aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${AWS_ACCOUNT_ID} --s3-prefix throwtrashbackend
 
-            aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${BACK_STAGE} --parameter-overrides Stage=${BACK_STAGE} FrontendStage=${FRONT_STAGE} AlexaClientID=${ALEXA_CLIENT_ID} AlexaClientSecret=${ALEXA_CLIENT_SECRET} GoogleClientID=${GOOGLE_CLIENT_ID} GoogleClientSecret=${GOOGLE_CLIENT_SECRET} RunLevel=${RUNLEVEL} DBRegion=${DBREGION} AlexaUserClientID=${ALEXA_USER_CLIENT_ID} AlexaUserSecret=${ALEXA_USER_SECRET} GoogleUserClientID=${GOOGLE_USER_CLIENT_ID} GoogleUserSecret=${GOOGLE_USER_SECRET} AlexaSkillID=${ALEXA_SKILL_ID} --role-arn ${BACKEND_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+            aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${BACK_STAGE} --parameter-overrides Stage=${BACK_STAGE} FrontendStage=${FRONT_STAGE} AlexaClientID=${ALEXA_CLIENT_ID} AlexaClientSecret=${ALEXA_CLIENT_SECRET} GoogleClientID=${GOOGLE_CLIENT_ID} GoogleClientSecret=${GOOGLE_CLIENT_SECRET} RunLevel=${RUNLEVEL} AlexaUserClientID=${ALEXA_USER_CLIENT_ID} AlexaUserSecret=${ALEXA_USER_SECRET} GoogleUserClientID=${GOOGLE_USER_CLIENT_ID} GoogleUserSecret=${GOOGLE_USER_SECRET} AlexaSkillID=${ALEXA_SKILL_ID} ApiGatewayOrigin=${BACKEND_API_GATEWAY_ORIGIN} --role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
       - run:
           name: api deploy
           command: |
             # DBのデプロイ
-            aws cloudformation deploy --template-file api/db-template.yml --stack-name throwtrash-mobile-db --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --region=${DBREGION}
+            aws cloudformation deploy --template-file api/db-template.yml --stack-name throwtrash-mobile-db --role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --region=${AWS_DEFAULT_REGION}
 
             # Lambda LayersのNodeJSモジュールはnodejsの下に配置が必要
             mkdir -p api/src/layer/nodejs
             mv api/src/node_modules api/src/layer/nodejs
 
             # API/Lambdaのパッケージングとデプロイ
-            aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_DEFAULT_REGION} --s3-prefix throwtrashapi
+            aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${AWS_ACCOUNT_ID} --s3-prefix throwtrashapi
 
-            # AuthorizationEndpointの設定
-            AUTHORIZATION_ENDPOINT="https://backend.mythrowaway.net/${BACK_STAGE}"
-            aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${MOBILE_API_STAGE} --parameter-overrides RunLevel=${RUNLEVEL} Stage=${MOBILE_API_STAGE} DBRegion=${DBREGION} SkillStage=${SKILL_STAGE} AlexaSkillID=${ALEXA_SKILL_ID} AlexaClientID=${ALEXA_CLIENT_ID} AlexaClientSecret=${ALEXA_CLIENT_SECRET} AlexaUserClientID=${ALEXA_USER_CLIENT_ID} AuthorizationEndpoint=https://backend.mythrowaway.net/${BACK_STAGE} BackendApiKey=${BACKEND_API_KEY} --role-arn ${API_CFN_ROLE} --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+            aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${MOBILE_API_STAGE} --parameter-overrides RunLevel=${RUNLEVEL} Stage=${MOBILE_API_STAGE} SkillStage=${SKILL_STAGE} AlexaSkillID=${ALEXA_SKILL_ID} AlexaClientID=${ALEXA_CLIENT_ID} AlexaClientSecret=${ALEXA_CLIENT_SECRET} AlexaUserClientID=${ALEXA_USER_CLIENT_ID} AuthorizationEndpoint=${BACKEND_API_ENDPOINT}/${BACK_STAGE} BackendApiKey=${MOBILE_API_KEY} --role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
 workflows:
-  version: 2
-  test_and_deploy:
+  deploy-dev:
+    when:
+      not:
+        matches:
+          pattern: ^deploy$
+          value: << pipeline.git.branch >>
     jobs:
-      - frontend-test:
-          context: aws-test
-          filters:
-            branches:
-              ignore: master
-      - backend-test:
-          context: aws-test
-          filters:
-            branches:
-              ignore: master
-      - api-test:
-          filters:
-            branches:
-              ignore: master
-      - frontend-build:
-          requires:
-            - frontend-test
-          filters:
-            branches:
-              ignore: master
-      - backend-build:
-          requires:
-            - backend-test
-          filters:
-            branches:
-              ignore: master
-      - api-build:
-          requires:
-            - api-test
-          filters:
-            branches:
-              ignore: master
+      - frontend-build
+      - backend-build
+      - api-build
       - deploy:
           requires:
             - frontend-build
             - api-build
             - backend-build
-          filters:
-            branches:
-              ignore: master
-          context: aws-deploy
+          context: aws-dev-deploy
+      - frontend-test:
+          context: aws-dev-test
+          requires:
+            - deploy
+      - backend-test:
+          context: aws-dev-test
+          requires:
+            - deploy
+      - api-test:
+          context: aws-dev-test
+          requires:
+            - deploy
+  deploy-prod:
+    when:
+      equal: [deploy, << pipeline.git.branch >>]
+    jobs:
+      - frontend-build
+      - backend-build
+      - api-build
+      - deploy:
+          requires:
+            - frontend-build
+            - api-build
+            - backend-build
+          context: aws-prod-deploy

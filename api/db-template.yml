@@ -61,8 +61,8 @@ Outputs:
   ActivationTable:
     Export:
       Name: "throwtrash-db-activation"
-    Value: !Ref ActivationTableName
+    Value: !GetAtt ActivationTable.Arn
   AccountLinkTable:
     Export:
       Name: "throwtrash-db-accountlink"
-    Value: !Ref AccountLinkTable
+    Value: !GetAtt AccountLinkTable.Arn
