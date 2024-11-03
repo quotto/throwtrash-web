@@ -27,11 +27,11 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       Tags:
         -
-          Key: Group
-          Value: throwtrash
+          Key: group
+          Value: mobile
         -
-          Key: Purpose
-          Value: MobileBackend
+          Key: app
+          Value: throwtrash
     DeletionPolicy: Retain
   AccountLinkTable:
     Type: "AWS::DynamoDB::Table"
@@ -51,11 +51,11 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       Tags:
         -
-          Key: Group
-          Value: throwtrash
+          Key: group
+          Value: mobile
         -
-          Key: Purpose
-          Value: MobileBackend
+          Key: app
+          Value: throwtrash
     DeletionPolicy: Retain
 Outputs:
   ActivationTable:

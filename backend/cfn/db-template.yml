@@ -30,11 +30,11 @@ Resources:
       BillingMode: "PAY_PER_REQUEST"
       Tags:
         -
-          Key: Group
-          Value: throwtrash
+          Key: group
+          Value: backend
         -
-          Key: Purpose
-          Value: WebBackend/MobileBackend/Skill
+          Key: app
+          Value: throwtrash
       AttributeDefinitions:
         -
           AttributeName: "id"
@@ -83,11 +83,11 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       Tags:
         -
-          Key: Group
-          Value: throwtrash
+          Key: group
+          Value: backend
         -
-          Key: Purpose
-          Value: WebBackend/OAuthBackend
+          Key: app
+          Value: throwtrash
     DeletionPolicy: Retain
   AuthorizationTable:
     Type: "AWS::DynamoDB::Table"
@@ -107,11 +107,11 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       Tags:
         -
-          Key: Group
-          Value: throwtrash
+          Key: group
+          Value: backend
         -
-          Key: Purpose
-          Value: OAuthBackend
+          Key: app
+          Value: throwtrash
     DeletionPolicy: Retain
   AccessTokenTable:
     Type: "AWS::DynamoDB::Table"
@@ -131,11 +131,11 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       Tags:
         -
-          Key: Group
-          Value: throwtrash
+          Key: group
+          Value: backend
         -
-          Key: Purpose
-          Value: OAuthBackend
+          Key: app
+          Value: throwtrash
     DeletionPolicy: Retain
   RefreshTokenTable:
     Type: "AWS::DynamoDB::Table"
@@ -155,11 +155,11 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       Tags:
         -
-          Key: Group
-          Value: throwtrash
+          Key: group
+          Value: backend
         -
-          Key: Purpose
-          Value: OAuthBackend
+          Key: app
+          Value: throwtrash
     DeletionPolicy: Retain
   SharedScheduleTable:
     Type: "AWS::DynamoDB::Table"
@@ -176,7 +176,10 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       Tags:
         -
-          Key: Group
+          Key: group
+          Value: backend
+        -
+          Key: app
           Value: throwtrash
     DeletionPolicy: Retain
 Outputs:

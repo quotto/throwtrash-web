@@ -101,8 +101,8 @@ Resources:
           ALEXA_SKILL_ID: !Ref AlexaSkillID
           FRONT_END_STAGE: !Ref FrontendStage
       Tags:
-        Group: throwtrash
-        Purpose: WebBackend/OAuthBackend
+        app: throwtrash
+        group: backend
       Events:
         OAuthRequest:
           Type: Api
@@ -182,8 +182,8 @@ Resources:
     Properties:
       Name: !Sub "throwtrash-backend-${Stage}"
       Tags:
-        Group: throwtrash
-        Purpose: WebBackend/OAuthBackend
+        app: throwtrash
+        group: backend
       StageName: !Ref Stage
       Cors:
         AllowMethods: "'GET,POST'"

@@ -88,8 +88,8 @@ Resources:
           AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
           BACKEND_API_KEY: !Ref BackendApiKey
       Tags:
-        Group: throwtrash
-        Purpose: MobileBackend
+        group: mobile
+        app: throwtrash
       Events:
         Sync:
           Type: Api
@@ -173,6 +173,6 @@ Resources:
     Properties:
       Name: !Sub "throwtrash-mobile-api-${Stage}"
       Tags:
-        Group: throwtrash
-        Purpose: MobileBackend
+        group: mobile
+        app: throwtrash
       StageName: !Ref Stage
