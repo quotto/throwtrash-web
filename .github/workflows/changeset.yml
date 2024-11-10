@@ -10,12 +10,16 @@ on:
    branches:
      - deploy
 
-env:
-  FRONT_STAGE: v5
-  BACK_STAGE: v5
-  MOBILE_API_STAGE: v5
-
 jobs:
+  get-pr-number:
+    runs-on: ubuntu-latest
+    outputs:
+      PR_NUMBER: ${{ steps.pr.outputs.PR_NUMBER }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get PR number
+        id: pr
+        run: echo "PR_NUMBER=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
   backend-build:
     runs-on: ubuntu-latest
     environment: prod
@@ -48,39 +52,8 @@ jobs:
           name: backend-layer
           path: backend/src/node_modules
           retention-days: 1
-  mobile-backend-build:
-    runs-on: ubuntu-latest
-    environment: prod
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '16.x'
-      - name: Restore API cache
-        uses: actions/cache@v2
-        with:
-          key: npm-deps-${{ github.ref_name }}-${{ hashFiles('api/src/package-lock.json') }}
-          path: api/src/node_modules
-      - name: Install dependencies
-        run: npm ci --production
-        working-directory: api/src
-      - name: Build
-        run: npm run build
-        working-directory: api/src
-      - name: Archive Module
-        uses: actions/upload-artifact@v4
-        with:
-          name: mobile-backend
-          path: api/src/api-dist
-          retention-days: 1
-      - name: Archive Layer
-        uses: actions/upload-artifact@v4
-        with:
-          name: mobile-backend-layer
-          path: api/src/node_modules
-  create-changeset:
-    needs: ["backend-build", "mobile-backend-build"]
+  backend-changeset:
+    needs: ["get-pr-number","backend-build"]
     environment: prod
     runs-on: ubuntu-latest
     steps:
@@ -98,16 +71,6 @@ jobs:
         with:
           name: backend-layer
           path: backend/src/layer/nodejs/node_modules
-      - name: Download mobile backend artifact
-        uses: actions/download-artifact@v4.1.7
-        with:
-          name: mobile-backend
-          path: api/src/api-dist
-      - name: Download mobile backend layer
-        uses: actions/download-artifact@v4.1.7
-        with:
-          name: mobile-backend-layer
-          path: api/src/layer/nodejs/node_modules
       - name: AWS Set up
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -118,7 +81,7 @@ jobs:
           echo ${{ secrets.GCP_CREDENTIALS }} | base64 -d > backend/src/backend-dist/serviceAccountKey.json
       - name: Create Changeset for Backend DB
         run: |
-          aws cloudformation create-change-set  --stack-name throwtrash-backend-db --template-body file://backend/cfn/db-template.yml --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --change-set-name "deploy-${{ env.PR_NUMBER }}" --region=${{ vars.AWS_DEFAULT_REGION }}
+          aws cloudformation create-change-set  --stack-name throwtrash-backend-db --template-body file://backend/cfn/db-template.yml --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --region=${{ vars.AWS_DEFAULT_REGION }}
       - name: Create Changeset for Backend
         run: |
             # lambdaでは1980年以前のタイムスタンプを持つファイルをzipできないためざっくりと1981年以前のファイル日時を更新する
@@ -129,13 +92,19 @@ jobs:
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-prod --s3-prefix throwtrashbackend
 
-            aws cloudformation create-change-set --stack-name throwtrash-backend-${{ env.BACK_STAGE }} --template-body file://backend/cfn/package-template.yml --change-set-name "deploy-${{ env.PR_NUMBER }}" --parameters ParameterKey=Stage,ParameterValue="${{ env.BACK_STAGE }}" ParameterKey=FrontendStage,ParameterValue="${{ env.FRONT_STAGE }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=GoogleClientID,ParameterValue="${{ secrets.GOOGLE_CLIENT_ID }}" ParameterKey=GoogleClientSecret,ParameterValue="${{ secrets.GOOGLE_CLIENT_SECRET }}" ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}"  ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AlexaUserSecret,ParameterValue="${{ secrets.ALEXA_USER_SECRET }}" ParameterKey=GoogleUserClientID,ParameterValue="${{ secrets.GOOGLE_USER_CLIENT_ID }}" ParameterKey=GoogleUserSecret,ParameterValue="${{ secrets.GOOGLE_USER_SECRET }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=ApiGatewayOrigin,ParameterValue="${{ vars.BACKEND_API_GATEWAY_ORIGIN }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
+            aws cloudformation create-change-set --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --template-body file://backend/cfn/package-template.yml --change-set-name "deploy-${{ env.PR_NUMBER }}" --parameters ParameterKey=Stage,ParameterValue="${{ vars.BACK_STAGE }}" ParameterKey=FrontendStage,ParameterValue="${{ vars.FRONT_STAGE }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=GoogleClientID,ParameterValue="${{ secrets.GOOGLE_CLIENT_ID }}" ParameterKey=GoogleClientSecret,ParameterValue="${{ secrets.GOOGLE_CLIENT_SECRET }}" ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}"  ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AlexaUserSecret,ParameterValue="${{ secrets.ALEXA_USER_SECRET }}" ParameterKey=GoogleUserClientID,ParameterValue="${{ secrets.GOOGLE_USER_CLIENT_ID }}" ParameterKey=GoogleUserSecret,ParameterValue="${{ secrets.GOOGLE_USER_SECRET }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=ApiGatewayOrigin,ParameterValue="${{ vars.BACKEND_API_GATEWAY_ORIGIN }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
+  mobile-backend-changeset:
+    runs-on: ubuntu-latest
+    needs: ["get-pr-number"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/mobile-backend/build
       - name: Create Changeset for Mobile Backend DB
         run: |
-          aws cloudformation create-change-set --stack-name throwtrash-mobile-db --template-body file://api/db-template.yml --change-set-name "deploy-${{ env.PR_NUMBER }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --region=${AWS_DEFAULT_REGION}
+          aws cloudformation create-change-set --stack-name throwtrash-mobile-db --template-body file://api/db-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --region=${AWS_DEFAULT_REGION}
       - name: Create Changeset for Mobile Backend
         run: |
           # API/Lambdaのパッケージングとデプロイ
           aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-prod --s3-prefix throwtrashapi
 
-          aws cloudformation create-change-set --stack-name throwtrash-mobile-${{ env.MOBILE_API_STAGE }} --template-body file://api/package-template.yml --change-set-name "deploy-${{ env.PR_NUMBER }}" --parameters ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}" ParameterKey=Stage,ParameterValue="${{ env.MOBILE_API_STAGE }}" ParameterKey=SkillStage,ParameterValue="${{ vars.SKILL_STAGE }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AuthorizationEndpoint,ParameterValue="${{ vars.BACKEND_API_ENDPOINT }}/${{ env.BACK_STAGE }}" ParameterKey=BackendApiKey,${{ secrets.BACKEND_API_KEY }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
+          aws cloudformation create-change-set --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --template-body file://api/package-template.yml --change-set-name "deploy-${{ env.PR_NUMBER }}" --parameters ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}" ParameterKey=Stage,ParameterValue="${{ vars.MOBILE_API_STAGE }}" ParameterKey=SkillStage,ParameterValue="${{ vars.SKILL_STAGE }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AuthorizationEndpoint,ParameterValue="${{ vars.BACKEND_API_ENDPOINT }}"/"${{ vars.BACK_STAGE }}" ParameterKey=BackendApiKey,ParameterValue="${{ secrets.BACKEND_API_KEY }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM

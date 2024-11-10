@@ -225,59 +225,18 @@ jobs:
             aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${{ needs.set-environment.outputs.ENV }} --s3-prefix throwtrashbackend
 
             aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${{ needs.set-environment.outputs.BACK_STAGE }} --parameter-overrides Stage=${{ needs.set-environment.outputs.BACK_STAGE }} FrontendStage=${{ needs.set-environment.outputs.FRONT_STAGE }} AlexaClientID=${{ secrets.ALEXA_CLIENT_ID }} AlexaClientSecret=${{ secrets.ALEXA_CLIENT_SECRET }} GoogleClientID=${{ secrets.GOOGLE_CLIENT_ID }} GoogleClientSecret=${{ secrets.GOOGLE_CLIENT_SECRET }} RunLevel=${{ vars.RUNLEVEL }}  AlexaUserClientID=${{ secrets.ALEXA_USER_CLIENT_ID }} AlexaUserSecret=${{ secrets.ALEXA_USER_SECRET }} GoogleUserClientID=${{ secrets.GOOGLE_USER_CLIENT_ID }} GoogleUserSecret=${{ secrets.GOOGLE_USER_SECRET }} AlexaSkillID=${{ secrets.ALEXA_SKILL_ID }} ApiGatewayOrigin=${{ vars.BACKEND_API_GATEWAY_ORIGIN }} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
-  mobile-backend-build:
-    runs-on: ubuntu-latest
-    needs: ["mobile-backend-test", "set-environment"]
-    environment: ${{ needs.set-environment.outputs.ENV }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '16.x'
-      - name: Restore API cache
-        uses: actions/cache@v2
-        with:
-          key: npm-deps-${{ github.ref_name }}-${{ hashFiles('api/src/package-lock.json') }}
-          path: api/src/node_modules
-      - name: Install dependencies
-        run: npm ci --production
-        working-directory: api/src
-      - name: Build
-        run: npm run build
-        working-directory: api/src
-      - name: Archive Module
-        uses: actions/upload-artifact@v4
-        with:
-          name: mobile-backend
-          path: api/src/api-dist
-          retention-days: 1
-      - name: Archive Layer
-        uses: actions/upload-artifact@v4
-        with:
-          name: mobile-backend-layer
-          path: api/src/node_modules
   mobile-backend-deploy:
-    needs: ["mobile-backend-build", "set-environment"]
+    needs: ["mobile-backend-test","set-environment"]
     environment: ${{ needs.set-environment.outputs.ENV }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Download module
-        uses: actions/download-artifact@v4.1.7
-        with:
-          name: mobile-backend
-          path: api/src/api-dist
-      - name: Download layer
-        uses: actions/download-artifact@v4.1.7
-        with:
-          name: mobile-backend-layer
-          path: api/src/layer/nodejs/node_modules
       - name: AWS Set up
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-role
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - uses: ./.github/actions/mobile-backend/build
       - name: Deploy DB
         run: |
           aws cloudformation deploy --template-file api/db-template.yml --stack-name throwtrash-mobile-db --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --region=${AWS_DEFAULT_REGION}
