@@ -1,0 +1,69 @@
+name: Production Deploy
+on:
+  push:
+    branches:
+    - deploy
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  get-pr-number:
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.findPr.outputs.pr }}
+    steps:
+      - uses: jwalton/gh-find-current-pr@master
+        id: findPr
+        with:
+          state: closed
+      - name: Set PR number
+        run: echo "pr_number=${{ steps.findPr.outputs.pr }}" >> $GITHUB_OUTPUT
+  frontend-deploy:
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: AWS Set up
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-tester-role
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - uses: ./.github/actions/frontend/build
+        with:
+          back-stage: ${{ vars.BACK_STAGE }}
+          front-stage: ${{ vars.FRONT_STAGE }}
+      - uses: ./.github/actions/frontend/deploy
+        with:
+          front-stage: ${{ vars.FRONT_STAGE }}
+          bucket: throwtrash
+      - name: CloudFront Cache Clear
+        run: |
+          # 本番デプロイ時はデプロイステージのキャッシュをクリア
+          aws cloudfront create-invalidation --distribution-id ${{ vars.AWS_CLOUDFRONT_DST_ID }} --paths /${{ vars.FRONT_STAGE }}/*
+  backend-deploy:
+    needs: ["get-pr-number"]
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-role
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - name: Backend ChangeSet Execute
+        run: |
+          aws cloudformation execute-change-set --change-set-name deploy-${{ needs.get-pr-number.outputs.pr_number }} --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --region ${{ vars.AWS_DEFAULT_REGION }}
+  mobile-backend-deploy:
+    needs: ["get-pr-number"]
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-role
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - name: Mobile Backend ChangeSet Execute
+        run: |
+          aws cloudformation execute-change-set --change-set-name deploy-${{ needs.get-pr-number.outputs.pr_number }} --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --region ${{ vars.AWS_DEFAULT_REGION }}
