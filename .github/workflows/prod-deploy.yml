@@ -66,7 +66,7 @@ jobs:
       - uses: jwalton/gh-find-current-pr@master
         id: findPr
         with:
-          state: open
+          state: closed
       - name: Set PR number
         run: echo "pr_number=${{ steps.findPr.outputs.pr }}" >> $GITHUB_OUTPUT
   backend-deploy:
