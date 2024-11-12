@@ -2,7 +2,7 @@ import property from "./property";
 import * as common from "trash-common";
 const logger = common.getLogger();
 import AWS, { Account, AWSError } from "aws-sdk";
-const documentClient = new AWS.DynamoDB.DocumentClient({ region: process.env.DB_REGION });
+const documentClient = new AWS.DynamoDB.DocumentClient();
 import crypto from "crypto";
 import {  AccountLinkItem, ActivationCodeItem, CodeItem, SharedScheduleItem, TrashScheduleItem } from "./interface";
 
