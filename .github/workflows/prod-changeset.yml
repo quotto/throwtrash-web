@@ -41,18 +41,14 @@ jobs:
           aws cloudformation create-change-set  --stack-name throwtrash-backend-db --template-body file://backend/cfn/db-template.yml --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --region=${{ vars.AWS_DEFAULT_REGION }}
       - name: Create Changeset for Backend
         run: |
-            # lambdaでは1980年以前のタイムスタンプを持つファイルをzipできないためざっくりと1981年以前のファイル日時を更新する
-            YEAR_DIFF=$(expr `date +%Y` - 1981)
-            DATE_DIFF=$(expr $YEAR_DIFF \* 365)
-            find backend/src/layer/nodejs/node_modules -daystart -mtime +$DATE_DIFF -exec touch {} \;
-
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-prod --s3-prefix throwtrashbackend
 
-            aws cloudformation create-change-set --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --template-body file://backend/cfn/package-template.yml --change-set-name "deploy-${{ env.PR_NUMBER }}" --parameters ParameterKey=Stage,ParameterValue="${{ vars.BACK_STAGE }}" ParameterKey=FrontendStage,ParameterValue="${{ vars.FRONT_STAGE }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=GoogleClientID,ParameterValue="${{ secrets.GOOGLE_CLIENT_ID }}" ParameterKey=GoogleClientSecret,ParameterValue="${{ secrets.GOOGLE_CLIENT_SECRET }}" ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}"  ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AlexaUserSecret,ParameterValue="${{ secrets.ALEXA_USER_SECRET }}" ParameterKey=GoogleUserClientID,ParameterValue="${{ secrets.GOOGLE_USER_CLIENT_ID }}" ParameterKey=GoogleUserSecret,ParameterValue="${{ secrets.GOOGLE_USER_SECRET }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=ApiGatewayOrigin,ParameterValue="${{ vars.BACKEND_API_GATEWAY_ORIGIN }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
+            aws cloudformation create-change-set --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --template-body file://backend/cfn/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --parameters ParameterKey=Stage,ParameterValue="${{ vars.BACK_STAGE }}" ParameterKey=FrontendStage,ParameterValue="${{ vars.FRONT_STAGE }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=GoogleClientID,ParameterValue="${{ secrets.GOOGLE_CLIENT_ID }}" ParameterKey=GoogleClientSecret,ParameterValue="${{ secrets.GOOGLE_CLIENT_SECRET }}" ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}"  ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AlexaUserSecret,ParameterValue="${{ secrets.ALEXA_USER_SECRET }}" ParameterKey=GoogleUserClientID,ParameterValue="${{ secrets.GOOGLE_USER_CLIENT_ID }}" ParameterKey=GoogleUserSecret,ParameterValue="${{ secrets.GOOGLE_USER_SECRET }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=ApiGatewayOrigin,ParameterValue="${{ vars.BACKEND_API_GATEWAY_ORIGIN }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
   mobile-backend-changeset:
     runs-on: ubuntu-latest
     needs: ["get-pr-number"]
+    environment: prod
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/actions/mobile-backend/build
