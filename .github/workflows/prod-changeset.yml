@@ -51,6 +51,11 @@ jobs:
     environment: prod
     steps:
       - uses: actions/checkout@v2
+      - name: AWS Set up
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-role
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
       - uses: ./.github/actions/mobile-backend/build
       - name: Create Changeset for Mobile Backend DB
         run: |
