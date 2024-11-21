@@ -1,0 +1,30 @@
+name: "Frontend Build"
+description: "Build the frontend"
+inputs:
+  back-stage:
+    description: "The backend stage"
+    required: true
+  front-stage:
+    description: "The frontend stage"
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '14.x'
+    - name: Restore frontend cache
+      uses: actions/cache@v2
+      with:
+        path: frontend/node_modules
+        key: npm-deps-${{ github.ref_name }}-${{ hashFiles('frontend/package-lock.json') }}
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+      working-directory: frontend
+    - name: Build frontend
+      shell: bash
+      run: npm run build -- --env stage=${{ inputs.back-stage }} --env front_stage=${{ inputs.front-stage }}
+      working-directory: frontend

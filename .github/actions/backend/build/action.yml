@@ -1,0 +1,40 @@
+name: "Backend Build"
+description: "Build the backend"
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16.x'
+    - name: Restore backend cache
+      uses: actions/cache@v2
+      with:
+        key: npm-deps-${{ github.ref_name }}-${{ hashFiles('backend/src/package-lock.json') }}
+        path: backend/src/node_modules
+    - name: Install dependencies
+      shell: bash
+      run: npm ci --production
+      working-directory: backend/src
+    - name: Build backend
+      shell: bash
+      run: npm run build
+      working-directory: backend/src
+    - name: Archive backend
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend
+        path: backend/src/backend-dist
+        retention-days: 1
+    - name: Archive backend layer
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-layer
+        path: backend/src/node_modules
+        retention-days: 1
+    - name: Move dependencies to layer directory
+      shell: bash
+      run: |
+        mkdir -p backend/src/layer/nodejs
+        mv backend/src/node_modules backend/src/layer/nodejs/node_modules

@@ -27,11 +27,11 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       Tags:
         -
-          Key: Group
-          Value: throwtrash
+          Key: group
+          Value: mobile
         -
-          Key: Purpose
-          Value: MobileBackend
+          Key: app
+          Value: throwtrash
     DeletionPolicy: Retain
   AccountLinkTable:
     Type: "AWS::DynamoDB::Table"
@@ -51,18 +51,18 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       Tags:
         -
-          Key: Group
-          Value: throwtrash
+          Key: group
+          Value: mobile
         -
-          Key: Purpose
-          Value: MobileBackend
+          Key: app
+          Value: throwtrash
     DeletionPolicy: Retain
 Outputs:
   ActivationTable:
     Export:
       Name: "throwtrash-db-activation"
-    Value: !Ref ActivationTableName
+    Value: !GetAtt ActivationTable.Arn
   AccountLinkTable:
     Export:
       Name: "throwtrash-db-accountlink"
-    Value: !Ref AccountLinkTable
+    Value: !GetAtt AccountLinkTable.Arn
