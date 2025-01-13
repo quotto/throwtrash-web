@@ -31,6 +31,7 @@ jobs:
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
       - uses: ./.github/actions/frontend/build
         with:
+          env: prod
           back-stage: ${{ vars.BACK_STAGE }}
           front-stage: ${{ vars.FRONT_STAGE }}
       - uses: ./.github/actions/frontend/deploy

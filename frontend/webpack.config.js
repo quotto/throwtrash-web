@@ -10,7 +10,6 @@ module.exports = (env)=>{
     const filename = 'bundle.js';
     const build_path = `${app_root.path}/frontend-dist/${env.front_stage}`;
     console.log(build_path);
-    const api_host = 'backend.mythrowaway.net';
     return {
         entry: './react/index.tsx',
         resolve: {
@@ -54,7 +53,7 @@ module.exports = (env)=>{
             }),
             new webpack.DefinePlugin({
                 API_STAGE: JSON.stringify(env.stage),
-                API_HOST: JSON.stringify(api_host)
+                API_HOST: JSON.stringify(env.api_host)
             }),
             new CopyPlugin({
                 patterns: [

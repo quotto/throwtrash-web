@@ -107,6 +107,7 @@ jobs:
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
       - uses: ./.github/actions/frontend/build
         with:
+          env: dev
           back-stage: ${{ needs.set-stage.outputs.BACK_STAGE }}
           front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
       - uses: ./.github/actions/frontend/deploy

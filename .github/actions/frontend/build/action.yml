@@ -1,6 +1,9 @@
 name: "Frontend Build"
 description: "Build the frontend"
 inputs:
+  env:
+    description: "Build environment"
+    required: true
   back-stage:
     description: "The backend stage"
     required: true
@@ -26,5 +29,10 @@ runs:
       working-directory: frontend
     - name: Build frontend
       shell: bash
-      run: npm run build -- --env stage=${{ inputs.back-stage }} --env front_stage=${{ inputs.front-stage }}
+      run: |
+        api_host="backend.mythrowaway.net"
+        if [[ ${{ inputs.env }} = "dev" ]]; then
+          api_host="dev.backend.mythrowaway.net"
+        fi
+        npm run build -- --env api_host=${api_host} --env stage=${{ inputs.back-stage }} --env front_stage=${{ inputs.front-stage }}
       working-directory: frontend
