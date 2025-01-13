@@ -15,7 +15,7 @@ export default async (params: any,session: SessionItem,new_flg: boolean,stage: s
             const response: BackendResponse =  {
                 statusCode: 301,
                 headers: {
-                    Location: `https://accountlink.mythrowaway.net/${front_end_stage}/index.html`
+                    Location: `https://${process.env.FRONT_END_HOST}/${front_end_stage}/index.html`
                 }
             };
             if(new_flg) {

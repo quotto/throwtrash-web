@@ -1,6 +1,7 @@
 import * as common from "trash-common";
 const logger = common.getLogger();
 logger.setLevel_DEBUG();
+process.env.FRONT_END_HOST = "accountlink.mythrowaway.net"
 import oauth_request from "../oauth_request";
 import db from "../dbadapter";
 import error_def from "../error_def";

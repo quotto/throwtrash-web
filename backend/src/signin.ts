@@ -95,7 +95,7 @@ export default async(params: any,session: SessionItem,domain: string,stage: stri
             return {
                 statusCode: 301,
                 headers: {
-                    Location: `https://accountlink.mythrowaway.net/${front_end_stage}/index.html`,
+                    Location: `https://${process.env.FRONT_END_HOST}/${front_end_stage}/index.html`,
                     "Cache-Control": "no-store"
                 }
             }

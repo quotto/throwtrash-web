@@ -29,6 +29,8 @@ Parameters:
     Type: "String"
   ApiGatewayOrigin:
     Type: "String"
+  FrontendHost:
+    Type: "String"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -100,6 +102,7 @@ Resources:
           GOOGLE_USER_SECRET: !Ref GoogleUserSecret
           ALEXA_SKILL_ID: !Ref AlexaSkillID
           FRONT_END_STAGE: !Ref FrontendStage
+          FRONT_END_HOST: !Ref FrontendHost
       Tags:
         app: throwtrash
         group: backend

@@ -2,6 +2,7 @@ jest.setTimeout(100000);
 import * as common from "trash-common";
 const logger = common.getLogger();
 logger.setLevel_DEBUG();
+process.env.FRONT_END_HOST = "accountlink.mythrowaway.net"
 
 import db from "../dbadapter";
 

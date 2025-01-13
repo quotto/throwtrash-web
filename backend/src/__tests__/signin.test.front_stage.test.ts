@@ -1,4 +1,5 @@
 process.env.FRONT_END_STAGE = "001"
+process.env.FRONT_END_HOST = "accountlink.mythrowaway.net"
 jest.setTimeout(100000);
 import * as common from "trash-common";
 const logger = common.getLogger();
@@ -7,9 +8,6 @@ logger.setLevel_DEBUG();
 import db from "../dbadapter";
 
 import { SessionItem } from "../interface";
-
-const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
-const URL_500 = 'https://accountlink.mythrowaway.net/500.html';
 
 const mockResult: {[key: string]: SessionItem} = {};
 const mockData = [

@@ -94,7 +94,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
         return {
             statusCode: 301,
             headers: {
-                Location: `https://accountlink.mythrowaway.net/${stage}/accountlink-complete.html`
+                Location: `https://${process.env.FRONT_END_HOST}/${stage}/accountlink-complete.html`
             }
         }
     } catch(err: any) {

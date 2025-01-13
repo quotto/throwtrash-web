@@ -2,13 +2,13 @@ export default {
     ServerError: {
         statusCode: 301,
         headers: {
-            Location: "https://accountlink.mythrowaway.net/500.html"
+            Location: `https://${process.env.FRONT_END_HOST}/500.html`
         }
     },
     UserError: {
         statusCode: 301,
         headers: {
-            Location: "https://accountlink.mythrowaway.net/400.html"
+            Location: `https://${process.env.FRONT_END_HOST}/400.html`
         }
     }
 

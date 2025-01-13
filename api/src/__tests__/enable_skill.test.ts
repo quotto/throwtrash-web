@@ -52,6 +52,7 @@ describe("enable_skill",()=>{
         process.env.ALEXA_CLIENT_SECRET="secret"
         process.env.BACKEND_API_KEY = "api-key";
         process.env.SKILL_STAGE = "development";
+        process.env.FRONT_END_HOST = "accountlink.mythrowaway.net"
     })
     describe("正常系",()=>{
         it("開発:正常終了,paramsはtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
