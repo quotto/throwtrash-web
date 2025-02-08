@@ -1,0 +1,38 @@
+name: 'Mobile Backend Build'
+description: 'Build the Mobile backend'
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16.x'
+    - name: Restore API cache
+      uses: actions/cache@v2
+      with:
+        key: npm-deps-${{ github.ref_name }}-${{ hashFiles('api/src/package-lock.json') }}
+        path: api/src/node_modules
+    - name: Install dependencies
+      shell: bash
+      run: npm ci --production
+      working-directory: api/src
+    - name: Build
+      shell: bash
+      run: npm run build
+      working-directory: api/src
+    - name: Archive Module
+      uses: actions/upload-artifact@v4
+      with:
+        name: mobile-backend
+        path: api/src/api-dist
+        retention-days: 1
+    - name: Archive Layer
+      uses: actions/upload-artifact@v4
+      with:
+        name: mobile-backend-layer
+        path: api/src/node_modules
+    - name: Move dependencies to layer directory
+      shell: bash
+      run: |
+        mkdir -p api/src/layer/nodejs
+        mv api/src/node_modules api/src/layer/nodejs/node_modules

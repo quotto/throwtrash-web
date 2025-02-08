@@ -5,14 +5,13 @@ logger.setLevel_DEBUG();
 /**
  * DBアクセス等すべて実装済みで実施する
  */
-process.env.DB_REGION = "us-west-2";
 import AWS from "aws-sdk";
 import crypto from "crypto";
 
 import firebase from "firebase-admin";
 
 
-const documentClient = new AWS.DynamoDB.DocumentClient({region: 'us-west-2'});
+const documentClient = new AWS.DynamoDB.DocumentClient();
 
 // はるか未来の日付
 const DEFAULT_EXPIRE = 4133862000000;
@@ -61,7 +60,6 @@ describe('getDataBySigninId',()=>{
 
 describe('saveSession',()=>{
     beforeAll((done)=>{
-        process.env.DB_REGION = 'us-west-2';
         documentClient.put({
             TableName: property.SESSION_TABLE,
             Item: {
@@ -138,7 +136,6 @@ describe('saveSession',()=>{
 
 describe('deleteSession',()=>{
     beforeAll((done)=>{
-        process.env.DB_REGION = 'us-west-2';
         documentClient.put({
             TableName: property.SESSION_TABLE,
             Item:{
@@ -180,7 +177,6 @@ describe('deleteSession',()=>{
 describe('publishId',()=>{
     const duplicate_id = 'xxxxxxxx-xxxxxxxx-xxxxxxx-xxxxxxxx';
     beforeAll((done)=>{
-        process.env.DB_REGION = 'us-west-2';
         documentClient.put({
             TableName: property.SCHEDULE_TABLE,
             Item: {
@@ -207,7 +203,6 @@ describe('getSession', ()=>{
     const session_id_002 = 'getSession_id_002';
     const session_id_003 = 'getSession_id_003';
     beforeAll((done)=>{
-        process.env.DB_REGION = 'us-west-2';
         documentClient.batchWrite({
             RequestItems:{
                 "throwtrash-backend-session": [
@@ -252,7 +247,6 @@ describe('getSession', ()=>{
 
 describe('publishSession',()=>{
     beforeAll(()=>{
-        process.env.DB_REGION = 'us-west-2';
     });
     it('publish new session id',async ()=>{
         const session = await db.publishSession();

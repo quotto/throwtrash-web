@@ -1,37 +1,42 @@
-// For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.117.1/containers/docker-existing-dockerfile
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
 {
-	"name": "throwtrash/web development",
-
-	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": ["dbaeumer.vscode-eslint","msjsdiag.debugger-for-chrome","ritwickdey.liveserver","aws-scripting-guy.cform"],
-
-	"build": {
-		"dockerfile": "Dockerfile"
+	"name": "Node.js & TypeScript",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-18-bullseye",
+	"features": {
+		"ghcr.io/devcontainers/features/aws-cli:1": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/git:1": {
+			"ppa": true,
+			"version": "latest"
+		},
+		"ghcr.io/larsnieuwenhuizen/features/neovim:0": {}
 	},
-	"workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
 	"mounts": [
-      "source=${localEnv:USERPROFILE}/.aws,target=/root/.aws,type=bind,consistency=cached",
-      "target=/app/backend/src/node_modules",
-      "target=/app/api/src/node_modules",
-      "target=/app/frontend/node_modules"
+		"source=${localEnv:USERPROFILE}/.aws,target=/root/.aws,type=bind,consistency=cached",
+		"target=/app/backend/src/node_modules",
+		"target=/app/api/src/node_modules",
+		"target=/app/frontend/node_modules"
 	],
 	"workspaceFolder": "/app",
-	"onCreateCommand": "git config --local core.editor \"code --wait\"",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
 
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [9005,5500]
+	"forwardPorts": [
+		9005,
+		5500
+	],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "git config core.editor \"code --wait\"",
 
-	// Uncomment the next line to run commands after the container is created - for example installing git.
-	// "postCreateCommand": "apt-get update && apt-get install -y git",
+	// Configure tool-specific properties.
+	// "customizations": {},
 
-	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
-	// "runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
-
-	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-in-docker.
-	// "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
-
-	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
-	// "remoteUser": "vscode"
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
 }
