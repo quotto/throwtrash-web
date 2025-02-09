@@ -3,15 +3,10 @@
 {
 	"name": "Node.js & TypeScript",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-18-bullseye",
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:18-bookworm",
 	"features": {
-		"ghcr.io/devcontainers/features/aws-cli:1": {
-			"version": "latest"
-		},
-		"ghcr.io/devcontainers/features/git:1": {
-			"ppa": true,
-			"version": "latest"
-		},
+		"ghcr.io/devcontainers/features/aws-cli:1": {},
+		"ghcr.io/devcontainers/features/git:1": {},
 		"ghcr.io/larsnieuwenhuizen/features/neovim:0": {}
 	},
 	"mounts": [
@@ -20,19 +15,24 @@
 		"target=/app/api/src/node_modules",
 		"target=/app/frontend/node_modules"
 	],
-	"workspaceFolder": "/app",
 	"workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
+	"forwardPorts": [9005,5500],
+	"postCreateCommand": "git config core.editor \"code --wait\"",
+
+	// Uncomment the next line to run commands after the container is created - for example installing git.
+	// "postCreateCommand": "apt-get update && apt-get install -y git",
+
+	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
+	// "runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [
-		9005,
-		5500
-	],
+	// "forwardPorts": [],
+
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "git config core.editor \"code --wait\"",
+	// "postCreateCommand": "yarn install",
 
 	// Configure tool-specific properties.
 	// "customizations": {},
