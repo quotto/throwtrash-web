@@ -3,6 +3,9 @@ import update from "./update";
 import register from "./register";
 import publish_activation_code from "./publish_activation_code";
 import activate from "./activate";
+import migrationSignup from './migration/signup';
+import { handler as authorizer } from './authorizer';
+import * as admin from 'firebase-admin';
 
 import * as common from "trash-common";
 import start_link from "./start_link";
@@ -11,11 +14,41 @@ import migrationV2 from "./migration/v2";
 const logger = common.getLogger();
 process.env.RUNLEVEL === "INFO" ? logger.setLevel_INFO() : logger.setLevel_DEBUG();
 
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+});
+
 exports.handler = async function(event: AWSLambda.APIGatewayEvent,_context: AWSLambda.Context) {
     logger.debug(JSON.stringify(event));
-    if(event.resource === '/register') {
+
+    // Extract the ID token from the request headers
+    const token = event.headers.Authorization || event.headers.authorization;
+
+    if (!token) {
+        return {
+            statusCode: 401,
+            body: 'Unauthorized',
+        };
+    }
+
+    // Verify the ID token using Firebase Admin SDK
+    let firebaseAccountId;
+    try {
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        firebaseAccountId = decodedToken.uid;
+    } catch (error) {
+        logger.error('Error verifying ID token: ' + error);
+        return {
+            statusCode: 403,
+            body: 'Forbidden',
+        };
+    }
+
+    if (event.resource === '/migration/signup') {
+        return await migrationSignup(event.body || '', firebaseAccountId);
+    } else if(event.resource === '/register') {
         // 新規登録処理
-        return await register(event.body || "");
+        return await register(event.body || "", firebaseAccountId);
     } else if(event.resource === '/update') {
         // 更新処理
         if(event.body === null) {
