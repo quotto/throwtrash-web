@@ -54,7 +54,8 @@ export interface TrashScheduleItem {
     description: string,
     platform?: string,
     shared_id?: string,
-    timestamp?: number
+    timestamp?: number,
+    mobile_signin_id?: string
 }
 
 export interface SharedScheduleItem {

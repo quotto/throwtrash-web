@@ -323,6 +323,20 @@ const updateTrashScheduleTimestamp = async(user_id: string, timestamp: number): 
     });
 }
 
+const updateTrashScheduleMobileSigninId = async (user_id: string, mobile_signin_id: string): Promise<boolean> => {
+    return documentClient.update({
+        TableName: property.TRASH_SCHEDULE_TABLE,
+        Key: { id: user_id },
+        UpdateExpression: "set #mobile_signin_id = :mobile_signin_id",
+        ExpressionAttributeNames: { "#mobile_signin_id": "mobile_signin_id" },
+        ExpressionAttributeValues: { ":mobile_signin_id": mobile_signin_id }
+    }).promise().then(_ => true).catch(err => {
+        logger.error("failed to update mobile_signin_id");
+        logger.error(err);
+        return false;
+    });
+};
+
 export default {
     putAccountLinkItem: putAccountLinkItem,
     getAccountLinkItemByToken: getAccountLinkItemByToken,
@@ -339,5 +353,6 @@ export default {
     putSharedSchedule: putSharedSchedule,
     getSharedScheduleBySharedId: getSharedScheduleBySharedId,
     transactionUpdateScheduleAndSharedSchedule: transactionUpdateScheduleAndSharedSchedule,
-    updateTrashScheduleTimestamp: updateTrashScheduleTimestamp
+    updateTrashScheduleTimestamp: updateTrashScheduleTimestamp,
+    updateTrashScheduleMobileSigninId: updateTrashScheduleMobileSigninId
 }
