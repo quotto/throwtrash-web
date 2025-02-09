@@ -167,6 +167,31 @@ Resources:
             RequestParameters:
               - method.request.querystring.code:
                   Required: true
+        MigrationSignup:
+          Type: Api
+          Properties:
+            Path: "/migration/signup"
+            Method: "POST"
+            RestApiId: !Ref Api
+  AuthorizerFunction:
+    Type: "AWS::Serverless::Function"
+    DeletionPolicy: Retain
+    Properties:
+      CodeUri: ./src/api-dist
+      FunctionName: !Sub "throwtrash-mobile-authorizer-${Stage}"
+      Handler: authorizer.handler
+      Role: !GetAtt LambdaExecRole.Arn
+      Runtime: nodejs16.x
+      Timeout: 30
+      Layers:
+        - !Ref FunctionLayer
+      Environment:
+        Variables:
+          RUNLEVEL: !Ref RunLevel
+          AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
+      Tags:
+        group: mobile
+        app: throwtrash
   Api:
     Type: "AWS::Serverless::Api"
     DeletionPolicy: Retain
@@ -176,3 +201,15 @@ Resources:
         group: mobile
         app: throwtrash
       StageName: !Ref Stage
+      Auth:
+        DefaultAuthorizer: LambdaAuthorizer
+        Authorizers:
+          LambdaAuthorizer:
+            FunctionArn: !GetAtt AuthorizerFunction.Arn
+            IdentitySource: "method.request.header.Authorization"
+            FunctionPayloadType: REQUEST
+            FunctionInvokeRole: !GetAtt LambdaExecRole.Arn
+      MethodSettings:
+        - LoggingLevel: "INFO"
+          HttpMethod: "*"
+          ResourcePath: "/*"
