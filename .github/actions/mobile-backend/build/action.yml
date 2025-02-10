@@ -1,5 +1,9 @@
 name: 'Mobile Backend Build'
 description: 'Build the Mobile backend'
+inputs:
+  google-cloud-service-account-key:
+    description: "Service account key for Google Cloud"
+    required: true
 runs:
   using: composite
   steps:
@@ -39,4 +43,4 @@ runs:
     - name: Restore firebase config
       shell: bash
       run: |
-        echo "FIREBASE_CONFIG=$(${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY }} | base64 -d)" >> $GITHUB_ENV 
+        echo "FIREBASE_CONFIG=$(${{ inputs.google-cloud-service-account-key }} | base64 -d)" >> $GITHUB_ENV 
