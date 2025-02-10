@@ -206,9 +206,12 @@ Resources:
         Authorizers:
           LambdaAuthorizer:
             FunctionArn: !GetAtt AuthorizerFunction.Arn
-            IdentitySource: "method.request.header.Authorization"
             FunctionPayloadType: REQUEST
             FunctionInvokeRole: !GetAtt LambdaExecRole.Arn
+            Identity:
+              Headers:
+                - Authorization
+                - "X-TRASH-USERID"
       MethodSettings:
         - LoggingLevel: "INFO"
           HttpMethod: "*"
