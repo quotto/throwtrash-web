@@ -36,3 +36,7 @@ runs:
       run: |
         mkdir -p api/src/layer/nodejs
         mv api/src/node_modules api/src/layer/nodejs/node_modules
+    - name: Restore firebase config
+      shell: bash
+      run: |
+        echo "FIREBASE_CONFIG=$(${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY }} | base64 -d)" >> $GITHUB_ENV 

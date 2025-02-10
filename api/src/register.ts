@@ -1,7 +1,5 @@
-import { APIGatewayProxyResultV2, APIGatewayProxyEventQueryStringParameters, APIGatewayEventDefaultAuthorizerContext, APIGatewayProxyEventBase } from "aws-lambda";
 import * as common from "trash-common";
 import dbadapter from "./dbadapter";
-import { RegisteredTrashScheduleItem } from "./interface";
 const logger = common.getLogger();
 
 export default async (event_body_str: string, firebaseAccountId: string) => {

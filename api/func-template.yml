@@ -23,6 +23,8 @@ Parameters:
     Type: "String"
   BackendApiKey:
     Type: "String"
+  FirebaseConfig:
+    Type: "String"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -188,7 +190,7 @@ Resources:
       Environment:
         Variables:
           RUNLEVEL: !Ref RunLevel
-          AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
+          FIREBASE_CONFIG: !Ref FirebaseConfig
       LoggingConfig:
         LogFormat: JSON
         ApplicationLogLevel: !Ref RunLevel
