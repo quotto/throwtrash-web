@@ -189,6 +189,9 @@ Resources:
         Variables:
           RUNLEVEL: !Ref RunLevel
           AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
+      LoggingConfig:
+        LogFormat: JSON
+        ApplicationLogLevel: !Ref RunLevel
       Tags:
         group: mobile
         app: throwtrash
@@ -207,7 +210,6 @@ Resources:
           LambdaAuthorizer:
             FunctionArn: !GetAtt AuthorizerFunction.Arn
             FunctionPayloadType: REQUEST
-            FunctionInvokeRole: !GetAtt LambdaExecRole.Arn
             Identity:
               Headers:
                 - Authorization
