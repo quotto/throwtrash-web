@@ -24,6 +24,11 @@ runs:
       shell: bash
       run: npm run build
       working-directory: api/src
+    - name: Restore firebase config
+      shell: bash
+      run: |
+        echo ${{ inputs.google-cloud-service-account-key }} | base64 -d >> api-dist/serviceAccountKey.json 
+      working-directory: api/src
     - name: Archive Module
       uses: actions/upload-artifact@v4
       with:
@@ -40,7 +45,3 @@ runs:
       run: |
         mkdir -p api/src/layer/nodejs
         mv api/src/node_modules api/src/layer/nodejs/node_modules
-    - name: Restore firebase config
-      shell: bash
-      run: |
-        echo "FIREBASE_CONFIG=$(${{ inputs.google-cloud-service-account-key }} | base64 -d)" >> $GITHUB_ENV 

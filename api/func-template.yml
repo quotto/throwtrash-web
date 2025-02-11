@@ -23,8 +23,6 @@ Parameters:
     Type: "String"
   BackendApiKey:
     Type: "String"
-  FirebaseConfig:
-    Type: "String"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
@@ -189,8 +187,7 @@ Resources:
         - !Ref FunctionLayer
       Environment:
         Variables:
-          RUNLEVEL: !Ref RunLevel
-          FIREBASE_CONFIG: !Ref FirebaseConfig
+          GOOGLE_APPLICATION_CREDENTIALS: /var/task/serviceAccountKey.json
       LoggingConfig:
         LogFormat: JSON
         ApplicationLogLevel: !Ref RunLevel
