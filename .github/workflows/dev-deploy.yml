@@ -161,5 +161,5 @@ jobs:
             --parameter-overrides RunLevel=${{ vars.RUNLEVEL }} Stage=${{ needs.set-stage.outputs.MOBILE_API_STAGE }} SkillStage=${{ vars.SKILL_STAGE }} \
             AlexaSkillID=${{ secrets.ALEXA_SKILL_ID }} AlexaClientID=${{ secrets.ALEXA_CLIENT_ID }} AlexaClientSecret=${{ secrets.ALEXA_CLIENT_SECRET }} \
             AlexaUserClientID=${{ secrets.ALEXA_USER_CLIENT_ID }} AuthorizationEndpoint=${{ vars.BACKEND_API_ENDPOINT }}/${{ needs.set-stage.outputs.BACK_STAGE }} BackendApiKey=${{ secrets.BACKEND_API_KEY }} \
-            FirebaseConfig=$(${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY }} | base64 -d) \
+            FirebaseConfig=$(echo "${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY }}" | base64 -d) \
             --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
