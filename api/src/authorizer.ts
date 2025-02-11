@@ -1,22 +1,22 @@
 import { APIGatewayProxyEvent, APIGatewayAuthorizerResult } from 'aws-lambda';
 import * as admin from 'firebase-admin';
-import * as common from 'trash-common';
+import Logger from './logger';
 import dbadapter from './dbadapter';
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
 });
 
-const logger = common.getLogger();
+const logger = new Logger('authorizer');
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayAuthorizerResult> => {
-  logger.debug(JSON.stringify(event));
+  logger.debug({ message: 'Event received', data: event, method: 'handler' });
   const token = event.headers.Authorization || event.headers.authorization;
   const methodArn = event.requestContext.resourceId;
   const userId = event.headers['X-TRASH-USERID'];
 
   if (!token || !userId) {
-    logger.error('Unauthorized: token or userId is missing');
+    logger.error({ message: 'Unauthorized: token or userId is missing', method: 'handler' });
     return generatePolicy('user', 'Deny', methodArn);
   }
 
@@ -28,14 +28,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayAu
       const item = await dbadapter.getTrashScheduleByUserId(userId);
 
       if (!item || item.mobile_signin_id !== signinId) {
-        logger.error(`match error: ${item?.mobile_signin_id} !== ${signinId}`);
+        logger.error({ message: 'match error', data: { expected: item?.mobile_signin_id, actual: signinId }, method: 'handler' });
         throw new Error('Unauthorized');
       }
     }
 
     return generatePolicy(signinId, 'Allow', methodArn);
   } catch (error: any) {
-    logger.error(error);
+    logger.error({ message: 'Authorization error', data: error, method: 'handler' });
     return generatePolicy('user', 'Deny', methodArn);
   }
 };
