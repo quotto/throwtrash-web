@@ -212,7 +212,6 @@ Resources:
             Identity:
               Headers:
                 - Authorization
-                - "X-TRASH-USERID"
       MethodSettings:
         - LoggingLevel: "INFO"
           HttpMethod: "*"

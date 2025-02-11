@@ -28,7 +28,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayAu
       const item = await dbadapter.getTrashScheduleByUserId(userId);
 
       if (!item || item.mobile_signin_id !== signinId) {
-        logger.error({ message: 'match error', data: { expected: item?.mobile_signin_id, actual: signinId }, method: 'handler' });
+        logger.error({ message: 'match error', data: { expected: item?.mobile_signin_id || '', actual: signinId }, method: 'handler' });
         throw new Error('Unauthorized');
       }
     }
