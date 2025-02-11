@@ -211,12 +211,7 @@ const getActivationCode = async(code: string): Promise<ActivationCodeItem | null
 const insertTrashSchedule = async(trashScheduleItem: TrashScheduleItem, timestamp: number): Promise<boolean> => {
     return documentClient.put({
         TableName: property.TRASH_SCHEDULE_TABLE,
-        Item: {
-            id: trashScheduleItem.id,
-            description: trashScheduleItem.description,
-            platform: trashScheduleItem.platform,
-            timestamp: timestamp
-        },
+        Item: trashScheduleItem,
         ConditionExpression: 'attribute_not_exists(id)'
     }).promise().then(_ => true).catch((e: any) => {
         logger.error({ message: e, method: 'insertTrashSchedule' });
