@@ -19,18 +19,22 @@ const mockGetTrashScheduleByUserId = jest.fn();
 dbadapter.getTrashScheduleByUserId = mockGetTrashScheduleByUserId;
 
 describe('authorizer', () => {
-  const event: APIGatewayProxyEvent = {
-    headers: {
-      Authorization: 'Bearer valid-token',
-      'X-TRASH-USERID': 'valid-user-id',
-    },
-    requestContext: {
-      resourceId: 'arn:aws:execute-api:region:account-id:api-id/stage/GET/resource',
-    },
-    path: '/some-path',
-    body: null,
-    // ...other properties as needed
-  } as any;
+  let event: APIGatewayProxyEvent;
+
+  beforeEach(() => {
+    event = {
+      headers: {
+        Authorization: 'Bearer valid-token',
+        'X-TRASH-USERID': 'valid-user-id',
+      },
+      requestContext: {
+        resourceId: 'arn:aws:execute-api:region:account-id:api-id/stage/GET/resource',
+      },
+      path: '/some-path',
+      body: null,
+      // ...other properties as needed
+    } as any;
+  });
 
   it('should allow access for valid token and matching user_id', async () => {
     mockVerifyIdToken.mockResolvedValue({ uid: 'valid-signin-id' });
@@ -62,18 +66,19 @@ describe('authorizer', () => {
   });
 
   it('should allow access for /migration/signup path', async () => {
-    const migrationEvent = { ...event, path: '/migration/signup' };
+    event.path = '/migration/signup';
     mockVerifyIdToken.mockResolvedValue({ uid: 'valid-user-id' });
 
-    const result: APIGatewayAuthorizerResult = await handler(migrationEvent);
+    const result: APIGatewayAuthorizerResult = await handler(event);
     expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
   });
 
   it('should allow access for /register path', async () => {
-    const registerEvent = { ...event, path: '/register' };
+    event.path = '/register';
+    event.headers['X-TRASH-USERID'] = undefined;
     mockVerifyIdToken.mockResolvedValue({ uid: 'valid-user-id' });
 
-    const result: APIGatewayAuthorizerResult = await handler(registerEvent);
+    const result: APIGatewayAuthorizerResult = await handler(event);
     expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
   });
 });

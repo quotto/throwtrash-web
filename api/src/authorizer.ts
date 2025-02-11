@@ -15,7 +15,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayAu
   const methodArn = event.requestContext.resourceId;
   const userId = event.headers['X-TRASH-USERID'];
 
-  if (!token || !userId) {
+  if (!token || (!userId && event.path !== '/register')) {
     logger.error({ message: 'Unauthorized: token or userId is missing', method: 'handler' });
     return generatePolicy('user', 'Deny', methodArn);
   }
@@ -25,7 +25,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayAu
     const signinId = decodedToken.uid;
 
     if (!['/migration/signup', '/register'].includes(event.path)) {
-      const item = await dbadapter.getTrashScheduleByUserId(userId);
+      const item = await dbadapter.getTrashScheduleByUserId(userId!);
 
       if (!item || item.mobile_signin_id !== signinId) {
         logger.error({ message: 'match error', data: { expected: item?.mobile_signin_id || '', actual: signinId }, method: 'handler' });
