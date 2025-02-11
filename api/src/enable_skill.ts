@@ -1,26 +1,26 @@
-import { CodeItem, SKILL_STAGE } from "./interface";
+import { SKILL_STAGE } from "./interface";
 
 import * as request from "request";
-import * as common from "trash-common";
-const logger = common.getLogger();
+import Logger from './logger';
+const logger = new Logger('enable_skill');
 import db from "./dbadapter";
 import rp from "request-promise";
 import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResultV2 } from "aws-lambda";
 import error_def from "./error_def";
 
 export default async(params: APIGatewayProxyEventQueryStringParameters,stage: string): Promise<APIGatewayProxyResultV2> => {
-    logger.debug(`enable_skill parameters: ${JSON.stringify(params)}`);
+    logger.debug({ message: 'enable_skill parameters', data: params, method: 'enable_skill' });
     if(
         params.code === null || typeof(params.code) === "undefined" ||
         params.token === null || typeof(params.token) === "undefined" ||
         params.redirect_uri === null || typeof(params.redirect_uri) === "undefined") {
-        logger.error("parameter not contains token or code or redirect_uri");
+        logger.error({message: 'parameter not contains token or code or redirect_uri'});
         return error_def.UserError;
     }
     const accountLinkItem = await db.getAccountLinkItemByToken(params.token);
-    logger.debug(`get accountlink item: ${JSON.stringify(accountLinkItem)}`);
+    logger.debug({ message: 'get accountlink item', data: accountLinkItem, method: 'enable_skill' });
     if(accountLinkItem === null || params.state != accountLinkItem.state) {
-        logger.error("invalid parameters");
+        logger.error({message: 'invalid parameters', data: {accountLinkItem: accountLinkItem, params: params}});
         return error_def.UserError;
     }
     // Amazonのアクセストークンを取得する
@@ -36,11 +36,11 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
         method: "POST",
         json: true
     }
-    logger.debug(`Get amazon access token:\n${JSON.stringify(options)}`);
+    logger.debug({ message: 'Get amazon access token', data: options, method: 'enable_skill' });
 
     try {
         const amazonAccessToken = await rp(options);
-        logger.debug(`Response Amazon AccessToken${JSON.stringify(amazonAccessToken)}`);
+        logger.debug({ message: 'Response Amazon AccessToken', data: amazonAccessToken, method: 'enable_skill' });
         const alexaEndpoint = await rp({
             uri: "https://api.amazonalexa.com/v1/alexaApiEndpoint",
             headers: {
@@ -58,7 +58,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
             json: true
         }
         const authorizationCodeResponse = await rp(authorizationOptions);
-        logger.debug(`Response Authorization Code: ${JSON.stringify(authorizationCodeResponse)}`);
+        logger.debug({ message: 'Response Authorization Code', data: authorizationCodeResponse, method: 'enable_skill' });
 
 
         const skill_stage = process.env.SKILL_STAGE as SKILL_STAGE;
@@ -82,13 +82,13 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
             }
         }
 
-        logger.debug(`Request Enable Skill: ${JSON.stringify(enableSkillOptions)}`);
+        logger.debug({ message: 'Request Enable Skill', data: enableSkillOptions, method: 'enable_skill' });
 
         // Alexa APIエンドポイントにスキル有効化のリクエストを送信する
         // Alexa APIではサービス（今日のゴミ出し）にauthorization codeをつけてアクセストークンをリクエストする
         // 正常にアクセストークンが取得できれば200が戻る
         const skillResponse = await rp(enableSkillOptions);
-        logger.debug(`Response Enable Skill: ${JSON.stringify(skillResponse)}`);
+        logger.debug({ message: 'Response Enable Skill', data: skillResponse, method: 'enable_skill' });
 
         await db.deleteAccountLinkItemByToken(accountLinkItem.token);
         return {

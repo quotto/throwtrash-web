@@ -77,9 +77,11 @@ Resources:
       Timeout: 30
       Layers:
         - !Ref FunctionLayer
+      LoggingConfig:
+        LogFormat: JSON
+        ApplicationLogLevel: !Ref RunLevel
       Environment:
         Variables:
-          RUNLEVEL: !Ref RunLevel
           SKILL_STAGE: !Ref SkillStage
           ALEXA_SKILL_ID: !Ref AlexaSkillID
           ALEXA_CLIENT_ID: !Ref AlexaClientID
@@ -87,6 +89,7 @@ Resources:
           ALEXA_USER_CLIENT_ID: !Ref AlexaUserClientID
           AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
           BACKEND_API_KEY: !Ref BackendApiKey
+          GOOGLE_APPLICATION_CREDENTIALS: /var/task/serviceAccountKey.json
       Tags:
         group: mobile
         app: throwtrash

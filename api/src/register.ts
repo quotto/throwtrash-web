@@ -1,13 +1,14 @@
 import * as common from "trash-common";
 import dbadapter from "./dbadapter";
-const logger = common.getLogger();
+import Logger from "./logger";
+const logger = new Logger("register");
 
 export default async (event_body_str: string, firebaseAccountId: string) => {
     let event_body;
     try {
         event_body = JSON.parse(event_body_str);
         if (typeof(event_body.platform) === "undefined" || event_body.platform.length === 0) {
-            logger.error(`invalid parameter: platform -> ${event_body.platform}`);
+            logger.error({message: 'invalid parameter: platform', data: event_body});
             return { statusCode: 400 };
         }
     } catch (e: any) {
@@ -16,7 +17,7 @@ export default async (event_body_str: string, firebaseAccountId: string) => {
     }
 
     const id = common.generateUUID("-");
-    logger.debug(`publish user id -> ${id}`);
+    logger.debug({message: 'publish user id: id'});
     const timestamp = new Date().getTime();
     const registeredItem = {
         id: id,
@@ -25,7 +26,7 @@ export default async (event_body_str: string, firebaseAccountId: string) => {
         mobile_signin_id: firebaseAccountId,
     };
 
-    logger.info(`register user: ${JSON.stringify(registeredItem)}, timestamp: ${timestamp}`);
+    logger.info({message: 'register user', data:{registeredItem, timestamp: timestamp}});
     if (await dbadapter.insertTrashSchedule(registeredItem, timestamp)) {
         return { statusCode: 200, body: JSON.stringify({ id: id, timestamp: timestamp }) };
     } else {

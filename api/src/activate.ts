@@ -1,19 +1,20 @@
-import sync from "./sync";
-import * as common from "trash-common";
 import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResultV2 } from "aws-lambda";
 import dbadapter from "./dbadapter";
-const logger = common.getLogger();
-export default async(params: APIGatewayProxyEventQueryStringParameters): Promise<APIGatewayProxyResultV2>=>{
+import Logger from './logger';
+
+const logger = new Logger('activate');
+
+export default async(params: APIGatewayProxyEventQueryStringParameters): Promise<APIGatewayProxyResultV2> => {
     if(params.code && params.user_id) {
         const activationCode = await dbadapter.getActivationCode(params.code);
         if(activationCode) {
-            logger.debug(`receive activation Code -> ${JSON.stringify(activationCode)}`);
+            logger.debug({ message: 'receive activation Code', data: activationCode, method: 'activate' });
             if(!await dbadapter.setSharedIdToTrashSchedule(params.user_id, activationCode.shared_id)) {
                 return {
                     statusCode: 500
                 }
             }
-            logger.info(`set shared_id ${activationCode.shared_id} to user_id ${params.user_id}`);
+            logger.info({ message: `set shared_id ${activationCode.shared_id} to user_id ${params.user_id}`, method: 'activate' });
             const sharedSchedule = await dbadapter.getSharedScheduleBySharedId(activationCode.shared_id);
             if(sharedSchedule === null) {
                 return {
@@ -24,8 +25,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters): Promise
             // 使い終わったActivationCodeを削除する
             const deleteResult = dbadapter.deleteActivationCode(activationCode.code);
             const response = await Promise.all([updateTrashScheduleResult, deleteResult]);
-            logger.debug(JSON.stringify(response));
-
+            logger.debug({ message: 'update and delete result', data: response, method: 'activate' });
             if(response[0]) {
                 return {
                     statusCode: 200,
@@ -40,13 +40,13 @@ export default async(params: APIGatewayProxyEventQueryStringParameters): Promise
                 }
             }
         } else {
-            logger.error(`Activation Code Not Found: ${params.code}`)
+            logger.error({ message: `Activation Code Not Found: ${params.code}`, method: 'activate' });
             return {
                 statusCode: 400
             }
         }
     }
-    logger.error("parameters not contains code");
+    logger.error({ message: 'parameters not contains code', method: 'activate' });
     return {
         statusCode: 400
     }

@@ -1,9 +1,9 @@
 import property from "./property";
-import * as common from "trash-common";
 import dbadapter from './dbadapter';
 import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { randomUUID } from "crypto";
-const logger = common.getLogger();
+import Logger from './logger';
+const logger = new Logger('publish_activation_code');
 
 const generateActivationCode = (): string=>{
     const code = [];
@@ -19,7 +19,7 @@ const generateSharedId = (): string=>{
 }
 
 export default async(params: APIGatewayProxyEventQueryStringParameters): Promise<APIGatewayProxyResultV2>=>{
-    logger.debug(`publish activation code params: ${JSON.stringify(params)}`);
+    logger.debug({message: 'start publish activation', data: params});
 
     if(params.user_id) {
         const trashScheduleItem = await dbadapter.getTrashScheduleByUserId(params.user_id);
@@ -41,7 +41,7 @@ export default async(params: APIGatewayProxyEventQueryStringParameters): Promise
             let limit = 0;
             while(limit < 5) {
                 const code = generateActivationCode();
-                logger.debug(`publish activation code -> ${code}`);
+                logger.debug({message: `publish activation code: ${code}`});
                 const ttl = Math.ceil(new Date().getTime() / 1000 + property.ACTIVATION_CODE_EXPIRE_SECONDS);
                 if (await dbadapter.putActivationCode({
                     code: code,
@@ -52,18 +52,18 @@ export default async(params: APIGatewayProxyEventQueryStringParameters): Promise
                 }
                 limit++;
             }
-            logger.error("failed publish activation code, over limit");
+            logger.error({message: "failed publish activation code, over limit"});
             return {
                 statusCode: 500
             }
         } else {
-            logger.error(`user id not found: ${params.user_id}`);
+            logger.error({message: `user id not found: ${params.user_id}`});
             return {
                 statusCode: 400
             };
         }
     }
-    logger.error("parameters not contains user_id");
+    logger.error({message: "parameters not contains user_id"});
     return {
         statusCode: 400
     };

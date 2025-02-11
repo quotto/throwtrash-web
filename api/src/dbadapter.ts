@@ -1,7 +1,7 @@
 import property from "./property";
-import * as common from "trash-common";
-const logger = common.getLogger();
-import AWS, { Account, AWSError } from "aws-sdk";
+import Logger from './logger';
+const logger = new Logger('dbadapter');
+import AWS from "aws-sdk";
 const documentClient = new AWS.DynamoDB.DocumentClient();
 import crypto from "crypto";
 import {  AccountLinkItem, ActivationCodeItem, CodeItem, SharedScheduleItem, TrashScheduleItem } from "./interface";
@@ -54,10 +54,10 @@ const getAccountLinkItemByToken = async (token: string): Promise<AccountLinkItem
             };
             return resultItem;
         }
-        logger.error(`account link item not found, token=${token}`);
+        logger.error({ message: `account link item not found, token=${token}`, method: 'getAccountLinkItemByToken' });
         return null;
     }).catch(err => {
-        logger.error(err);
+        logger.error({ message: err, method: 'getAccountLinkItemByToken' });
         return null;
     });
 }
@@ -67,22 +67,22 @@ const putAccountLinkItem = async (accountLinkItem: AccountLinkItem): Promise<boo
         TableName: property.ACCOUNT_LINK_TABLE,
         Item: accountLinkItem
     }).promise().then(() => {
-        logger.info("put AccountLinkItem: "+JSON.stringify(accountLinkItem));
+        logger.info({ message: 'put AccountLinkItem', data: accountLinkItem, method: 'putAccountLinkItem' });
         return true;
     }).catch(err => {
-        logger.error(err);
+        logger.error({ message: err, method: 'putAccountLinkItem' });
         return false;
     });
 }
 
-const deleteAccountLinkItemByToken = async(token: string): Promise<boolean>=>{
+const deleteAccountLinkItemByToken = async(token: string): Promise<boolean> => {
     return await documentClient.delete({
         TableName: property.ACCOUNT_LINK_TABLE,
-        Key:{
+        Key: {
             token: token
         }
-    }).promise().then(_=>{return true}).catch((e: any)=>{
-        logger.error(e);
+    }).promise().then(_ => true).catch((e: any) => {
+        logger.error({ message: e, method: 'deleteAccountLinkItemByToken' });
         return false;
     });
 }
@@ -93,7 +93,7 @@ const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleI
         Key: {
             id: user_id
         }
-    }).promise().then(item=>{
+    }).promise().then(item => {
         if(item.Item) {
             return {
                 id: item.Item.id,
@@ -103,11 +103,10 @@ const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleI
                 shared_id: item.Item.shared_id
             }
         }
-        logger.error(`user id not found ${user_id}`)
+        logger.error({ message: `user id not found ${user_id}`, method: 'getTrashScheduleByUserId' });
         return null;
     }).catch((e: any) => {
-        logger.error("failed get trash schedule")
-        logger.error(e);
+        logger.error({ message: 'failed get trash schedule', data: e, method: 'getTrashScheduleByUserId' });
         return null;
     });
 }
@@ -118,15 +117,13 @@ const setSharedIdToTrashSchedule = async(user_id: string, shared_id: string): Pr
         Key: {
             id: user_id
         },
-        UpdateExpression: "set #shared_id = :shared_id",
-        ExpressionAttributeNames: {"#shared_id": "shared_id"},
-        ExpressionAttributeValues: {":shared_id": shared_id}
-    }).promise().then(_=>true).catch((err)=>{
-        logger.error("failed update trash schedule");
-        logger.error(err);
+        UpdateExpression: 'set #shared_id = :shared_id',
+        ExpressionAttributeNames: {'#shared_id': 'shared_id'},
+        ExpressionAttributeValues: {':shared_id': shared_id}
+    }).promise().then(_ => true).catch((err) => {
+        logger.error({ message: 'failed update trash schedule', data: err, method: 'setSharedIdToTrashSchedule' });
         return false;
     })
-
 }
 
 const putSharedSchedule = async(shared_id: string, schedule: TrashScheduleItem): Promise<boolean> => {
@@ -137,9 +134,8 @@ const putSharedSchedule = async(shared_id: string, schedule: TrashScheduleItem):
             description: schedule.description,
             timestamp: schedule.timestamp
         }
-    }).promise().then(_=>true).catch((err)=>{
-        logger.error("failed put shared schedule");
-        logger.error(err);
+    }).promise().then(_ => true).catch((err) => {
+        logger.error({ message: 'failed put shared schedule', data: err, method: 'putSharedSchedule' });
         return false;
     });
 }
@@ -150,18 +146,17 @@ const getSharedScheduleBySharedId = async(shared_id: string): Promise<SharedSche
         Key: {
             shared_id: shared_id
         }
-    }).promise().then((value)=>{
+    }).promise().then((value) => {
         if(value.Item) {
             return {
-               shared_id: value.Item.shared_id ,
-               description: value.Item.description,
-               timestamp: value.Item.timestamp
+                shared_id: value.Item.shared_id,
+                description: value.Item.description,
+                timestamp: value.Item.timestamp
             }
         }
         return null;
-    }).catch((err)=>{
-        logger.error("failed get shared schedule");
-        logger.error(err)
+    }).catch((err) => {
+        logger.error({ message: 'failed get shared schedule', data: err, method: 'getSharedScheduleBySharedId' });
         return null;
     });
 }
@@ -174,8 +169,8 @@ const putActivationCode = async(activationCodeItem: ActivationCodeItem): Promise
             shared_id: activationCodeItem.shared_id,
             TTL: activationCodeItem.TTL
         }
-    }).promise().then(_=>{return true}).catch(e=>{
-        logger.error("failed put activation code");
+    }).promise().then(_ => true).catch(e => {
+        logger.error({ message: 'failed put activation code', data: e, method: 'putActivationCode' });
         return false;
     });
 }
@@ -186,22 +181,19 @@ const deleteActivationCode = async(code: string): Promise<boolean> => {
         Key: {
             code: code
         }
-    }).promise().then(_=>{
-        return true;
-    }).catch((e: any)=>{
-        logger.error("failed delete activation code");
-        logger.error(e);
+    }).promise().then(_ => true).catch((e: any) => {
+        logger.error({ message: 'failed delete activation code', data: e, method: 'deleteActivationCode' });
         return false;
     });
 }
 
-const getActivationCode = async(code: string): Promise<ActivationCodeItem | null>=> {
+const getActivationCode = async(code: string): Promise<ActivationCodeItem | null> => {
     return await documentClient.get({
         TableName: property.ACTIVATE_TABLE,
         Key: {
             code: code
         }
-    }).promise().then(item=>{
+    }).promise().then(item => {
         if(item.Item) {
             return {
                 code: item.Item.code,
@@ -210,9 +202,8 @@ const getActivationCode = async(code: string): Promise<ActivationCodeItem | null
             }
         }
         return null;
-    }).catch((e: any)=>{
-        logger.error("failed get activation code");
-        logger.error(e);
+    }).catch((e: any) => {
+        logger.error({ message: 'failed get activation code', data: e, method: 'getActivationCode' });
         return null;
     });
 }
@@ -226,10 +217,10 @@ const insertTrashSchedule = async(trashScheduleItem: TrashScheduleItem, timestam
             platform: trashScheduleItem.platform,
             timestamp: timestamp
         },
-        ConditionExpression: "attribute_not_exists(id)"
-    }).promise().then(_=>{return true}).catch((e: any)=>{
-       logger.error(e);
-       return false;
+        ConditionExpression: 'attribute_not_exists(id)'
+    }).promise().then(_ => true).catch((e: any) => {
+        logger.error({ message: e, method: 'insertTrashSchedule' });
+        return false;
     });
 }
 
@@ -243,45 +234,42 @@ const putExistTrashSchedule = async(trashScheduleItem: TrashScheduleItem, timest
             timestamp: timestamp,
             shared_id: trashScheduleItem.shared_id
         },
-        ConditionExpression: "attribute_exists(id)"
-    }).promise().then(_=>{return true}).catch((e: any)=>{
-       logger.error(e);
-       return false;
+        ConditionExpression: 'attribute_exists(id)'
+    }).promise().then(_ => true).catch((e: any) => {
+        logger.error({ message: e, method: 'putExistTrashSchedule' });
+        return false;
     });
 }
 
-const updateTrashSchedule = async(user_id: string, description: string, timestamp: number): Promise<boolean> =>{
+const updateTrashSchedule = async(user_id: string, description: string, timestamp: number): Promise<boolean> => {
     return documentClient.update({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Key: {
             id: user_id
         },
-        UpdateExpression: "set #description = :description, #timestamp = :timestamp",
+        UpdateExpression: 'set #description = :description, #timestamp = :timestamp',
         ExpressionAttributeNames: {
-            "#description": "description",
-            "#timestamp": "timestamp"
+            '#description': 'description',
+            '#timestamp': 'timestamp'
         },
         ExpressionAttributeValues: {
-            ":description": description,
-            ":timestamp": timestamp
+            ':description': description,
+            ':timestamp': timestamp
         },
-        ConditionExpression: "attribute_exists(id)"
-    }).promise().then(_=>true).catch((err)=> {
-        logger.error("failed update trash schedule");
-        logger.error(err);
+        ConditionExpression: 'attribute_exists(id)'
+    }).promise().then(_ => true).catch((err) => {
+        logger.error({ message: 'failed update trash schedule', data: err, method: 'updateTrashSchedule' });
         return false;
     });
 }
 
-const putAuthorizationCode = async(codeItem: CodeItem): Promise<boolean> =>{
+const putAuthorizationCode = async(codeItem: CodeItem): Promise<boolean> => {
     return documentClient.put({
         TableName: property.AUTHORIZE_TABLE,
         Item: codeItem,
-        ConditionExpression: "attribute_not_exists(code)"
-    }).promise().then(_ => {
-        return true;
-    }).catch(err => {
-        logger.warn(err);
+        ConditionExpression: 'attribute_not_exists(code)'
+    }).promise().then(_ => true).catch(err => {
+        logger.warn({ message: err, method: 'putAuthorizationCode' });
         return false;
     });
 }
@@ -293,12 +281,11 @@ const transactionUpdateScheduleAndSharedSchedule = async(shared_id: string, sche
                 Put: SharedSchedulePutOperation(shared_id, scheduleItem.description, timestamp),
             },
             {
-                Put: ExistTrashScheduleWithSharedIdPutOperation(scheduleItem.id, scheduleItem.description, scheduleItem.platform || "web", timestamp, shared_id)
+                Put: ExistTrashScheduleWithSharedIdPutOperation(scheduleItem.id, scheduleItem.description, scheduleItem.platform || 'web', timestamp, shared_id)
             }
         ]
-    }).promise().then(_=> true).catch((err)=>{
-        logger.error("failed transaction update schedule");
-        logger.error(err);
+    }).promise().then(_ => true).catch((err) => {
+        logger.error({ message: 'failed transaction update schedule', data: err, method: 'transactionUpdateScheduleAndSharedSchedule' });
         return false;
     })
 }
@@ -309,16 +296,15 @@ const updateTrashScheduleTimestamp = async(user_id: string, timestamp: number): 
         Key: {
             id: user_id
         },
-        UpdateExpression: "set #timestamp = :timestamp",
+        UpdateExpression: 'set #timestamp = :timestamp',
         ExpressionAttributeNames: {
-            "#timestamp": "timestamp"
+            '#timestamp': 'timestamp'
         },
         ExpressionAttributeValues: {
-            ":timestamp": timestamp
+            ':timestamp': timestamp
         }
-    }).promise().then(_=>true).catch(err=>{
-        logger.error("failed update TrashSchedule timestamp");
-        logger.error(err);
+    }).promise().then(_ => true).catch(err => {
+        logger.error({ message: 'failed update TrashSchedule timestamp', data: err, method: 'updateTrashScheduleTimestamp' });
         return false;
     });
 }
@@ -327,32 +313,31 @@ const updateTrashScheduleMobileSigninId = async (user_id: string, mobile_signin_
     return documentClient.update({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Key: { id: user_id },
-        UpdateExpression: "set #mobile_signin_id = :mobile_signin_id",
-        ExpressionAttributeNames: { "#mobile_signin_id": "mobile_signin_id" },
-        ExpressionAttributeValues: { ":mobile_signin_id": mobile_signin_id }
+        UpdateExpression: 'set #mobile_signin_id = :mobile_signin_id',
+        ExpressionAttributeNames: { '#mobile_signin_id': 'mobile_signin_id' },
+        ExpressionAttributeValues: { ':mobile_signin_id': mobile_signin_id }
     }).promise().then(_ => true).catch(err => {
-        logger.error("failed to update mobile_signin_id");
-        logger.error(err);
+        logger.error({ message: 'failed to update mobile_signin_id', data: err, method: 'updateTrashScheduleMobileSigninId' });
         return false;
     });
 };
 
 export default {
-    putAccountLinkItem: putAccountLinkItem,
-    getAccountLinkItemByToken: getAccountLinkItemByToken,
-    deleteAccountLinkItemByToken: deleteAccountLinkItemByToken,
-    getTrashScheduleByUserId: getTrashScheduleByUserId,
-    putActivationCode: putActivationCode,
-    deleteActivationCode: deleteActivationCode,
-    getActivationCode: getActivationCode,
-    insertTrashSchedule: insertTrashSchedule,
-    putExistTrashSchedule: putExistTrashSchedule,
-    updateTrashSchedule: updateTrashSchedule,
-    putAuthorizationCode: putAuthorizationCode,
-    setSharedIdToTrashSchedule: setSharedIdToTrashSchedule,
-    putSharedSchedule: putSharedSchedule,
-    getSharedScheduleBySharedId: getSharedScheduleBySharedId,
-    transactionUpdateScheduleAndSharedSchedule: transactionUpdateScheduleAndSharedSchedule,
-    updateTrashScheduleTimestamp: updateTrashScheduleTimestamp,
-    updateTrashScheduleMobileSigninId: updateTrashScheduleMobileSigninId
-}
+    putAccountLinkItem,
+    getAccountLinkItemByToken,
+    deleteAccountLinkItemByToken,
+    getTrashScheduleByUserId,
+    putActivationCode,
+    deleteActivationCode,
+    getActivationCode,
+    insertTrashSchedule,
+    putExistTrashSchedule,
+    updateTrashSchedule,
+    putAuthorizationCode,
+    setSharedIdToTrashSchedule,
+    putSharedSchedule,
+    getSharedScheduleBySharedId,
+    transactionUpdateScheduleAndSharedSchedule,
+    updateTrashScheduleTimestamp,
+    updateTrashScheduleMobileSigninId
+};

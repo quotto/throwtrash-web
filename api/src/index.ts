@@ -4,22 +4,21 @@ import register from "./register";
 import publish_activation_code from "./publish_activation_code";
 import activate from "./activate";
 import migrationSignup from './migration/signup';
-import { handler as authorizer } from './authorizer';
 import * as admin from 'firebase-admin';
 
-import * as common from "trash-common";
 import start_link from "./start_link";
 import enable_skill from "./enable_skill";
 import migrationV2 from "./migration/v2";
-const logger = common.getLogger();
-process.env.RUNLEVEL === "INFO" ? logger.setLevel_INFO() : logger.setLevel_DEBUG();
+
+import Logger from './logger';
+const logger = new Logger('index');
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
 });
 
 exports.handler = async function(event: AWSLambda.APIGatewayEvent,_context: AWSLambda.Context) {
-    logger.debug(JSON.stringify(event));
+    logger.debug({message: 'handler', data: event});
 
     // Extract the ID token from the request headers
     const token = event.headers.Authorization || event.headers.authorization;
@@ -37,7 +36,7 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent,_context: AWSL
         const decodedToken = await admin.auth().verifyIdToken(token);
         firebaseAccountId = decodedToken.uid;
     } catch (error) {
-        logger.error('Error verifying ID token: ' + error);
+        logger.error({message: 'Error verifying ID token', data: error});
         return {
             statusCode: 403,
             body: 'Forbidden',
@@ -52,7 +51,7 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent,_context: AWSL
     } else if(event.resource === '/update') {
         // 更新処理
         if(event.body === null) {
-            logger.error("/update error: body is null");
+            logger.error({message: "/update error: body is null"});
             return {
                 statusCode: 400
             }

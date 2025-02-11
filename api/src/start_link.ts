@@ -3,7 +3,8 @@ import {AccountLinkItem, SKILL_STAGE} from "./interface";
 import * as common from "trash-common";
 import property from "./property";
 import { APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResultV2 } from "aws-lambda";
-const logger = common.getLogger();
+import Logger from './logger';
+const logger = new Logger('start_link');
 
 export default async(params: APIGatewayProxyEventQueryStringParameters ,stage: string): Promise<APIGatewayProxyResultV2> => {
     if (params.user_id && params.platform) {
@@ -36,9 +37,9 @@ export default async(params: APIGatewayProxyEventQueryStringParameters ,stage: s
                 redirect_url: redirect_uri,
                 TTL: Math.ceil(Date.now()/1000) + property.ACCOUNT_LINK_EXPIRE_SECONDS
             };
-            logger.debug("put account link info \n"+JSON.stringify(accountLinkItem));
+            logger.debug({message: "put account link info", data: accountLinkItem});
             if(await db.putAccountLinkItem(accountLinkItem)) {
-                logger.debug(`resonse accountlink url: ${loginUrl}`);
+                logger.debug({message: `resonse accountlink url: ${loginUrl}`});
                 return {
                     statusCode: 200,
                     headers: {
