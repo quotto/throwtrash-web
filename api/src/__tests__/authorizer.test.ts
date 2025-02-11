@@ -30,7 +30,7 @@ describe('authorizer', () => {
       requestContext: {
         resourceId: 'arn:aws:execute-api:region:account-id:api-id/stage/GET/resource',
       },
-      path: '/some-path',
+      resource: '/some-path',
       body: null,
       // ...other properties as needed
     } as any;
@@ -66,7 +66,7 @@ describe('authorizer', () => {
   });
 
   it('should allow access for /migration/signup path', async () => {
-    event.path = '/migration/signup';
+    event.resource = '/migration/signup';
     mockVerifyIdToken.mockResolvedValue({ uid: 'valid-user-id' });
 
     const result: APIGatewayAuthorizerResult = await handler(event);
@@ -74,7 +74,7 @@ describe('authorizer', () => {
   });
 
   it('should allow access for /register path', async () => {
-    event.path = '/register';
+    event.resource = '/register';
     event.headers['X-TRASH-USERID'] = undefined;
     mockVerifyIdToken.mockResolvedValue({ uid: 'valid-user-id' });
 
