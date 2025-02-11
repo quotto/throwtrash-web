@@ -155,7 +155,7 @@ jobs:
       - name: Module Deploy
         run: |
           # Firebase認証情報
-          FIREBASE_CONFIG=$(echo ${{ secrets.GCP_TEST_CREDENTIALS }} | base64 -d)
+          FIREBASE_CONFIG=$(echo ${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_KEY }} | base64 -d)
           # API/Lambdaのパッケージングとデプロイ
           aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${{ needs.set-stage.outputs.ENV }} --s3-prefix throwtrashapi
 
