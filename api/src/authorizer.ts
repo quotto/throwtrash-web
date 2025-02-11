@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayAuthorizerResult } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayAuthorizerResult, APIGatewayAuthorizerEvent, APIGatewayRequestAuthorizerEventV2, APIGatewayRequestAuthorizerEvent } from 'aws-lambda';
 import * as admin from 'firebase-admin';
 import Logger from './logger';
 import dbadapter from './dbadapter';
@@ -9,11 +9,11 @@ admin.initializeApp({
 
 const logger = new Logger('authorizer');
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayAuthorizerResult> => {
+export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
   logger.debug({ message: 'Event received', data: event, method: 'handler' });
-  const token = event.headers.Authorization || event.headers.authorization;
-  const methodArn = event.requestContext.resourceId;
-  const userId = event.headers['X-TRASH-USERID'];
+  const token = event.headers?.Authorization || event.headers?.authorization;
+  const methodArn = event.methodArn;
+  const userId = event.headers ? event.headers['X-TRASH-USERID'] : undefined;
 
   if (!token || (!userId && event.resource !== '/register')) {
     logger.error({ message: 'Unauthorized: token or userId is missing', method: 'handler' });

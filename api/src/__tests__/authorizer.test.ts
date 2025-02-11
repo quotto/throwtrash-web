@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayAuthorizerResult } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayAuthorizerResult, APIGatewayRequestAuthorizerEvent } from 'aws-lambda';
 import * as admin from 'firebase-admin';
 import dbadapter from '../dbadapter';
 import { handler } from '../authorizer';
@@ -19,10 +19,11 @@ const mockGetTrashScheduleByUserId = jest.fn();
 dbadapter.getTrashScheduleByUserId = mockGetTrashScheduleByUserId;
 
 describe('authorizer', () => {
-  let event: APIGatewayProxyEvent;
+  let event: APIGatewayRequestAuthorizerEvent;
 
   beforeEach(() => {
     event = {
+      methodArn: 'arn:aws:execute-api:region:account-id:api-id/stage/GET/resource',
       headers: {
         Authorization: 'Bearer valid-token',
         'X-TRASH-USERID': 'valid-user-id',
@@ -75,7 +76,7 @@ describe('authorizer', () => {
 
   it('should allow access for /register path', async () => {
     event.resource = '/register';
-    event.headers['X-TRASH-USERID'] = undefined;
+    event.headers!['X-TRASH-USERID'] = undefined;
     mockVerifyIdToken.mockResolvedValue({ uid: 'valid-user-id' });
 
     const result: APIGatewayAuthorizerResult = await handler(event);
