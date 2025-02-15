@@ -22,13 +22,14 @@ const SharedSchedulePutOperation = (shared_id: string, description: string, time
     }
 }
 
-const ExistTrashScheduleWithSharedIdPutOperation = (user_id: string, description: string, platform: string, timestamp: number, shared_id: string): AWS.DynamoDB.DocumentClient.Put => {
+const ExistTrashScheduleWithSharedIdPutOperation = (scheduleItem: TrashScheduleItem, timestamp: number, shared_id: string): AWS.DynamoDB.DocumentClient.Put => {
    return  {
         TableName: property.TRASH_SCHEDULE_TABLE,
         Item: {
-            id: user_id,
-            description: description,
-            platform: platform,
+            id: scheduleItem.id,
+            description: scheduleItem.description,
+            platform: scheduleItem.platform,
+            mobile_signin_id: scheduleItem.mobile_signin_id,
             timestamp: timestamp,
             shared_id: shared_id
         },
@@ -100,7 +101,8 @@ const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleI
                 description: item.Item.description,
                 platform: item.Item.platform,
                 timestamp: item.Item.timestamp,
-                shared_id: item.Item.shared_id
+                shared_id: item.Item.shared_id,
+                mobile_signin_id: item.Item.mobile_signin_id
             }
         }
         logger.error({ message: `user id not found ${user_id}`, method: 'getTrashScheduleByUserId' });
@@ -276,7 +278,7 @@ const transactionUpdateScheduleAndSharedSchedule = async(shared_id: string, sche
                 Put: SharedSchedulePutOperation(shared_id, scheduleItem.description, timestamp),
             },
             {
-                Put: ExistTrashScheduleWithSharedIdPutOperation(scheduleItem.id, scheduleItem.description, scheduleItem.platform || 'web', timestamp, shared_id)
+                Put: ExistTrashScheduleWithSharedIdPutOperation(scheduleItem, timestamp, shared_id)
             }
         ]
     }).promise().then(_ => true).catch((err) => {
