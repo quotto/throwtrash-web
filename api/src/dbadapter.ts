@@ -322,6 +322,26 @@ const updateTrashScheduleMobileSigninId = async (user_id: string, mobile_signin_
     });
 };
 
+const getTrashScheduleUserIdByMobileSigninId = async (mobile_signin_id: string): Promise<string | null> => {
+    return documentClient.query({
+        TableName: property.TRASH_SCHEDULE_TABLE,
+        IndexName: 'mobile_signin_id-index',
+        KeyConditionExpression: 'mobile_signin_id = :mobile_signin_id',
+        ExpressionAttributeValues: {
+            ':mobile_signin_id': mobile_signin_id
+        }
+    }).promise().then(result => {
+        if (result.Items && result.Items.length > 0) {
+            return result.Items[0].id;
+        }
+        logger.error({ message: `mobile_signin_id not found ${mobile_signin_id}`, method: 'getTrashScheduleByMobileSigninId' });
+        return null;
+    }).catch((e: any) => {
+        logger.error({ message: 'failed to get trash schedule by mobile_signin_id', data: e, method: 'getTrashScheduleByMobileSigninId' });
+        return null;
+    });
+};
+
 export default {
     putAccountLinkItem,
     getAccountLinkItemByToken,
@@ -339,5 +359,6 @@ export default {
     getSharedScheduleBySharedId,
     transactionUpdateScheduleAndSharedSchedule,
     updateTrashScheduleTimestamp,
-    updateTrashScheduleMobileSigninId
+    updateTrashScheduleMobileSigninId,
+    getTrashScheduleUserIdByMobileSigninId: getTrashScheduleUserIdByMobileSigninId
 };

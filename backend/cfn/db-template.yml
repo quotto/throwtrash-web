@@ -42,6 +42,9 @@ Resources:
         -
           AttributeName: "signinId"
           AttributeType: "S"
+        -
+          AttributeName: "mobile_signin_id"
+          AttributeType: "S"
       KeySchema:
         -
           AttributeName: "id"
@@ -59,6 +62,16 @@ Resources:
               - "id"
               - "signinService"
             ProjectionType: "INCLUDE"
+        -
+          IndexName: 'mobile_signin_id-index'
+          KeySchema:
+            -
+              AttributeName: 'mobile_signin_id'
+              KeyType: 'HASH'
+          Projection:
+            NonKeyAttributes:
+              - "id"
+            ProjectionType: 'INCLUDE'
       StreamSpecification:
         StreamViewType: "NEW_IMAGE"
       PointInTimeRecoverySpecification:

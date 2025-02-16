@@ -9,6 +9,7 @@ import * as admin from 'firebase-admin';
 import start_link from "./start_link";
 import enable_skill from "./enable_skill";
 import migrationV2 from "./migration/v2";
+import signin from "./signin";
 
 import Logger from './logger';
 const logger = new Logger('index');
@@ -72,5 +73,7 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent,_context: AWSL
         return await enable_skill(event.queryStringParameters || {}, event.requestContext.stage);
     } else if(event.resource === '/migration/v2') {
         return await migrationV2(event.queryStringParameters || {});
+    } else if(event.resource === '/signin') {
+        return await signin(event);
     }
 }

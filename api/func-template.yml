@@ -176,6 +176,12 @@ Resources:
             Path: "/migration/signup"
             Method: "POST"
             RestApiId: !Ref Api
+        SignIn:
+          Type: Api
+          Properties:
+            Path: "/signin"
+            Method: "GET"
+            RestApiId: !Ref Api
   AuthorizerFunction:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
