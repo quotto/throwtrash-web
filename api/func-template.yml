@@ -180,7 +180,7 @@ Resources:
           Type: Api
           Properties:
             Path: "/signin"
-            Method: "GET"
+            Method: "POST"
             RestApiId: !Ref Api
   AuthorizerFunction:
     Type: "AWS::Serverless::Function"
