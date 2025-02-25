@@ -35,6 +35,7 @@ Resources:
             Action: "dynamodb:*"
             Resource:
               - Fn::ImportValue: throwtrash-db-schedule
+              - Fn::ImportValue: throwtrash-db-schedule-mobileSigninIdIndex
               - Fn::ImportValue: throwtrash-db-activation
               - Fn::ImportValue: throwtrash-db-accountlink
               - Fn::ImportValue: throwtrash-db-shared-schedule
