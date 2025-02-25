@@ -225,7 +225,7 @@ Outputs:
     Value: !Sub "${TrashScheduleTable.Arn}/index/${SigninIdIndexName}"
   MobileSigninIdIndex:
     Export:
-      Name: !Sub "throwtrash-db-schedule-mobileSigninInIddex"
+      Name: !Sub "throwtrash-db-schedule-mobileSigninIdIndex"
     Value: !Sub "${TrashScheduleTable.Arn}/index/${MobileSigninIdIndexName}"
   SharedSchedule:
     Export:
