@@ -82,4 +82,13 @@ describe('authorizer', () => {
     const result: APIGatewayAuthorizerResult = await handler(event);
     expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
   });
+
+  it('should allow access for /signin path', async () => {
+    event.resource = '/signin';
+    event.headers!['X-TRASH-USERID'] = undefined;
+    mockVerifyIdToken.mockResolvedValue({ uid: 'valid-user-id' });
+
+    const result: APIGatewayAuthorizerResult = await handler(event);
+    expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
+  });
 });

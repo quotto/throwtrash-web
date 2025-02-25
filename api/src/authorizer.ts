@@ -15,7 +15,7 @@ export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<
   const methodArn = event.methodArn;
   const userId = event.headers ? event.headers['X-TRASH-USERID'] : undefined;
 
-  if (!token || (!userId && event.resource !== '/register')) {
+  if (!token || (!userId && !['/register', '/signin'].includes(event.resource))) {
     logger.error({ message: 'Unauthorized: token or userId is missing', method: 'handler' });
     return generatePolicy('user', 'Deny', methodArn);
   }
@@ -24,7 +24,7 @@ export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<
     const decodedToken = await admin.auth().verifyIdToken(token);
     const signinId = decodedToken.uid;
 
-    if (!['/migration/signup', '/register'].includes(event.resource)) {
+    if (!['/migration/signup', '/register', '/signin'].includes(event.resource)) {
       const item = await dbadapter.getTrashScheduleByUserId(userId!);
 
       if (!item || item.mobile_signin_id !== signinId) {
