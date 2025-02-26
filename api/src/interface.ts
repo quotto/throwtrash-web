@@ -81,3 +81,11 @@ export interface ApiResponse {
 
 // TypeScriptのenumbは型安全ではないためユニオンを使う
 export type  SKILL_STAGE =  "development" | "live";
+
+// 更新リクエスト用の専用型
+export interface UpdateRequest  {
+    id: string,
+    description: string,
+    platform: string,
+    timestamp: number
+}
