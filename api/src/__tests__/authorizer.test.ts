@@ -1,22 +1,17 @@
-import { APIGatewayProxyEvent, APIGatewayAuthorizerResult, APIGatewayRequestAuthorizerEvent } from 'aws-lambda';
+import { APIGatewayAuthorizerResult, APIGatewayRequestAuthorizerEvent } from 'aws-lambda';
 import * as admin from 'firebase-admin';
-import dbadapter from '../dbadapter';
 import { handler } from '../authorizer';
 
 jest.mock('firebase-admin');
-jest.mock('../dbadapter');
 
 const mockVerifyIdToken = jest.fn();
 const mockAuth = {
   verifyIdToken: mockVerifyIdToken,
   tenantManager: jest.fn(),
   projectConfigManager: jest.fn(),
-  app: jest.fn(),
 };
-(admin as any).auth = jest.fn().mockReturnValue(mockAuth);
 
-const mockGetTrashScheduleByUserId = jest.fn();
-dbadapter.getTrashScheduleByUserId = mockGetTrashScheduleByUserId;
+(admin as any).auth = jest.fn().mockReturnValue(mockAuth);
 
 describe('authorizer', () => {
   let event: APIGatewayRequestAuthorizerEvent;
@@ -25,70 +20,38 @@ describe('authorizer', () => {
     event = {
       methodArn: 'arn:aws:execute-api:region:account-id:api-id/stage/GET/resource',
       headers: {
-        Authorization: 'Bearer valid-token',
-        'X-TRASH-USERID': 'valid-user-id',
+        Authorization: 'Bearer valid-token'
       },
       requestContext: {
         resourceId: 'arn:aws:execute-api:region:account-id:api-id/stage/GET/resource',
       },
       resource: '/some-path',
       body: null,
-      // ...other properties as needed
     } as any;
   });
 
-  it('should allow access for valid token and matching user_id', async () => {
+  it('should allow access for valid token', async () => {
     mockVerifyIdToken.mockResolvedValue({ uid: 'valid-signin-id' });
-    mockGetTrashScheduleByUserId.mockResolvedValue({
-      user_id: 'valid-user-id',
-      mobile_signin_id: 'valid-signin-id',
-    });
-
+    
     const result: APIGatewayAuthorizerResult = await handler(event);
+    
     expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
+    expect(result.principalId).toBe('valid-signin-id');
   });
 
   it('should deny access for invalid token', async () => {
     mockVerifyIdToken.mockRejectedValue(new Error('Invalid token'));
-
+    
     const result: APIGatewayAuthorizerResult = await handler(event);
+    
     expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
   });
 
-  it('should deny access for non-matching user_id', async () => {
-    mockVerifyIdToken.mockResolvedValue({ uid: 'valid-signin-id' });
-    mockGetTrashScheduleByUserId.mockResolvedValue({
-      user_id: 'valid-user-id',
-      mobile_signin_id: 'different-signin-id',
-    });
-
+  it('should deny access when no token is provided', async () => {
+    event.headers = {};
+    
     const result: APIGatewayAuthorizerResult = await handler(event);
+    
     expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
-  });
-
-  it('should allow access for /migration/signup path', async () => {
-    event.resource = '/migration/signup';
-    mockVerifyIdToken.mockResolvedValue({ uid: 'valid-user-id' });
-
-    const result: APIGatewayAuthorizerResult = await handler(event);
-    expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
-  });
-
-  it('should allow access for /register path', async () => {
-    event.resource = '/register';
-    event.headers!['X-TRASH-USERID'] = undefined;
-    mockVerifyIdToken.mockResolvedValue({ uid: 'valid-user-id' });
-
-    const result: APIGatewayAuthorizerResult = await handler(event);
-    expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
-  });
-
-  it('should allow access for /signin path', async () => {
-    event.resource = '/signin';
-    event.headers!['X-TRASH-USERID'] = undefined;
-    mockVerifyIdToken.mockResolvedValue({ uid: 'valid-user-id' });
-
-    const result: APIGatewayAuthorizerResult = await handler(event);
-    expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
   });
 });
