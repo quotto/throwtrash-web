@@ -21,7 +21,7 @@ export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const signinId = decodedToken.uid;
-    
+
     return generatePolicy(signinId, 'Allow', methodArn);
   } catch (error: any) {
     logger.error({ message: 'Authorization error', data: error, method: 'handler' });
@@ -30,6 +30,14 @@ export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<
 };
 
 const generatePolicy = (principalId: string, effect: string, resource: string): APIGatewayAuthorizerResult => {
+  // Convert specific resource to a wildcard that covers the entire API
+  // Format of methodArn: arn:aws:execute-api:region:account-id:api-id/stage/HTTP-VERB/resource-path
+  // Replace the specific path with a wildcard, removing the HTTP verb as well
+  const arnParts = resource.split('/');
+  // Keep only up to the stage part (index 2) and add wildcard
+  const baseArn = arnParts.slice(0, 2).join('/');
+  const wildcardResource = `${baseArn}/*`;
+
   return {
     principalId,
     policyDocument: {
@@ -38,7 +46,7 @@ const generatePolicy = (principalId: string, effect: string, resource: string): 
         {
           Action: 'execute-api:Invoke',
           Effect: effect,
-          Resource: resource,
+          Resource: wildcardResource,
         },
       ],
     },

@@ -54,11 +54,11 @@ export const handler = async function(event: AWSLambda.APIGatewayEvent,_context:
     if (!noValidationPaths.includes(event.resource) && userIdHeader) {
         try {
             const userData = await dbadapter.getTrashScheduleByUserId(userIdHeader);
-            
+
             // Validate that the Firebase ID matches the user ID
             if (!userData || userData.mobile_signin_id !== firebaseAccountId) {
                 logger.error({
-                    message: 'User ID validation failed', 
+                    message: 'User ID validation failed',
                     data: {
                         userIdHeader,
                         signinId: firebaseAccountId
