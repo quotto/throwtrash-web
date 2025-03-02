@@ -26,6 +26,6 @@
     "@types/aws-lambda": "^8.10.102",
     "aws-sdk": "^2.1199.0",
     "firebase-admin": "^11.0.1",
-    "trash-common": "git+https://github.com/quotto/throwtrash-common-module.git#v2.3.1"
+    "trash-common": "git+https://github.com/quotto/throwtrash-common-module.git#feature/allow-empty-data"
   }
 }

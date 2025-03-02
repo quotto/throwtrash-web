@@ -8,5 +8,5 @@ backend/src/serviceAccountKey.json
 backend/src/backend-dist
 backend/cfn/package-template.yml
 api/src/node_modules
-api/src/dist
+api/src/api-dist
 api/package-template.yml
