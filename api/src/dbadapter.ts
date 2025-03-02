@@ -343,6 +343,18 @@ const getTrashScheduleUserIdByMobileSigninId = async (mobile_signin_id: string):
     });
 };
 
+const deleteTrashScheduleByUserId = async(user_id: string): Promise<boolean> => {
+    return documentClient.delete({
+        TableName: property.TRASH_SCHEDULE_TABLE,
+        Key: {
+            id: user_id
+        }
+    }).promise().then(_ => true).catch((err) => {
+        logger.error({ message: 'failed to delete trash schedule', data: err, method: 'deleteTrashScheduleByUserId' });
+        return false;
+    });
+};
+
 export default {
     putAccountLinkItem,
     getAccountLinkItemByToken,
@@ -361,5 +373,6 @@ export default {
     transactionUpdateScheduleAndSharedSchedule,
     updateTrashScheduleTimestamp,
     updateTrashScheduleMobileSigninId,
-    getTrashScheduleUserIdByMobileSigninId: getTrashScheduleUserIdByMobileSigninId
+    getTrashScheduleUserIdByMobileSigninId,
+    deleteTrashScheduleByUserId
 };

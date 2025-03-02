@@ -10,6 +10,7 @@ import start_link from "./start_link";
 import enable_skill from "./enable_skill";
 import migrationV2 from "./migration/v2";
 import signin from "./signin";
+import deleteUser from "./delete";
 
 import Logger from './logger';
 import dbadapter from './dbadapter';
@@ -109,6 +110,9 @@ export const handler = async function(event: AWSLambda.APIGatewayEvent,_context:
         return await migrationV2(event.queryStringParameters || {});
     } else if(event.resource === '/signin') {
         return await signin(event);
+    } else if(event.resource === '/delete') {
+        // ユーザーデータと認証情報の削除処理
+        return await deleteUser(event, firebaseAccountId);
     }
 }
 

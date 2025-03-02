@@ -183,6 +183,15 @@ Resources:
             Path: "/signin"
             Method: "POST"
             RestApiId: !Ref Api
+        Delete:
+          Type: Api
+          Properties:
+            Path: "/delete"
+            Method: "DELETE"
+            RestApiId: !Ref Api
+            RequestParameters:
+              - method.request.header.X-TRASH-USERID:
+                  Required: true
   AuthorizerFunction:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
