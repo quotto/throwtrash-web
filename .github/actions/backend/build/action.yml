@@ -9,7 +9,7 @@ runs:
       with:
         node-version: '16.x'
     - name: Restore backend cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         key: npm-deps-${{ github.ref_name }}-${{ hashFiles('backend/src/package-lock.json') }}
         path: backend/src/node_modules

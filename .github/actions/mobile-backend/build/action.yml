@@ -12,7 +12,7 @@ runs:
       with:
         node-version: '16.x'
     - name: Restore API cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         key: npm-deps-${{ github.ref_name }}-${{ hashFiles('api/src/package-lock.json') }}
         path: api/src/node_modules
@@ -27,7 +27,7 @@ runs:
     - name: Restore firebase config
       shell: bash
       run: |
-        echo ${{ inputs.google-cloud-service-account-key }} | base64 -d >> api-dist/serviceAccountKey.json 
+        echo ${{ inputs.google-cloud-service-account-key }} | base64 -d >> api-dist/serviceAccountKey.json
       working-directory: api/src
     - name: Archive Module
       uses: actions/upload-artifact@v4
