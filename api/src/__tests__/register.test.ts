@@ -2,14 +2,19 @@
 
 import { APIGatewayProxyStructuredResultV2 } from "aws-lambda";
 import * as common from "trash-common";
-const logger = common.getLogger();
-logger.setLevel_DEBUG();
-
+console.log(common);
 
 const mockId = "1234567891";
 const mockFirebaseAccountId = "firebase-account-id";
 
-jest.spyOn(common, "generateUUID").mockImplementation((separator)=>mockId);
+// Mock the entire common module instead of using spyOn
+jest.mock("trash-common", () => {
+  const originalModule = jest.requireActual("trash-common");
+  return {
+    ...originalModule,
+    generateUUID: jest.fn((separator) => mockId)
+  };
+});
 
 jest.mock("../dbadapter");
 import dbadapter from "../dbadapter";
