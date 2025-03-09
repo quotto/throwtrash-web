@@ -16,13 +16,19 @@ runs:
       with:
         key: npm-deps-${{ github.ref_name }}-${{ hashFiles('api/src/package-lock.json') }}
         path: api/src/node_modules
-    - name: Install dependencies
+    - name: Install all dependencies including devDependencies for build
       shell: bash
-      run: npm ci --production
+      run: npm ci
       working-directory: api/src
     - name: Build
       shell: bash
       run: npm run build
+      working-directory: api/src
+    - name: Clean and reinstall production dependencies only
+      shell: bash
+      run: |
+        rm -rf node_modules
+        npm ci --production
       working-directory: api/src
     - name: Restore firebase config
       shell: bash
@@ -40,6 +46,7 @@ runs:
       with:
         name: mobile-backend-layer
         path: api/src/node_modules
+        retention-days: 1
     - name: Move dependencies to layer directory
       shell: bash
       run: |
