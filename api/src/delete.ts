@@ -1,13 +1,14 @@
 import * as admin from 'firebase-admin';
 import Logger from './logger';
 import dbadapter from './dbadapter';
+import { extractHeaderValue } from './utils';
 
 const logger = new Logger('delete');
 
 export default async function(event: AWSLambda.APIGatewayEvent, firebaseAccountId: string) {
     logger.debug({ message: 'delete user request', data: { event, firebaseAccountId }, method: 'default' });
 
-    const userId = event.headers['X-TRASH-USERID'];
+    const userId = extractHeaderValue(event.headers, 'X-TRASH-USERID');
 
     if (!userId) {
         logger.error({ message: 'X-TRASH-USERID が存在しません', method: 'default' });

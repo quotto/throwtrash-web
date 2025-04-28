@@ -65,7 +65,7 @@ Resources:
       ContentUri: ./src/layer
       LayerName: !Sub "throwtrash-mobile-layer-${Stage}"
       CompatibleRuntimes:
-        - nodejs16.x
+        - nodejs22.x
   LambdaFunction:
     Type: "AWS::Serverless::Function"
     DeletionPolicy: Retain
@@ -74,7 +74,7 @@ Resources:
       FunctionName: !Sub "throwtrash-mobile-${Stage}"
       Handler: index.handler
       Role: !GetAtt LambdaExecRole.Arn
-      Runtime: nodejs16.x
+      Runtime: nodejs22.x
       Timeout: 30
       Layers:
         - !Ref FunctionLayer
@@ -200,7 +200,7 @@ Resources:
       FunctionName: !Sub "throwtrash-mobile-authorizer-${Stage}"
       Handler: authorizer.handler
       Role: !GetAtt LambdaExecRole.Arn
-      Runtime: nodejs16.x
+      Runtime: nodejs22.x
       Timeout: 30
       Layers:
         - !Ref FunctionLayer

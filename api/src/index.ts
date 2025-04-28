@@ -14,6 +14,7 @@ import deleteUser from "./delete";
 
 import Logger from './logger';
 import dbadapter from './dbadapter';
+import { extractHeaderValue } from "./utils";
 
 const logger = new Logger('index');
 
@@ -48,11 +49,18 @@ export const handler = async function(event: AWSLambda.APIGatewayEvent,_context:
     }
 
     // No validation needed for these resources
-    const noValidationPaths = ['/migration/signup', '/register', '/signin'];
-    const userIdHeader = event.headers['X-TRASH-USERID'] || '';
+    const noAppUserIdValidationPaths = ['/migration/signup', '/register', '/signin'];
+    const userIdHeader = extractHeaderValue(event.headers, 'X-TRASH-USERID');
 
     // Check if path requires validation and validate user ID
-    if (!noValidationPaths.includes(event.resource) && userIdHeader) {
+    if (!noAppUserIdValidationPaths.includes(event.resource)) {
+        if (!userIdHeader) {
+            logger.error({message: 'X-TRASH-USERID header is missing'});
+            return {
+                statusCode: 403,
+                body: 'Missing X-TRASH-USERID header',
+            };
+        }
         try {
             const userData = await dbadapter.getTrashScheduleByUserId(userIdHeader);
 

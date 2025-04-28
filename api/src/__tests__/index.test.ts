@@ -139,6 +139,19 @@ describe('index handler', () => {
     });
   });
 
+  it('should return 403 when no X-TRASH-USERID header is provided', async () => {
+
+    delete event.headers['X-TRASH-USERID'];
+    event.resource = '/sync';
+
+    const result = await handler(event, {} as AWSLambda.Context);
+
+    expect(result).toEqual({
+      statusCode: 403,
+      body: 'Missing X-TRASH-USERID header',
+    });
+  });
+
   it('should process valid requests correctly based on resource path', async () => {
     // Test each path to make sure it routes correctly
     const paths = [
