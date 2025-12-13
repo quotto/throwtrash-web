@@ -2,8 +2,8 @@ import { Button, CircularProgress,  Dialog, DialogActions, DialogContent, Dialog
 import { withStyles } from '@mui/styles';
 import React from 'react';
 import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
-import { MainProps } from '../../containers/MainContainer'
-import axios from 'axios';
+import { MainProps } from '../../types/props'
+import { loadAddress } from '../../lib/api-client';
 
 const StyledTableRow = withStyles((theme:Theme) => ({
     root: {
@@ -44,8 +44,7 @@ class AddressSearchDialog extends React.Component<MainProps,{}> {
                                                 key={index}
                                                 onClick={async(_)=>{
                                                     submitZipcode(true);
-                                                    axios.get(`https://zipcode.mythrowaway.net/load?address=${address}`).then((response) => {
-                                                        // ページネーション表示
+                                                    loadAddress(address).then((response) => {
                                                         changeZipcodeStatus(ZipcodeStatus.ResultSelect, response.data.data);
                                                     }).catch(error => console.error(error))
                                                         .finally(() => submitZipcode(false));

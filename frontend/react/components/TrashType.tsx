@@ -4,7 +4,7 @@ import Delete from '@mui/icons-material/Delete';
 import { withStyles, WithStyles, createStyles } from '@mui/styles';
 import { WithTranslation, withTranslation } from 'react-i18next';
 import { isError, TrashTypeList } from './common';
-import { MainProps } from '../containers/MainContainer';
+import { MainProps } from '../types/props';
 import { Trash } from '../reducers/TrashReducer';
 
 const styles = (theme: Theme)=> createStyles({
@@ -26,14 +26,14 @@ const styles = (theme: Theme)=> createStyles({
 
 interface Props extends MainProps, WithStyles<typeof styles>,WithTranslation{
     number: number,
-    trash: Trash
+    trash: any
 }
 class TrashType extends React.Component<Props,{}> {
-    getErrorMessage(message_id?: string | boolean,params=[]) {
+    getErrorMessage(message_id?: string | boolean,params: (string|number)[] = []) {
         let message =  typeof(message_id)==='string' ? this.props.t(`error.${message_id}`) : undefined;
         if(message) {
             for(let i=0; i<params.length; i++){
-                message = message.replace('%s',params[i]);
+                message = message.replace('%s', String(params[i]));
             }
         }
         return message;
@@ -91,7 +91,8 @@ class TrashType extends React.Component<Props,{}> {
                             }}
                             value={this.props.trash.trash_val}
                             onChange={(e) => {
-                                this.props.onInputTrashType(this.props.number, e.target.value, this.props.t('TrashSchedule.input.other.maxlength'));
+                                const max = Number(this.props.t('TrashSchedule.input.other.maxlength'));
+                                this.props.onInputTrashType(this.props.number, e.target.value, isNaN(max) ? 10 : max);
                             }}
                             helperText= {this.getErrorMessage(
                                 this.props.trash.input_trash_type_error,

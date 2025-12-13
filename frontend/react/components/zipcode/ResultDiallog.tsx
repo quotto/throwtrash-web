@@ -2,7 +2,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Dialog
 import { withStyles } from '@mui/styles';
 import React from 'react';
 import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
-import { MainProps } from '../../containers/MainContainer';
+import { MainProps } from '../../types/props';
 
 
 const StyledTableRow = withStyles((theme: Theme) => ({

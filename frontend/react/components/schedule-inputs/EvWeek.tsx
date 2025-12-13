@@ -3,7 +3,7 @@ import { Grid, FormControl, InputLabel, Select, TextField, MenuItem, Theme } fro
 import { withStyles, WithStyles, createStyles, StyleRules } from '@mui/styles'
 import { WithTranslation, withTranslation } from 'react-i18next';
 import { WeekDayList } from './WeekDayList';
-import { MainProps } from '../../containers/MainContainer';
+import { MainProps } from '../../types/props';
 import { Schedule,EvWeek as EvWeekType  } from '../../reducers/TrashReducer';
 
 const styles = (theme: Theme): StyleRules=>createStyles({
@@ -74,6 +74,7 @@ class EvWeek extends React.Component<Props,{}> {
                 <FormControl className={this.props.classes.OptionEvweekFormControl}>
                     <TextField
                         id={`recently-${this.props.trash_index}-${this.props.schedule_index}`}
+                        name={`recently-${this.props.trash_index}-${this.props.schedule_index}`}
                         label={this.props.t('TrashSchedule.select.evweek.helper')}
                         type="date"
                         InputLabelProps={{

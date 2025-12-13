@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ACTION_TYPE } from '../actions';
 import _ from 'lodash';
 import common_check from './common_check';

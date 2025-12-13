@@ -86,17 +86,14 @@ const ExcludeDate = withStyles(styles)(
                             )}
                         </Select>
                         <div className={this.props.classes.dateComponent}>日</div>
-                        <label htmlFor='icon-delete'>
-                            <IconButton
-                                className={this.props.classes.dateComponent}
-                                size='small'
-                                color='error'
-                                arial-label='delete date'
-                                component='span'
-                                onClick={()=>this.props.deleteExcludeDate(index)}>
-                                <HighlightOff />
-                            </IconButton>
-                        </label>
+                        <IconButton
+                            className={this.props.classes.dateComponent}
+                            size='small'
+                            color='error'
+                            aria-label='delete date'
+                            onClick={()=>this.props.deleteExcludeDate(index)}>
+                            <HighlightOff />
+                        </IconButton>
                     </Grid>
                 );
             });
@@ -117,15 +114,12 @@ const ExcludeDate = withStyles(styles)(
                             justifyContent='center'
                             xs={12}
                             className={this.props.classes.addButtonRow}>
-                            <label htmlFor='icon-button-add'>
-                                <IconButton
-                                    color='secondary'
-                                    arial-label='add date'
-                                    component='span'
-                                    onClick={() => this.props.addExcludeDate()}>
-                                    <AddCircle />
-                                </IconButton>
-                            </label>
+                            <IconButton
+                                color='secondary'
+                                aria-label='add date'
+                                onClick={() => this.props.addExcludeDate()}>
+                                <AddCircle />
+                            </IconButton>
                         </Grid> : null}
                     <Grid container item
                         justifyContent='center'

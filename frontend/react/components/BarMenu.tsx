@@ -1,9 +1,9 @@
-import axios from 'axios';
 import React from 'react';
 import {WithTranslation, withTranslation} from 'react-i18next';
 import { Menu, MenuItem, Divider } from '@mui/material';
-import { AppBarProps } from '../containers/AppBarContainer';
+import { AppBarProps } from '../types/props';
 import i18next from 'i18next';
+import { signOut as signOutApi } from '../lib/api-client';
 
 interface Props extends AppBarProps,WithTranslation{}
 class BarMenu extends React.Component<Props,{}> {
@@ -14,12 +14,11 @@ class BarMenu extends React.Component<Props,{}> {
     }
 
     signOut() {
-        // API_HOST,API_STAGEはwebpackで置換する
-        // eslint-disable-next-line no-undef
-        axios.get(`https://${API_HOST}/${API_STAGE}/signout`,{withCredentials: true})
+        signOutApi()
             .then(()=>{
                 this.props.onSignOut();
-            });
+            })
+            .catch((e)=>console.error(e));
     }
 
     openWindow(url: string) {

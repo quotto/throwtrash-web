@@ -4,7 +4,7 @@ import { withStyles, WithStyles, StyleRules, createStyles } from '@mui/styles';
 import { WithTranslation, withTranslation } from 'react-i18next';
 import { getErrorMessage} from '../common';
 import { WeekDayList } from './WeekDayList';
-import { MainProps } from '../../containers/MainContainer';
+import { MainProps } from '../../types/props';
 import { Schedule } from '../../reducers/TrashReducer';
 
 const styles = (theme: Theme):StyleRules=>createStyles({
@@ -33,23 +33,24 @@ interface Props extends MainProps, WithStyles<typeof styles>,WithTranslation {
 }
 class WeekDay extends React.Component<Props,{}> {
     render() {
+        const { classes, t, trash_index, schedule_index, target_schedule, onChangeInput } = this.props;
         return(
-            <FormControl className={this.props.classes.OptionWeekFormControl}>
-                <InputLabel htmlFor={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}>
-                    {this.props.t('TrashSchedule.select.weekday.label')}
+            <FormControl className={classes.OptionWeekFormControl}>
+                <InputLabel htmlFor={`scinput-${trash_index}-${schedule_index}`}>
+                    {t('TrashSchedule.select.weekday.label')}
                 </InputLabel>
                 <Select
-                    id={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
-                    label={this.props.t('TrashSchedule.select.weekday.label')}
-                    name={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
-                    className={this.props.classes.OptionWeekSelect}
-                    value={this.props.target_schedule.value}
-                    onChange={(e) => this.props.onChangeInput(this.props.trash_index, this.props.schedule_index, e.target.value as string)}
+                    id={`scinput-${trash_index}-${schedule_index}`}
+                    label={t('TrashSchedule.select.weekday.label')}
+                    name={`scinput-${trash_index}-${schedule_index}`}
+                    className={classes.OptionWeekSelect}
+                    value={target_schedule.value}
+                    onChange={(e) => onChangeInput(trash_index, schedule_index, e.target.value as string)}
                 >
-                    {WeekDayList(this.props.t)}
+                    {WeekDayList(t)}
                 </Select>
-                <FormHelperText error={typeof(this.props.target_schedule.error) != 'undefined' && this.props.target_schedule.error.length > 0}>
-                    {getErrorMessage(this.props.t, this.props.target_schedule.error)}
+                <FormHelperText error={typeof(target_schedule.error) != 'undefined' && target_schedule.error.length > 0}>
+                    {getErrorMessage(t, target_schedule.error)}
                 </FormHelperText>
             </FormControl>
         );

@@ -1,11 +1,10 @@
-/* eslint-disable no-undef */
-/** API_HOST,API_STAGEはwebpackのビルドで置き換えられる文字列のためエラーは無視する **/
 import React from 'react';
 import {WithTranslation, withTranslation} from 'react-i18next';
 import PropTypes from 'prop-types';
 import { DialogTitle, Button, Dialog, DialogContent, DialogContentText, DialogActions, Theme } from '@mui/material';
-import axios from 'axios';
-import { AppBarProps } from '../containers/AppBarContainer';
+import { AppBarProps } from '../types/props';
+import { getUserInfo } from '../lib/api-client';
+import { apiBase } from '../lib/env';
 import { withStyles, StyleRules, createStyles, WithStyles } from '@mui/styles';
 
 const styles = (theme:Theme): StyleRules=> createStyles({
@@ -46,24 +45,25 @@ declare global {
        onAmazonLoginReady: Function
     }
 }
+// Amazon Login SDK グローバル
+declare const amazon: any;
+type AuthorizeOptions = { scope: string };
+type AccessTokenRequest = { access_token: string; error?: string };
 
 interface Props extends AppBarProps,WithStyles<typeof styles>,WithTranslation{}
 class SignInDialog extends React.Component<Props,{}> {
-    constructor(props: Props) {
-        super(props);
-        axios.get(`https://${API_HOST}/${API_STAGE}/user_info`,{
-            withCredentials: true
-        }).then(response => {
-            if (response.status === 200 && response.data.preset) {
-                props.onSetUserInfo(
-                    { name: response.data.name },
-                    response.data.preset
+    async componentDidMount() {
+        try {
+            const response = await getUserInfo();
+            if (response && response.preset) {
+                this.props.onSetUserInfo(
+                    { name: response.name },
+                    response.preset
                 );
             }
-        });
-    }
-
-    componentDidMount() {
+        } catch (e) {
+            // 未ログイン時はそのまま
+        }
         if(document.getElementById('amazon-root')) {
             window.onAmazonLoginReady = function () {
                 amazon.Login.setClientId('amzn1.application-oa2-client.8b1fd843af554c6891d9e48fc3c75be7');
@@ -85,12 +85,12 @@ class SignInDialog extends React.Component<Props,{}> {
     loginWithAmazon() {
         var options: AuthorizeOptions = { scope: 'profile' };
 
-        amazon.Login.authorize(options, (response)=>{
+        amazon.Login.authorize(options, (response: AccessTokenRequest)=>{
             if(response.error) {
                 console.error('amazonログインエラー:' + response.error);
                 return;
             }
-            document.location.href = `https://${API_HOST}/${API_STAGE}/signin?service=amazon&access_token=${encodeURIComponent((response as AccessTokenRequest).access_token)}`;
+            document.location.href = `${apiBase}/signin?service=amazon&access_token=${encodeURIComponent((response as AccessTokenRequest).access_token)}`;
         });
         return false;
     }
@@ -125,7 +125,7 @@ class SignInDialog extends React.Component<Props,{}> {
                             <a id='LoginWithAmazon' className={classes.signInButton} onClick={this.loginWithAmazon}>
                                 <img src='https://images-na.ssl-images-amazon.com/images/G/01/lwa/btnLWA_gold_156x32.png' alt='sign in with Amazon' />
                             </a>
-                            <a href={`https://${API_HOST}/${API_STAGE}/google_signin`} className={classes.signInButton}>
+                            <a href={`${apiBase}/google_signin`} className={classes.signInButton}>
                                 <img className={classes.googleButtonImg} src='img/btn_google_signin_ja.png' alt='sign in with Google' />
                             </a>
                         </div>

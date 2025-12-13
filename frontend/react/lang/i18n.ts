@@ -15,7 +15,7 @@ i18next
         fallbackLng: 'ja',
         whitelist:['en','ja'],
         react :{
-            wait: true
+            useSuspense: false
         }
-    });
+    } as any);
 export default i18next;

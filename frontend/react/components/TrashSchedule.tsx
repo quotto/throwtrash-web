@@ -10,10 +10,10 @@ import TrashType from './TrashType';
 
 import {WithTranslation, withTranslation} from 'react-i18next';
 import Schedules from './Schedules';
-import {Link} from 'react-router-dom';
+import Link from 'next/link';
 import {Delete, NotInterested, CalendarToday} from '@mui/icons-material';
 import { createStyles,WithStyles,withStyles,StyleRules } from '@mui/styles';
-import { MainProps } from '../containers/MainContainer';
+import { MainProps } from '../types/props';
 
 const styles = (theme: Theme): StyleRules=>createStyles({
     TrashScheduleContainer: {
@@ -51,11 +51,19 @@ const styles = (theme: Theme): StyleRules=>createStyles({
 interface Props extends MainProps, WithStyles<typeof styles>,WithTranslation{}
 class TrashSchedule extends React.Component<Props,{}> {
     render() {
-        const {classes, trashes} = this.props;
+        const {
+            classes,
+            trashes,
+            t,
+            addSchedule,
+            onClickDelete,
+            ...rest
+        } = this.props; // classesを子へ渡さない
         let trashTag = [];
         for(let i=0; i < trashes.length; i++) {
             trashTag.push(
                 <Grid
+                    key={`trash-${i}`}
                     className={classes.TrashScheduleContainer}
                     container>
                     <Hidden xsDown><Grid item sm={2} md={3} /></Hidden>
@@ -70,13 +78,13 @@ class TrashSchedule extends React.Component<Props,{}> {
                         <Grid container>
                             <TrashType
                                 number={i}
-                                trash={trashes[i]}
-                                {...this.props}
+                                trash={trashes[i] as any}
+                                {...rest}
                             />
                             <Schedules
-                                trash={trashes[i]}
+                                trash={trashes[i] as any}
                                 trash_index={i}
-                                {...this.props}
+                                {...rest}
                             />
                         </Grid>
                         <Grid
@@ -88,12 +96,12 @@ class TrashSchedule extends React.Component<Props,{}> {
                                 color='primary'
                                 variant='outlined'
                                 startIcon={<CalendarToday />}
-                                onClick={()=>this.props.addSchedule(i)}
+                                onClick={()=>addSchedule(i)}
                             >
-                                {this.props.t('TrashSchedule.button.add')}
+                                {t('TrashSchedule.button.add')}
                             </Button> : null}
                             <Link
-                                to={`/exclude/${i}`}
+                                href={`/exclude/${i}`}
                                 style={{textDecoration: 'none'}}
                             >
                                 <Button
@@ -101,14 +109,14 @@ class TrashSchedule extends React.Component<Props,{}> {
                                     color='warning'
                                     variant='outlined'
                                     startIcon={<NotInterested />}>
-                                    {this.props.t('TrashSchedule.button.exclude')}
+                                    {t('TrashSchedule.button.exclude')}
                                 </Button>
                             </Link>
                             <Button
                                 variant='outlined'
                                 color='error'
                                 startIcon={<Delete />}
-                                onClick={()=>this.props.onClickDelete(i)}>{this.props.t('TrashSchedule.button.delete')}</Button>
+                                onClick={()=>onClickDelete(i)}>{t('TrashSchedule.button.delete')}</Button>
                         </Grid>
                     </Grid>
                     <Hidden xsDown><Grid item sm={2} md={3} /></Hidden>
