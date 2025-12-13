@@ -1,13 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { i18nRouter } from 'next-i18n-router';
-import i18nConfig from './i18n.config';
+import { NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest) {
-    const path = request.nextUrl.pathname;
-    // ロケール付きのパスのみ next-i18n-router に委譲し、それ以外は透過
-    if (path.startsWith('/ja') || path.startsWith('/en')) {
-        return i18nRouter(request, i18nConfig);
-    }
+export function middleware(request: Request) {
+    // i18nルーティングは現状未使用のため透過させる
     return NextResponse.next();
 }
 

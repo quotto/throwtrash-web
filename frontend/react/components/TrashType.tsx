@@ -1,110 +1,80 @@
 import React, { ReactNode } from 'react';
-import { Grid,MenuItem, FormControl, InputLabel, Chip, Avatar, Select, FormHelperText, TextField, Theme, FormLabel } from '@mui/material';
-import Delete from '@mui/icons-material/Delete';
-import { withStyles, WithStyles, createStyles } from '@mui/styles';
-import { WithTranslation, withTranslation } from 'react-i18next';
+import { Box, MenuItem, FormControl, FormHelperText, TextField, FormLabel, Select } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { isError, TrashTypeList } from './common';
 import { MainProps } from '../types/props';
-import { Trash } from '../reducers/TrashReducer';
 
-const styles = (theme: Theme)=> createStyles({
-    TrashTypeContainer: {
-        marginBottom: '20px',
-    },
-    // FormLabelをInputLabelと同じ見た目とするための設定
-    TrashTypeFormLabel: {
-        transform: 'scale(0.75)',
-        transformOrigin: 'top left'
-    },
-    TrashTypeText: {
-        color: theme.palette.secondary.main,
-        display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-    }
-});
+type Props = {
+    number: number;
+    trash: any;
+    onChangeTrash: MainProps['onChangeTrash'];
+    onInputTrashType: MainProps['onInputTrashType'];
+};
 
-interface Props extends MainProps, WithStyles<typeof styles>,WithTranslation{
-    number: number,
-    trash: any
-}
-class TrashType extends React.Component<Props,{}> {
-    getErrorMessage(message_id?: string | boolean,params: (string|number)[] = []) {
-        let message =  typeof(message_id)==='string' ? this.props.t(`error.${message_id}`) : undefined;
-        if(message) {
-            for(let i=0; i<params.length; i++){
-                message = message.replace('%s', String(params[i]));
-            }
+export default function TrashType(props: Props) {
+    const { t } = useTranslation();
+    const getErrorMessage = (message_id?: string | boolean, params: (string | number)[] = []) => {
+        let message = typeof message_id === 'string' ? t(`error.${message_id}`) : undefined;
+        if (message) {
+            params.forEach((p) => {
+                message = message!.replace('%s', String(p));
+            });
         }
         return message;
-    }
-    render() {
-        const TRASH_OPTION_TAG: ReactNode[] = [];
-        TrashTypeList.forEach((key: string)=>{
-            TRASH_OPTION_TAG.push(
-                <MenuItem key={key} value={key}>
-                    {this.props.t('TrashSchedule.select.trashtype.option.'+key)}
-                </MenuItem>
-            );
-        });
-        return (
-            <Grid
-                container
-                className={this.props.classes.TrashTypeContainer}
-            >
-                <Grid item xs={12}>
-                    <FormControl>
-                        <FormLabel className={this.props.classes.TrashTypeFormLabel}>
-                            <div className={this.props.classes.TrashTypeText}>
-                                <span>
-                                    {this.props.t('TrashSchedule.select.trashtype.label') + (this.props.number + 1)}
-                                </span>
-                            </div>
-                        </FormLabel>
-                        <Select
-                            id={`trash${this.props.number}`}
-                            name={`trash${this.props.number}`}
-                            value={this.props.trash.type}
-                            onChange={(e) => { this.props.onChangeTrash(this.props.number, e.target.value as string,[]); }}
-                            style={{ textAlign: 'center' }}
-                        >
-                            {TRASH_OPTION_TAG}
-                        </Select>
-                        <FormHelperText error={isError(this.props.trash.trash_type_error)}>
-                            {this.getErrorMessage(this.props.trash.trash_type_error)}
-                        </FormHelperText>
-                    </FormControl>
-                </Grid>
-                <Grid item style={{paddingTop: "10px"}} xs={12}>
-                    {this.props.trash.type === 'other' && (
-                        <TextField
-                            id={`othertrashtype${this.props.number}`}
-                            name={`othertrashtype${this.props.number}`}
-                            label={this.props.t('TrashSchedule.input.other.placeholder')}
-                            required={true}
-                            inputProps={{
-                                maxLength: this.props.t('TrashSchedule.input.other.maxlength'),
-                                style: { textAlign: 'center' }
-                            }}
-                            InputLabelProps={{
-                                shrink: true
-                            }}
-                            value={this.props.trash.trash_val}
-                            onChange={(e) => {
-                                const max = Number(this.props.t('TrashSchedule.input.other.maxlength'));
-                                this.props.onInputTrashType(this.props.number, e.target.value, isNaN(max) ? 10 : max);
-                            }}
-                            helperText= {this.getErrorMessage(
-                                this.props.trash.input_trash_type_error,
-                                [this.props.t('TrashSchedule.input.other.maxlength')])
-                            }
-                            error={isError(this.props.trash.input_trash_type_error)}
-                        />
-                    )}
-                </Grid>
-            </Grid>
-        );
-    }
-}
+    };
 
-export default withStyles(styles)(withTranslation()(TrashType));
+    const options: ReactNode[] = TrashTypeList.map((key: string) => (
+        <MenuItem key={key} value={key}>
+            {t('TrashSchedule.select.trashtype.option.' + key)}
+        </MenuItem>
+    ));
+
+    return (
+        <Box sx={{ mb: 2 }}>
+            <FormControl fullWidth>
+                <FormLabel sx={{ transform: 'scale(0.75)', transformOrigin: 'top left' }}>
+                    <span style={{ color: '#f50057' }}>
+                        {t('TrashSchedule.select.trashtype.label') + (props.number + 1)}
+                    </span>
+                </FormLabel>
+                <Select
+                    id={`trash${props.number}`}
+                    name={`trash${props.number}`}
+                    value={props.trash.type}
+                    onChange={(e) => { props.onChangeTrash(props.number, e.target.value as string, []); }}
+                    sx={{ textAlign: 'center' }}
+                >
+                    {options}
+                </Select>
+                <FormHelperText error={isError(props.trash.trash_type_error)}>
+                    {getErrorMessage(props.trash.trash_type_error)}
+                </FormHelperText>
+            </FormControl>
+            {props.trash.type === 'other' && (
+                <TextField
+                    sx={{ mt: 1 }}
+                    fullWidth
+                    id={`othertrashtype${props.number}`}
+                    name={`othertrashtype${props.number}`}
+                    label={t('TrashSchedule.input.other.placeholder')}
+                    required
+                    inputProps={{
+                        maxLength: t('TrashSchedule.input.other.maxlength'),
+                        style: { textAlign: 'center' }
+                    }}
+                    InputLabelProps={{ shrink: true }}
+                    value={props.trash.trash_val}
+                    onChange={(e) => {
+                        const max = Number(t('TrashSchedule.input.other.maxlength'));
+                        props.onInputTrashType(props.number, e.target.value, isNaN(max) ? 10 : max);
+                    }}
+                    helperText={getErrorMessage(
+                        props.trash.input_trash_type_error,
+                        [t('TrashSchedule.input.other.maxlength')]
+                    )}
+                    error={isError(props.trash.input_trash_type_error)}
+                />
+            )}
+        </Box>
+    );
+}
