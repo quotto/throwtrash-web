@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 const apiHost = process.env.API_HOST;
 const apiStage = process.env.API_STAGE;
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     const res = await fetch(`https://${apiHost}/${apiStage}/signout`, {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

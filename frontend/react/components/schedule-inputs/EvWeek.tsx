@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, FormControl, InputLabel, Select, TextField, MenuItem, Stack } from '@mui/material';
+import { FormControl, InputLabel, Select, TextField, MenuItem, Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { WeekDayList } from './WeekDayList';
 import { MainProps } from '../../types/props';

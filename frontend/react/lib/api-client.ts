@@ -1,6 +1,4 @@
 /* クライアント側で既存APIを呼び出すヘルパー（fetchベース） */
-import { apiBase } from './env';
-
 const jsonInit: RequestInit = {
     credentials: 'include',
     headers: {

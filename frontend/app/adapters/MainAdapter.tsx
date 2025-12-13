@@ -45,7 +45,7 @@ export default function MainAdapter() {
                     if (res) {
                         (window as any).location = res;
                     }
-                } catch (e) {
+                } catch {
                     dispatchSubmission({ type: SubmissionAction.setErrorDialog, open: true });
                 }
             }}

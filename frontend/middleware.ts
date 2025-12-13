@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export function middleware(request: Request) {
+export function middleware() {
     // i18nルーティングは現状未使用のため透過させる
     return NextResponse.next();
 }

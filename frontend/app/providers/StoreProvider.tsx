@@ -1,22 +1,14 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { reducer as trashReducer, initialState as trashInitial, Action as TrashAction } from '../states/trash-form';
-import { reducer as submissionReducer, initialState as submissionInitial, Action as SubmissionAction } from '../states/submission';
+import { reducer as trashReducer, initialState as trashInitial } from '../states/trash-form';
+import { reducer as submissionReducer, initialState as submissionInitial } from '../states/submission';
 import { reducer as authReducer, initialState as authInitial, Action as AuthAction } from '../states/auth';
 import { reducer as zipcodeReducer, initialState as zipcodeInitial, Action as ZipcodeAction } from '../states/zipcode';
-import { reducer as excludeReducer, initialState as excludeInitial, Action as ExcludeAction } from '../states/exclude-date';
+import { reducer as excludeReducer, initialState as excludeInitial } from '../states/exclude-date';
 import { useAuthQuery } from '../hooks/useAuthQuery';
 import { useZipcodeQuery } from '../hooks/useZipcodeQuery';
 import { ZipcodeStatusEnum } from '../states/types';
-
-type Dispatchers = {
-    dispatchTrash: React.Dispatch<any>;
-    dispatchSubmission: React.Dispatch<any>;
-    dispatchAuth: React.Dispatch<any>;
-    dispatchZipcode: React.Dispatch<any>;
-    dispatchExclude: React.Dispatch<any>;
-};
 
 const TrashContext = createContext({ state: trashInitial, dispatch: (() => {}) as React.Dispatch<any> });
 const SubmissionContext = createContext({ state: submissionInitial, dispatch: (() => {}) as React.Dispatch<any> });
