@@ -3,14 +3,15 @@
 import React, { use } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-    Grid,
     Select,
     MenuItem,
     IconButton,
     Button,
     Alert,
     FormControl,
-    InputLabel
+    InputLabel,
+    Box,
+    Stack
 } from '@mui/material';
 import { AddCircle, HighlightOff } from '@mui/icons-material';
 import { grey } from '@mui/material/colors';
@@ -67,16 +68,21 @@ export default function ExcludePage({ params }: { params: Promise<{ trashIndex: 
 
     return (
         <main style={{ padding: '16px' }}>
-            <Grid container justifyContent="center" spacing={2}>
-                <Grid item xs={12} textAlign="center">
-                    <div style={{ fontSize: '1.5em' }}>
-                        {trashLabel} の例外日設定（最大10件）
-                    </div>
-                </Grid>
+            <Stack spacing={2} alignItems="center">
+                <Box textAlign="center" sx={{ fontSize: '1.5em' }}>
+                    {trashLabel} の例外日設定（最大10件）
+                </Box>
                 {excludeState.excludes.map((ex, idx) => {
                     const maxDate = monthDays(ex.month);
                     return (
-                        <Grid item xs={12} container justifyContent="center" alignItems="center" key={`ex-${idx}`} gap={1}>
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            justifyContent="center"
+                            key={`ex-${idx}`}
+                            sx={{ width: '100%', flexWrap: 'wrap' }}
+                        >
                             <FormControl>
                                 <InputLabel id={`month-${idx}`}>月</InputLabel>
                                 <Select
@@ -126,17 +132,17 @@ export default function ExcludePage({ params }: { params: Promise<{ trashIndex: 
                             <IconButton color="error" onClick={() => dispatchExclude({ type: ExcludeAction.del, index: idx })}>
                                 <HighlightOff />
                             </IconButton>
-                        </Grid>
+                        </Stack>
                     );
                 })}
                 {excludeState.excludes.length < 10 && (
-                    <Grid item xs={12} textAlign="center">
+                    <Box textAlign="center">
                         <IconButton color="secondary" onClick={() => dispatchExclude({ type: ExcludeAction.add })}>
                             <AddCircle />
                         </IconButton>
-                    </Grid>
+                    </Box>
                 )}
-                <Grid item xs={12} container justifyContent="center" gap={2}>
+                <Stack direction="row" spacing={2} justifyContent="center">
                     <Button variant="contained" color="primary" onClick={handleSubmit}>
                         設定する
                     </Button>
@@ -147,18 +153,14 @@ export default function ExcludePage({ params }: { params: Promise<{ trashIndex: 
                     >
                         戻る
                     </Button>
-                </Grid>
+                </Stack>
                 {isError && (
-                    <Grid item xs={12}>
-                        <Alert severity="error">エラーが発生したため設定できません。</Alert>
-                    </Grid>
+                    <Alert severity="error">エラーが発生したため設定できません。</Alert>
                 )}
                 {isSubmitted && (
-                    <Grid item xs={12}>
-                        <Alert severity="success">設定しました。</Alert>
-                    </Grid>
+                    <Alert severity="success">設定しました。</Alert>
                 )}
-            </Grid>
+            </Stack>
         </main>
     );
 }

@@ -2,6 +2,9 @@
 const nextConfig = {
     experimental: {
         serverActions: { enabled: true }
+    },
+    turbopack: {
+        root: __dirname
     }
 };
 
