@@ -4,7 +4,6 @@ import React from 'react';
 import Providers from './providers/StoreProvider';
 import ReactQueryProvider from './providers/ReactQueryProvider';
 import { dehydrate, QueryClient } from '@tanstack/react-query';
-import { AUTH_QUERY_KEY } from './hooks/useAuthQuery';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 
 export const metadata: Metadata = {

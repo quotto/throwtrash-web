@@ -23,7 +23,7 @@ export default function Main(props: MainProps) {
             if (res) {
                 (window as any).location = res;
             }
-        } catch (e) {
+        } catch {
             props.onError(true);
             props.onSubmit(false);
         }

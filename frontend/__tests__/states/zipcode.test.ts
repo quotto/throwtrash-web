@@ -1,4 +1,4 @@
-import { reducer, initialState, Action, ZipcodeStatus, init_address_page_state } from '../../app/states/zipcode';
+import { reducer, initialState, Action, ZipcodeStatus } from '../../app/states/zipcode';
 
 const dummyTrash = [{
     type: 'burn',

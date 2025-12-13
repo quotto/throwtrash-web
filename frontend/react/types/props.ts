@@ -1,5 +1,4 @@
-import { Trash } from '../states/types';
-import { ZipcodeState } from '../states/types';
+import { Trash, ZipcodeState } from '../../app/states/types';
 
 export interface AppBarProps {
     signedIn: boolean;

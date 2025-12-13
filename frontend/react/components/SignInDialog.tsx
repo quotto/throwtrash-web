@@ -93,12 +93,22 @@ export default function SignInDialog(props: Props) {
                         </DialogContentText>
                     </DialogContent>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <a id='LoginWithAmazon' style={{ cursor: 'pointer', marginBottom: '10px' }} onClick={loginWithAmazon}>
+                        <Button
+                            id='LoginWithAmazon'
+                            sx={{ p: 0, minWidth: 'auto', mb: 1 }}
+                            onClick={loginWithAmazon}
+                            aria-label='sign in with Amazon'
+                        >
                             <img src='https://images-na.ssl-images-amazon.com/images/G/01/lwa/btnLWA_gold_156x32.png' alt='sign in with Amazon' />
-                        </a>
-                        <a href={`${apiBase}/google_signin`} style={{ cursor: 'pointer', marginBottom: '10px' }}>
+                        </Button>
+                        <Button
+                            component="a"
+                            href={`${apiBase}/google_signin`}
+                            sx={{ p: 0, minWidth: 'auto', mb: 1 }}
+                            aria-label='sign in with Google'
+                        >
                             <img style={{ width: '160px', height: '38px' }} src='img/btn_google_signin_ja.png' alt='sign in with Google' />
-                        </a>
+                        </Button>
                     </div>
                     <DialogActions>
                         <Button onClick={() => props.onSigninDialog(false)}>

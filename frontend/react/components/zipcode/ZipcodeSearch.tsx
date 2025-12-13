@@ -8,7 +8,7 @@ import ResultDialog from './ResultDiallog';
 
 const isMaxValue = (inputValue: number) => inputValue <= 9999999;
 
-interface Props extends MainProps {}
+type Props = MainProps;
 
 export default function ZipcodeSearch(props: Props) {
     const { zipcodeState, changeZipcode, submitZipcode } = props;

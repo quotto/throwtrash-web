@@ -7,7 +7,7 @@ import { Delete, NotInterested, CalendarToday } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { MainProps } from '../types/props';
 
-interface Props extends MainProps {}
+type Props = MainProps;
 
 export default function TrashSchedule(props: Props) {
     const { t } = useTranslation();
