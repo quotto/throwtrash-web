@@ -4,7 +4,7 @@ import { withStyles, StyleRules, createStyles, WithStyles } from '@mui/styles'
 import { WithTranslation, withTranslation } from 'react-i18next';
 import { getErrorMessage } from '../common';
 import { BiWeekList } from './WeekDayList';
-import { MainProps } from '../../containers/MainContainer';
+import { MainProps } from '../../types/props';
 import { Schedule } from '../../reducers/TrashReducer';
 
 const styles = (theme: Theme): StyleRules=>createStyles({

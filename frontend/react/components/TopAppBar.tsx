@@ -10,7 +10,7 @@ import { withStyles, WithStyles, StyleRules, createStyles } from '@mui/styles';
 import SignInDialog from './SignInDialog';
 import NotificationDialog from './NotificationDialog';
 import BarMenu from './BarMenu';
-import { AppBarProps } from '../containers/AppBarContainer';
+import { AppBarProps } from '../types/props';
 
 const styles = (theme: Theme): StyleRules=>createStyles({
     root: {
@@ -33,30 +33,30 @@ const styles = (theme: Theme): StyleRules=>createStyles({
 interface Props extends AppBarProps,WithStyles<typeof styles>,WithTranslation{}
 class TopAppBar extends React.Component<Props, {}> {
     render(){
-        const {classes} = this.props;
+        const {classes, t, ...rest} = this.props;
 
         return (
             <div className={classes.root}>
                 <AppBar position="static">
                     <Toolbar>
                         <IconButton
-                            data-title={this.props.t('IntroJS.other.title')}
-                            data-intro={this.props.t('IntroJS.other.hint')}
+                            data-title={t('IntroJS.other.title')}
+                            data-intro={t('IntroJS.other.hint')}
                             data-step={4}
                             edge="start"
                             className={classes.menuButton}
                             color="inherit"
                             aria-label="menu"
                             arial-control="menu"
-                            onClick={(event)=>this.props.onChangeMenu(true,event.target as Element)}>
+                            onClick={(event)=>rest.onChangeMenu(true,event.target as Element)}>
                                 <MenuIcon />
                         </IconButton>
-                        <BarMenu {...this.props} />
+                        <BarMenu {...rest} />
                         <Typography variant="h6" className={classes.appBarTitle}>
-                            {this.props.t('TopAppBar.title')}
+                            {t('TopAppBar.title')}
                         </Typography>
-                        <NotificationDialog {...this.props} />
-                        <SignInDialog {...this.props} />
+                        <NotificationDialog {...rest} />
+                        <SignInDialog {...rest} />
                     </Toolbar>
                 </AppBar>
             </div>

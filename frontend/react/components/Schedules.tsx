@@ -7,7 +7,7 @@ import WeekDay from './schedule-inputs/WeekDay';
 import EvWeek from './schedule-inputs/EvWeek';
 import BiWeek from './schedule-inputs/BiWeek';
 import Month from './schedule-inputs/Month';
-import { MainProps } from '../containers/MainContainer';
+import { MainProps } from '../types/props';
 import { Trash } from '../reducers/TrashReducer';
 
 const styles = (theme: Theme): StyleRules=>createStyles({
@@ -106,72 +106,84 @@ const ScheduleTypeButton = withStyles(styles)((props: ScheduleTypeButtonProps) =
 });
 
 interface Props extends MainProps, WithStyles<typeof styles>, WithTranslation{
-    trash: Trash,
+    trash: any,
     trash_index: number,
 }
 
 class Schedules extends React.Component<Props,{}> {
     render() {
+        // classesを子コンポーネントへ伝播させない
+        const { classes, t, trash, trash_index, ...rest } = this.props;
         const ScheduleTags = [];
-        for(let i=0; i<this.props.trash.schedules.length; i++) {
+        for(let i=0; i<trash.schedules.length; i++) {
             ScheduleTags.push(
                 <Grid container
                     alignItems='center'
                     key={`Grid${i}`}
-                    className={this.props.classes.TrashScheduleContainer}
+                    className={classes.TrashScheduleContainer}
                     style={{backgroundColor: i % 2 === 1? 'white' : '#f5f5f5'}}
                 >
                     <Grid item xs={10}>
                         <Grid item container alignItems='center' alignContent='flex-start' xs={12}>
                             <FormControl>
                                 <FormLabel
-                                    className={this.props.classes.ScheduleTypeFormLabel}
+                                    className={classes.ScheduleTypeFormLabel}
                                 >
                                     <div
-                                        className={this.props.classes.ScheduleTypeLabel}
+                                        className={classes.ScheduleTypeLabel}
                                     >
                                         <CalendarToday
                                             color='primary'
                                             style={{ marginLeft: '8px', width: '20px' }} />
-                                        <span>{this.props.t('TrashSchedule.select.scheduletype.label') + (i + 1)}</span>
+                                        <span>{t('TrashSchedule.select.scheduletype.label') + (i + 1)}</span>
                                     </div>
                                 </FormLabel>
                                 <FormGroup row>
                                     <ScheduleTypeButton
                                         schedule_index={i}
-                                        selected_trash_type={this.props.trash.schedules[i].type}
+                                        selected_trash_type={trash.schedules[i].type}
                                         schedule_type='weekday'
-                                        {...this.props}
+                                        trash_index={trash_index}
+                                        t={t}
+                                        {...rest}
                                     />
                                     <ScheduleTypeButton
                                         schedule_index={i}
-                                        selected_trash_type={this.props.trash.schedules[i].type}
+                                        selected_trash_type={trash.schedules[i].type}
                                         schedule_type='month'
-                                        {...this.props}
+                                        trash_index={trash_index}
+                                        t={t}
+                                        {...rest}
                                     />
                                     <ScheduleTypeButton
                                         schedule_index={i}
-                                        selected_trash_type={this.props.trash.schedules[i].type}
+                                        selected_trash_type={trash.schedules[i].type}
                                         schedule_type='biweek'
-                                        {...this.props}
+                                        trash_index={trash_index}
+                                        t={t}
+                                        {...rest}
                                     />
                                     <ScheduleTypeButton
                                         schedule_index={i}
-                                        selected_trash_type={this.props.trash.schedules[i].type}
+                                        selected_trash_type={trash.schedules[i].type}
                                         schedule_type='evweek'
-                                        {...this.props}
+                                        trash_index={trash_index}
+                                        t={t}
+                                        {...rest}
                                     />
                                 </FormGroup>
                             </FormControl>
                         </Grid>
                         <Grid item xs={12}
                             height='auto'
-                            className={this.props.classes.ScheduleOptionsGrid}>
+                            className={classes.ScheduleOptionsGrid}>
                             <ScheduleOption
                                 schedule_index={i}
-                                selected_trash_type={this.props.trash.schedules[i].type}
+                                selected_trash_type={trash.schedules[i].type}
                                 schedule_type='weekday'
-                                {...this.props}
+                                trash={trash}
+                                trash_index={trash_index}
+                                {...rest}
                             />
                         </Grid>
                     </Grid>
@@ -183,7 +195,7 @@ class Schedules extends React.Component<Props,{}> {
                     >
                         <IconButton
                             color='error'
-                            onClick={()=>this.props.deleteSchedule(this.props.trash_index, i)}
+                            onClick={()=>rest.deleteSchedule(trash_index, i)}
                         >
                             <HighlightOff />
                         </IconButton>

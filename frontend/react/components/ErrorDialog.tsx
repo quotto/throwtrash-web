@@ -1,7 +1,7 @@
 import React from 'react';
 import {withTranslation, WithTranslation} from 'react-i18next';
 import { DialogTitle,  Button, Dialog, DialogContent, DialogContentText, DialogActions } from '@mui/material';
-import {MainProps} from '../containers/MainContainer'
+import {MainProps} from '../types/props'
 
 interface Props extends MainProps,WithTranslation{}
 

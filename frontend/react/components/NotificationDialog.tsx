@@ -2,9 +2,9 @@ import React from 'react';
 import {WithTranslation, withTranslation} from 'react-i18next';
 import PropTypes from 'prop-types';
 import {DialogTitle,Dialog,DialogContent,DialogContentText,DialogActions,Button,Theme } from '@mui/material';
-import introJs from 'intro.js';
 import { WithStyles, StyleRules, createStyles, withStyles } from '@mui/styles';
-import { AppBarProps } from '../containers/AppBarContainer';
+import { AppBarProps } from '../types/props';
+import dynamicImport from 'next/dynamic';
 
 const styles = (theme: Theme): StyleRules=> createStyles({
     notificationMessage: {
@@ -22,20 +22,12 @@ const styles = (theme: Theme): StyleRules=> createStyles({
 });
 
 const isShowedNotification = ()=>{
+    if (typeof document === 'undefined') return false;
     return document.cookie.indexOf('showedNotification=true') >= 0;
 };
 
 interface Props extends AppBarProps,WithStyles<typeof styles>,WithTranslation{}
 class NotificationDialog extends React.Component<Props, {}> {
-    runIntroJs() {
-        const customIntroJs = introJs().setOptions({
-            'nextLabel':'>',
-            'prevLabel':'<',
-            'doneLabel': this.props.t('IntroJS.label.done')
-        });
-        customIntroJs.start();
-    }
-
     componentDidMount() {
         const ua = navigator.userAgent;
         if(!isShowedNotification())  {
@@ -47,7 +39,6 @@ class NotificationDialog extends React.Component<Props, {}> {
         // 通知ダイアログが閉じられた直後にIntroJSを開始する
         if(!this.props.notificationDialog && !isShowedNotification()) {
             document.cookie = 'showedNotification=true; ' + document.cookie;
-            this.runIntroJs();
         }
     }
 
@@ -64,7 +55,7 @@ class NotificationDialog extends React.Component<Props, {}> {
                     {this.props.t('NotificationDialog.title')}
                 </DialogTitle>
                 <DialogContent>
-                    <DialogContentText className={classes.notificationMessage}>
+                    <DialogContentText component="div" className={classes.notificationMessage}>
                         {this.props.t('NotificationDialog.message')}
                         <ul>
                             <li>{this.props.t('NotificationDialog.sub1')}</li>
