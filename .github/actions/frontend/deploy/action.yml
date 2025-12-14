@@ -1,16 +1,20 @@
 name: "Frontend Deploy"
 description: "Deploy the frontend"
 inputs:
-  front-stage:
-    description: "The frontend stage"
+  app-id:
+    description: "Amplify App ID"
     required: true
-  bucket:
-    description: "The name of the S3 bucket"
+  branch-name:
+    description: "Amplify branch name"
     required: true
 runs:
   using: composite
   steps:
-    - name: S3 Sync
+    - name: Trigger Amplify job
       shell: bash
+      env:
+        APP_ID: ${{ inputs.app-id }}
+        BRANCH: ${{ inputs.branch-name }}
       run: |
-        aws s3 sync frontend/frontend-dist/${{ inputs.front-stage }} s3://${{ inputs.bucket }}/${{ inputs.front-stage }}
+        echo "Starting Amplify deployment: app=$APP_ID branch=$BRANCH"
+        aws amplify start-job --app-id "$APP_ID" --branch-name "$BRANCH" --job-type RELEASE

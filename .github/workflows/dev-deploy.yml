@@ -102,8 +102,8 @@ jobs:
           front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
       - uses: ./.github/actions/frontend/deploy
         with:
-          front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
-          bucket: throwtrash-dev
+          app-id: ${{ vars.AMPLIFY_APP_ID }}
+          branch-name: fix/#97-frontend-refactoring
   backend-deploy:
     needs: ["set-stage", "backend-test"]
     environment: dev
