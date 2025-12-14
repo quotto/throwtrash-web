@@ -1,13 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "ES2022"
-    ],
+    "lib": ["dom", "dom.iterable", "ES2022"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "resolvePackageJsonExports": true,
     "jsx": "react-jsx",
     "allowJs": false,
     "noEmit": true,
@@ -19,25 +16,11 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "react": ["./node_modules/react"],
-      "react/*": ["./node_modules/react/*"]
+      "@/*": ["./*"]
     },
-    "types": [
-      "node",
-      "jest",
-      "@testing-library/jest-dom",
-      "react",
-      "react-dom"
-    ],
+    "types": ["node", "jest", "@testing-library/jest-dom"],
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
+    "plugins": [{ "name": "next" }]
   },
   "include": [
     "next-env.d.ts",
@@ -48,8 +31,7 @@
   ],
   "exclude": [
     "node_modules",
-    "react/reducers/**",
-    "react/actions/**",
-    "react/index.tsx"
+    ".next",
+    "out"
   ]
 }
