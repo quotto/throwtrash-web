@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "jest",
-    "build:cf": "npx @opennextjs/cloudflare build"
+    "build:cf": "node ../scripts/gen-env.cjs && npx @opennextjs/cloudflare build"
   },
   "author": "",
   "license": "ISC",
