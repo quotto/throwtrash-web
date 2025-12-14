@@ -1,104 +1,74 @@
-/* eslint-disable no-undef */
-/** API_HOST,API_STAGEはwebpackのビルドで置き換えられる文字列のためエラーは無視する **/
 import React from 'react';
 import TrashSchedule from './TrashSchedule';
-import { Button,Grid,Checkbox,FormControlLabel, Tooltip } from '@mui/material';
-import axios from 'axios';
-import { WithTranslation,withTranslation } from 'react-i18next';
+import { Button, Checkbox, FormControlLabel, Tooltip, Box, Stack } from '@mui/material';
 import ErrorDialog from './ErrorDialog';
 import { green } from '@mui/material/colors';
-import { MainProps } from '../containers/MainContainer';
-import { WithStyles, createStyles, withStyles } from '@mui/styles';
-
-const styles =  createStyles({
-    TopMessage: {
-        textAlign:'center',
-    }
-});
-
-interface Props extends MainProps,WithStyles<typeof styles>,WithTranslation{
-}
+import { MainProps } from '../types/props';
+import { submitTrashes } from '../lib/api-client';
+import { useTranslation } from 'react-i18next';
 
 const MAX_SCHEDULE = 10;
 
-const Main = withStyles(styles)(
-    class extends React.Component<Props, {}> {
-        constructor(props: Props) {
-            super(props)
-        }
-        render() {
-            if(this.props.submitting) {
-                axios.post(
-                    `https://${API_HOST}/${API_STAGE}/regist`,
-                    JSON.stringify({ data: this.props.trashes, offset: new Date().getTimezoneOffset(), nextdayflag: this.props.nextday_checked }),
-                    {
-                        headers: { 'Content-Type': 'application/json' },
-                        withCredentials: true
-                    }
-                ).then((response) => {
-                    window.location = response.data;
-                }).catch(() => {
-                    this.props.onError(true);
-                    this.props.onSubmit(false);
-                });
+export default function Main(props: MainProps) {
+    const { t } = useTranslation();
+
+    const handleSubmit = async () => {
+        try {
+            props.onSubmit(true);
+            const res = await submitTrashes({
+                data: props.trashes,
+                offset: new Date().getTimezoneOffset(),
+                nextdayflag: props.nextday_checked ?? true
+            });
+            if (res) {
+                (window as any).location = res;
             }
-            return (
-                <Grid container justifyContent='center' item xs={12} spacing={0} style={{ flexBasis: '90%' }}>
-                    <Grid item xs={12} className={this.props.classes.TopMessage}>
-                        <ul style={{ display: 'inline-block', textAlign: 'left' }}>
-                            <li>{this.props.t('App.description.trash')}</li>
-                            <li>{this.props.t('App.description.schedule')}</li>
-                        </ul>
-                    </Grid>
-                    <div
-                        data-title={this.props.t('IntroJS.main.title')}
-                        data-intro={this.props.t('IntroJS.main.hint')}
-                        data-step={1}
-                    >
-                        <TrashSchedule {...this.props} />
-                    </div>
-                    <Grid container justifyContent='center' direction='column' alignItems='center' spacing={3}>
-                        <Grid item>
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                disabled={this.props.trashes.length === MAX_SCHEDULE}
-                                onClick={() => this.props.onClickAdd()}>
-                                {this.props.t('ScheduleList.button.addtrash')}
-                            </Button>
-                        </Grid>
-                        <Grid item
-                            data-title={this.props.t('IntroJS.nextday.title')}
-                            data-intro={this.props.t('IntroJS.nextday.hint')}
-                            data-step={2}
-                        >
-                            <Tooltip
-                                title={this.props.t('App.checkbox.description')}
-                                placement='top'
-                                arial-label='description'>
-                                <FormControlLabel
-                                    control={<Checkbox
-                                        checked={this.props.nextday_checked}
-                                        style={{ color: green[600] }}
-                                        onChange={(event) => this.props.onChangeNextdayCheck(event.target.checked)} />
-                                    }
-                                    label={this.props.t('App.checkbox.nextday')} />
-                            </Tooltip>
-                        </Grid>
-                        <ErrorDialog {...this.props} />
-                        <Grid item>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                disabled={this.props.submit_error || this.props.submitting}
-                                onClick={() => this.props.onSubmit(true)}>
-                                {this.props.t('ScheduleList.button.regist')}
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Grid>
-            );
+        } catch {
+            props.onError(true);
+            props.onSubmit(false);
         }
-    }
-);
-export default withTranslation()(Main);
+    };
+
+    return (
+        <Box sx={{ flexBasis: '90%', width: '100%' }}>
+            <Box textAlign="center">
+                <ul style={{ display: 'inline-block', textAlign: 'left' }}>
+                    <li>{t('App.description.trash')}</li>
+                    <li>{t('App.description.schedule')}</li>
+                </ul>
+            </Box>
+            <div data-title={t('IntroJS.main.title')} data-intro={t('IntroJS.main.hint')} data-step={1}>
+                <TrashSchedule {...props} />
+            </div>
+            <Stack spacing={3} alignItems="center" mt={2}>
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    disabled={props.trashes.length === MAX_SCHEDULE}
+                    onClick={() => props.onClickAdd()}>
+                    {t('ScheduleList.button.addtrash')}
+                </Button>
+                <Tooltip
+                    title={t('App.checkbox.description')}
+                    placement='top'
+                    aria-label='description'>
+                    <FormControlLabel
+                        control={<Checkbox
+                            checked={props.nextday_checked}
+                            sx={{ color: green[600] }}
+                            onChange={(event) => props.onChangeNextdayCheck(event.target.checked)} />
+                        }
+                        label={t('App.checkbox.nextday')} />
+                </Tooltip>
+                <ErrorDialog {...props} />
+                <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={props.submit_error || props.submitting}
+                    onClick={handleSubmit}>
+                    {t('ScheduleList.button.regist')}
+                </Button>
+            </Stack>
+        </Box>
+    );
+}

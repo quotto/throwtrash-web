@@ -1,120 +1,66 @@
 import React from 'react';
 import NumberFormat from 'react-number-format';
-import { Button, CircularProgress, createStyles, FormControl, FormGroup, FormLabel, Grid, InputAdornment, TextField, Theme, Tooltip } from '@mui/material';
-import { withStyles, WithStyles } from '@mui/styles';
+import { Button, CircularProgress, FormControl, FormGroup, FormLabel, InputAdornment, TextField, Tooltip, FormHelperText, Box } from '@mui/material';
 import { Help } from '@mui/icons-material';
-import axios from 'axios';
-import { MainProps } from '../../containers/MainContainer';
-import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
+import { MainProps } from '../../types/props';
 import AddressSearchDialog from './AddressSearchDiallog';
 import ResultDialog from './ResultDiallog';
 
-const styles = (_: Theme)=>createStyles({
-    ZipcodeFormLabel: {
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '10px'
-    },
-    ZipcodeFormGroup: {
-        alignItems: 'flex-start',
-        '& :first-child': {
-            marginRight: '5px'
-        },
-    }
-});
+const isMaxValue = (inputValue: number) => inputValue <= 9999999;
 
-const ZipcodeTextField = (props:Props)=>{
+type Props = MainProps;
+
+export default function ZipcodeSearch(props: Props) {
+    const { zipcodeState, changeZipcode, submitZipcode } = props;
     return (
-        <TextField
-            variant='outlined'
-            label='郵便番号（ハイフン不要）'
-            size='small'
-            InputProps={{
-                startAdornment: <InputAdornment position="start">〒</InputAdornment>,
-            }}
-            error={typeof(props.zipcodeState.error) != 'undefined'}
-            helperText={props.zipcodeState.error}
-        />
-    );
-};
-
-const isMaxValue = (inputValue: number )=>{
-    return inputValue <= 9999999;
-};
-
-interface Props extends MainProps,WithStyles<typeof styles>{}
-class ZipcodeSearch extends React.Component<Props,{}> {
-    render() {
-        const {classes, zipcodeState, changeZipcode, submitZipcode, changeZipcodeStatus, setErrorZipcode } = this.props;
-        return (
-            <Grid container item xs={12} justifyContent='center' style={{marginBottom: '10px'}}>
-                {zipcodeState.submitting?
-                    <CircularProgress /> :
-                    <FormControl>
-                        <FormLabel
-                            component='legend'
-                            className={classes.ZipcodeFormLabel}
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.25 }}>
+            {zipcodeState.submitting ? (
+                <CircularProgress />
+            ) : (
+                <FormControl>
+                    <FormLabel
+                        component='legend'
+                        sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                    >
+                        <span>近くのゴミ出し予定を探してみる</span>
+                        <Tooltip
+                            title='同じ地域のユーザーが登録したゴミ出し予定を検索して自動入力できます。'
+                            placement='top'
+                            aria-label='description'
+                            sx={{ ml: 0.5 }}
                         >
-                            <span>近くのゴミ出し予定を探してみる</span>
-                            <Tooltip
-                                title='同じ地域のユーザーが登録したゴミ出し予定を検索して自動入力できます。'
-                                placement='top'
-                                arial-label='description'>
-                                <Help fontSize='small'/>
-                            </Tooltip>
-                        </FormLabel>
-                        <FormGroup row className={classes.ZipcodeFormGroup}>
-                            <NumberFormat
-                                value={zipcodeState.zipcode}
-                                allowNegative={false}
-                                isAllowed={(values)=>isMaxValue(Number(values))}
-                                // customInput={ ZipcodeTextField(this.props) }
-                                onValueChange={(values)=>{
-                                    console.log('change zipcode');
-                                    changeZipcode(String(values));
-                                }}
-                                // zipcodeState={zipcodeState}
-                            >
-                            </NumberFormat>
-                            <Button
-                                onClick={()=> {
-                                    submitZipcode(true);
-                                    axios.get(
-                                        `https://zipcode.mythrowaway.net/search?zipcode=${zipcodeState.zipcode}`
-                                    ).then(async(response)=>{
-                                        if(response.status === 200) {
-                                            if(response.data.address.length === 0) {
-                                                setErrorZipcode();
-                                            } else if(response.data.address.length === 1) {
-                                                await axios.get(`https://zipcode.mythrowaway.net/load?address=${response.data.address[0]}`).then((response)=>{
-                                                    // ページネーション表示
-                                                    changeZipcodeStatus(ZipcodeStatus.ResultSelect,response.data.data);
-                                                }).catch(error=>console.error(error));
-                                            } else {
-                                                // 住所選択モード
-                                                changeZipcodeStatus(ZipcodeStatus.AddressSelect,response.data.address);
-                                            }
-                                        }
-                                    }).catch(error=>{
-                                        console.error(error);
-                                        setErrorZipcode();
-                                    }).finally(()=>{
-                                        submitZipcode(false);
-                                    });
-                                }}
-                                variant='contained'
-                                color='secondary'
-                                disabled={zipcodeState.zipcode.length != 7}>
-                                検索
-                            </Button>
-                        </FormGroup>
-                    </FormControl>
-                }
-                <AddressSearchDialog {...this.props} />
-                <ResultDialog {...this.props} />
-            </Grid>
-        );
-    }
+                            <Help fontSize='small' />
+                        </Tooltip>
+                    </FormLabel>
+                    <FormGroup row sx={{ alignItems: 'flex-start', '& :first-of-type': { mr: 1 } }}>
+                        {/* @ts-ignore react-number-format 型差異を無視 */}
+                        <NumberFormat
+                            value={zipcodeState.zipcode}
+                            allowNegative={false}
+                            isAllowed={(values: any) => isMaxValue(Number(values))}
+                            onValueChange={(values: any) => {
+                                changeZipcode(String(values));
+                            }}
+                            customInput={TextField}
+                            size="small"
+                            label="郵便番号（ハイフン不要）"
+                            variant="outlined"
+                            InputProps={{ startAdornment: <InputAdornment position="start">〒</InputAdornment> }}
+                            error={Boolean(zipcodeState.error)}
+                        />
+                        <Button
+                            onClick={() => submitZipcode(true)}
+                            variant='contained'
+                            color='secondary'
+                            disabled={zipcodeState.zipcode.length !== 7}>
+                            検索
+                        </Button>
+                    </FormGroup>
+                    {zipcodeState.error && <FormHelperText error>{zipcodeState.error}</FormHelperText>}
+                </FormControl>
+            )}
+            <AddressSearchDialog {...props} />
+            <ResultDialog {...props} />
+        </Box>
+    );
 }
-
-export default withStyles(styles)(ZipcodeSearch);

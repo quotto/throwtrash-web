@@ -10,3 +10,6 @@ backend/cfn/package-template.yml
 api/src/node_modules
 api/src/dist
 api/package-template.yml
+work/
+*/.next
+*/.env
