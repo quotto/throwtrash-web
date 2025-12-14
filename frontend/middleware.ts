@@ -1,11 +1,14 @@
-import { NextRequest } from 'next/server';
-import createI18nMiddleware from 'next-i18n-router';
+import { NextRequest, NextResponse } from 'next/server';
+import { i18nRouter } from 'next-i18n-router';
 import i18nConfig from './i18n.config';
 
-const I18nMiddleware = createI18nMiddleware(i18nConfig);
-
 export function middleware(request: NextRequest) {
-    return I18nMiddleware(request);
+    const path = request.nextUrl.pathname;
+    // ロケール付きのパスのみ next-i18n-router に委譲し、それ以外は透過
+    if (path.startsWith('/ja') || path.startsWith('/en')) {
+        return i18nRouter(request, i18nConfig);
+    }
+    return NextResponse.next();
 }
 
 export const config = {
