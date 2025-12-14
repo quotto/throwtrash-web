@@ -1,12 +1,5 @@
 name: "Frontend Build"
-description: "Build the frontend"
-inputs:
-  back-stage:
-    description: "The backend stage"
-    required: true
-  front-stage:
-    description: "The frontend stage"
-    required: true
+description: "Build the frontend for Cloudflare Pages"
 runs:
   using: composite
   steps:
@@ -26,7 +19,7 @@ runs:
       shell: bash
       run: npm ci
       working-directory: frontend
-    - name: Build frontend
+    - name: Build frontend (Cloudflare)
       shell: bash
-      run: npm run build
+      run: npm run build:cf
       working-directory: frontend

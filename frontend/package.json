@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "jest"
+    "test": "jest",
+    "build:cf": "npx @opennextjs/cloudflare build"
   },
   "author": "",
   "license": "ISC",
@@ -34,6 +35,7 @@
     "react-to-string": "^0.1.1"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.14.6",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.13",

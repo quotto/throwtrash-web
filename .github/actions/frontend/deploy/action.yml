@@ -1,20 +1,21 @@
 name: "Frontend Deploy"
-description: "Deploy the frontend"
+description: "Deploy the frontend to Cloudflare Pages via wrangler"
 inputs:
-  app-id:
-    description: "Amplify App ID"
+  project-name:
+    description: "Cloudflare Pages project name"
     required: true
   branch-name:
-    description: "Amplify branch name"
+    description: "Cloudflare Pages branch name"
     required: true
 runs:
   using: composite
   steps:
-    - name: Trigger Amplify job
-      shell: bash
-      env:
-        APP_ID: ${{ inputs.app-id }}
-        BRANCH: ${{ inputs.branch-name }}
-      run: |
-        echo "Starting Amplify deployment: app=$APP_ID branch=$BRANCH"
-        aws amplify start-job --app-id "$APP_ID" --branch-name "$BRANCH" --job-type RELEASE
+    - name: Deploy to Cloudflare Pages
+      uses: cloudflare/wrangler-action@v3
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        command: |
+          pages deploy .open-next \
+            --project-name=${{ inputs.project-name }} \
+            --branch=${{ inputs.branch-name }}

@@ -91,19 +91,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: AWS Set up
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-tester-role
-          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
       - uses: ./.github/actions/frontend/build
-        with:
-          back-stage: ${{ needs.set-stage.outputs.BACK_STAGE }}
-          front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
       - uses: ./.github/actions/frontend/deploy
         with:
-          app-id: ${{ vars.AMPLIFY_APP_ID }}
-          branch-name: fix/#97-frontend-refactoring
+          project-name: ${{ vars.CF_PAGES_PROJECT }}
+          branch-name: ${{ github.ref_name }}
   backend-deploy:
     needs: ["set-stage", "backend-test"]
     environment: dev
