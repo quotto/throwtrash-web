@@ -13,5 +13,6 @@ api/package-template.yml
 work
 work/
 */.next
+*/.open-next
 */.env
 frontend/.env.local

@@ -4,8 +4,9 @@ compatibility_flags = ["nodejs_compat"]
 main = "./.open-next/worker.js"
 assets = { directory = "./.open-next/assets" }
 
-[env.preview]
-name = "throwtrash-preview"
+[vars]
+  API_HOST = "dev.backend.mythrowaway.net"
+  API_STAGE = "1c50b"
 
-[env.production]
-name = "throwtrash-prod"
+[observability]
+  enabled = true
