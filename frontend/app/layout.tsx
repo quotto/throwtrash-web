@@ -5,6 +5,7 @@ import Providers from './providers/StoreProvider';
 import ReactQueryProvider from './providers/ReactQueryProvider';
 import { dehydrate, QueryClient } from '@tanstack/react-query';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
+import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
     title: 'TrashSchedule (App Router)',
@@ -14,16 +15,18 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     // SSRでAuthをプリフェッチしてdehydrate
     const qc = new QueryClient();
+    const frontOrigin = process.env.NEXT_PUBLIC_FRONT_ORIGIN || 'http://localhost:3000';
+    const cookieHeader = cookies().toString();
     await qc.prefetchQuery({
         queryKey: ['auth','session'],
         queryFn: async () => {
             try {
-                const apiHost = process.env.API_HOST;
-                const apiStage = process.env.API_STAGE;
-                const apiBase = `https://${apiHost}/${apiStage}`;
-                const res = await fetch(`${apiBase}/user_info`, {
+                // クライアントのCookieを維持するため内部API経由で取得
+                const res = await fetch(`${frontOrigin}/api/user_info`, {
                     credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        cookie: cookieHeader
+                    },
                     cache: 'no-store'
                 });
                 if (!res.ok) throw new Error('ng');
