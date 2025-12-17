@@ -15,14 +15,13 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     // SSRでAuthをプリフェッチしてdehydrate
     const qc = new QueryClient();
-    const frontOrigin = process.env.NEXT_PUBLIC_FRONT_ORIGIN || 'http://localhost:3000';
     const cookieHeader = cookies().toString();
     await qc.prefetchQuery({
         queryKey: ['auth','session'],
         queryFn: async () => {
             try {
                 // クライアントのCookieを維持するため内部API経由で取得
-                const res = await fetch(`${frontOrigin}/api/user_info`, {
+                const res = await fetch('/api/user_info', {
                     credentials: 'include',
                     headers: {
                         cookie: cookieHeader

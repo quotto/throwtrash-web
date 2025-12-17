@@ -85,17 +85,6 @@ jobs:
       - name: Run API tests
         run: npm run test
         working-directory: api/src
-  frontend-deploy:
-    needs: ["set-stage", "frontend-test"]
-    environment: dev
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/frontend/build
-      - uses: ./.github/actions/frontend/deploy
-        with:
-          project-name: ${{ vars.CF_PAGES_PROJECT }}
-          branch-name: ${{ github.ref_name }}
   backend-deploy:
     needs: ["set-stage", "backend-test"]
     environment: dev

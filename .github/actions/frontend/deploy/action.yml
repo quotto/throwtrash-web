@@ -1,21 +1,6 @@
-name: "Frontend Deploy"
-description: "Deploy the frontend to Cloudflare Pages via wrangler"
-inputs:
-  project-name:
-    description: "Cloudflare Pages project name"
-    required: true
-  branch-name:
-    description: "Cloudflare Pages branch name"
-    required: true
+name: "Frontend Deploy (placeholder)"
+description: "Amplify handles deploy via amplify.yml; no-op here"
 runs:
   using: composite
   steps:
-    - name: Deploy to Cloudflare Pages
-      uses: cloudflare/wrangler-action@v3
-      with:
-        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        command: |
-          pages deploy .open-next \
-            --project-name=${{ inputs.project-name }} \
-            --branch=${{ inputs.branch-name }}
+    - run: echo "Deploy handled by Amplify Hosting build (amplify.yml)"
