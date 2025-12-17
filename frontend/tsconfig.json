@@ -9,7 +9,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolvePackageJsonExports": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "allowJs": false,
     "noEmit": true,
     "strict": true,

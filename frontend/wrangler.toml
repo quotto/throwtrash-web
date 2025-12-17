@@ -6,7 +6,7 @@ assets = { directory = "./.open-next/assets" }
 
 [vars]
   API_HOST = "dev.backend.mythrowaway.net"
-  API_STAGE = "1c50b"
+  API_STAGE = "c7cba"
 
 [observability]
   enabled = true
