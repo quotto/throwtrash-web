@@ -8,8 +8,7 @@ export async function POST(req: NextRequest) {
     const res = await fetch(`https://${apiHost}/${apiStage}/regist`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            cookie: req.headers.get('cookie') ?? ''
+            'Content-Type': 'application/json'
         },
         body,
         credentials: 'include',
