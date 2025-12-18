@@ -8,6 +8,8 @@ applications:
             - npm ci
         build:
           commands:
+            - echo "API_HOST=$API_HOST" >> .env
+            - echo "API_STAGE=$API_STAGE" >> .env
             - npm run lint
             - npm run test -- --runInBand
             - npm run build
