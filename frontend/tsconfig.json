@@ -19,18 +19,16 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "react": ["./node_modules/react"],
-      "react/*": ["./node_modules/react/*"]
+      "react": ["./node_modules/@types/react/index.d.ts"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "@/*": ["./*"]
     },
     "types": [
+      "@types/react",
+      "@types/react-dom",
       "node",
       "jest",
-      "@testing-library/jest-dom",
-      "react",
-      "react-dom"
+      "@testing-library/jest-dom"
     ],
     "incremental": true,
     "plugins": [
