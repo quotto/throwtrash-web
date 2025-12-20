@@ -5,20 +5,37 @@ logger.setLevel_DEBUG();
 /**
  * DBアクセス等すべて実装済みで実施する
  */
-import AWS from "aws-sdk";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { BatchWriteCommand, DeleteCommand, DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { fromEnv, fromSSO } from "@aws-sdk/credential-providers";
 import crypto from "crypto";
-
 import firebase from "firebase-admin";
+import db, { setDocumentClient } from "../dbadapter";
+import property from "../property";
+import { UserInfo,RawTrasScheduleItem } from "../interface";
 
 
-const documentClient = new AWS.DynamoDB.DocumentClient();
+const resolveCredentials = () => {
+    if (process.env.AWS_PROFILE) {
+        console.log("Use SSO Profile:", process.env.AWS_PROFILE);
+        return fromSSO({ profile: process.env.AWS_PROFILE });
+    }
+    if (process.env.AWS_ACCESS_KEY_ID) {
+        console.log("Use Env Credentials:", process.env.AWS_ACCESS_KEY_ID);
+        return fromEnv();
+    }
+    return undefined;
+};
+const dynamoClient = new DynamoDBClient({
+    region: process.env.DB_REGION,
+    credentials: resolveCredentials()
+});
+const documentClient = DynamoDBDocumentClient.from(dynamoClient);
+setDocumentClient(documentClient);
 
 // はるか未来の日付
 const DEFAULT_EXPIRE = 4133862000000;
 
-import db from "../dbadapter";
-import property from "../property";
-import { UserInfo,RawTrasScheduleItem } from "../interface";
 
 
 describe('getDataBySigninId',()=>{
@@ -29,11 +46,11 @@ describe('getDataBySigninId',()=>{
         ]),
         signinId: '1111-1111-1111'
     };
-    beforeAll((done)=>{
-        documentClient.put({
+    beforeAll(async()=>{
+        await documentClient.send(new PutCommand({
             TableName: property.SCHEDULE_TABLE,
             Item: testdata
-        }).promise().then(()=>done());
+        }));
     })
     it('IDあり',async()=>{
         const result = await db.getDataBySigninId('1111-1111-1111') as RawTrasScheduleItem;
@@ -46,21 +63,19 @@ describe('getDataBySigninId',()=>{
         const result = await db.getDataBySigninId('xxxx-xxxx-xxxx') as RawTrasScheduleItem;
         expect(JSON.stringify(result)).toBe("{}");
     });
-    afterAll((done)=>{
-        documentClient.delete({
+    afterAll(async()=>{
+        await documentClient.send(new DeleteCommand({
             TableName: property.SCHEDULE_TABLE,
             Key: {
                 id: 'test-001'
             }
-            }).promise().then(()=>{
-            done();
-        });
+            }));
     });
 })
 
 describe('saveSession',()=>{
-    beforeAll((done)=>{
-        documentClient.put({
+    beforeAll(async()=>{
+        await documentClient.send(new PutCommand({
             TableName: property.SESSION_TABLE,
             Item: {
                 id: 'session002',
@@ -72,19 +87,19 @@ describe('saveSession',()=>{
                     id: 'test002'
                 }
             }
-        }).promise().then(()=>done());
+        }));
     });
     it('セッションテーブルに存在しないデータ', async()=>{
         const session_data = {id: 'session001', expire: 9999999};
         const result = await db.saveSession(session_data);
         expect(result);
 
-        documentClient.get({
+        documentClient.send(new GetCommand({
             TableName: property.SESSION_TABLE,
             Key: {
                 id: 'session001'
             }
-        }).promise().then((data)=>{
+        })).then((data)=>{
             expect(data.Item).not.toBeUndefined();
             expect(data.Item!.id).toBe("session001");
             expect(data.Item!.expire).toBeDefined();
@@ -101,20 +116,20 @@ describe('saveSession',()=>{
         const session_data = {id: 'session002', expire: 3600,userInfo: overwireUserInfo};
         const result = await db.saveSession(session_data);
         expect(result);
-        await documentClient.get({
+        await documentClient.send(new GetCommand({
             TableName: property.SESSION_TABLE,
             Key: {
                 id: 'session002'
             }
-        }).promise().then((data)=>{
+        })).then((data)=>{
             expect(data.Item).not.toBeUndefined();
             expect(data.Item!.id).toBe('session002');
             expect(data.Item!.userInfo).toMatchObject(overwireUserInfo);
             expect(data.Item!.expire).toBeDefined();
         });
     });
-    afterAll((done)=>{
-        documentClient.batchWrite({
+    afterAll(async()=>{
+        await documentClient.send(new BatchWriteCommand({
             RequestItems:{
                 "throwtrash-backend-session": [
                     {
@@ -129,20 +144,20 @@ describe('saveSession',()=>{
                     }
                 ]
             }
-        }).promise().then(()=>done());
+        }));
     });
 
 });
 
 describe('deleteSession',()=>{
-    beforeAll((done)=>{
-        documentClient.put({
+    beforeAll(async()=>{
+        await documentClient.send(new PutCommand({
             TableName: property.SESSION_TABLE,
             Item:{
                 id: 'test002',
                 expire: 3600
             }
-        }).promise().then(()=>done())
+        }))
     });
     it('存在しないセッションIDを削除',async()=>{
         // パラメータはセッションID
@@ -156,45 +171,45 @@ describe('deleteSession',()=>{
         // 削除は対象のIDが無くてもtrue
         expect(result);
 
-        await documentClient.get({
+        await documentClient.send(new GetCommand({
             TableName: property.SESSION_TABLE,
             Key:{
                 id: 'test002'
             }
         // eslint-disable-next-line no-unused-vars
-        }).promise().then(()=>expect(false)).catch(err=>{expect(true)});
+        })).then(()=>expect(false)).catch(err=>{expect(true)});
     });
-    afterAll((done)=>{
-        documentClient.delete({
+    afterAll(async()=>{
+        await documentClient.send(new DeleteCommand({
             TableName: property.SESSION_TABLE,
             Key:{
                 id: 'test002'
             }
-        }).promise().then(()=>done()).catch(()=>done());
+        })).catch(()=>undefined);
     })
 });
 
 describe('publishId',()=>{
     const duplicate_id = 'xxxxxxxx-xxxxxxxx-xxxxxxx-xxxxxxxx';
-    beforeAll((done)=>{
-        documentClient.put({
+    beforeAll(async()=>{
+        await documentClient.send(new PutCommand({
             TableName: property.SCHEDULE_TABLE,
             Item: {
                 id: duplicate_id
             }
-        }).promise().then(()=>done());
+        }));
     });
     it('正常パターン',async()=>{
        const id = await db.publishId();
        expect(id.length).toBe(36);
     });
-    afterAll((done)=>{
-        documentClient.delete({
+    afterAll(async()=>{
+        await documentClient.send(new DeleteCommand({
             TableName: property.SCHEDULE_TABLE,
             Key: {
                 id: duplicate_id
             }
-        }).promise().then(()=>done());
+        }));
     });
 });
 
@@ -202,8 +217,8 @@ describe('getSession', ()=>{
     const session_id_001 = 'getSession_id_001';
     const session_id_002 = 'getSession_id_002';
     const session_id_003 = 'getSession_id_003';
-    beforeAll((done)=>{
-        documentClient.batchWrite({
+    beforeAll(async()=>{
+        await documentClient.send(new BatchWriteCommand({
             RequestItems:{
                 "throwtrash-backend-session": [
                     {
@@ -218,7 +233,7 @@ describe('getSession', ()=>{
                     }
                 ]
             }
-        }).promise().then(()=>done());
+        }));
     });
     it('有効期限内',async ()=>{
         //有効期限内ならセッションを返す
@@ -230,8 +245,8 @@ describe('getSession', ()=>{
         const session = await db.getSession(session_id_003);
         expect(session).toBeUndefined();
     });
-    afterAll((done)=>{
-        documentClient.batchWrite({
+    afterAll(async()=>{
+        await documentClient.send(new BatchWriteCommand({
             RequestItems:{
                 "throwtrash-backend-session": [
                     {
@@ -241,7 +256,7 @@ describe('getSession', ()=>{
                     }
                 ]
             }
-        }).promise().then(()=>done());
+        }));
     });
 });
 
@@ -252,16 +267,16 @@ describe('publishSession',()=>{
         const session = await db.publishSession();
         expect(session).not.toBeNull();
         expect(session!.id.length).toBe(20);
-        await documentClient.get({
+        await documentClient.send(new GetCommand({
             TableName: property.SESSION_TABLE,
             Key:{id: session!.id}
-        }).promise().then(async(data)=>{
+        })).then(async(data)=>{
             expect(data.Item).not.toBeUndefined();
             expect(data.Item!.id).toBe(session!.id);
-            await documentClient.delete({
+            await documentClient.send(new DeleteCommand({
                 TableName: property.SESSION_TABLE,
                 Key:{id: session!.id}
-            }).promise();
+            }));
         });
     });
 });
@@ -271,12 +286,12 @@ describe("putAuthorizationCode",()=>{
         const result = await db.putAuthorizationCode("id0001","alexa-skill","https://example.com/skill",300);
 
         console.log(JSON.stringify(result));
-        await documentClient.get({
+        await documentClient.send(new GetCommand({
             TableName: property.AUTHORIZE_TABLE,
             Key: {
                 code: result.code
             }
-        }).promise().then((data)=>{
+        })).then((data)=>{
             expect(data.Item).not.toBeUndefined();
             expect(data.Item!.code).toBe(result.code);
             expect(data.Item!.client_id).toBe("alexa-skill");
@@ -288,23 +303,23 @@ describe("putAuthorizationCode",()=>{
             expect(data.Item!.expires_in).toBeGreaterThan(expire-10);
         });
 
-        await documentClient.delete({
+        await documentClient.send(new DeleteCommand({
             TableName: property.AUTHORIZE_TABLE,
             Key: {
                 code: result.code
             }
-        }).promise();
+        }));
     });
 });
 
 describe("deleteAuthorizationCode",()=>{
     beforeAll(async()=>{
-        await documentClient.put({
+        await documentClient.send(new PutCommand({
             TableName: property.AUTHORIZE_TABLE,
             Item: {
                 code: "1234xyz"
             }
-        }).promise();
+        }));
     })
     it("正常削除",async()=>{
         const result = await db.deleteAuthorizationCode("1234xyz");
@@ -320,7 +335,7 @@ describe("deleteAuthorizationCode",()=>{
 
 describe("getAuthorizationCode",()=>{
     beforeAll(async()=>{
-        await documentClient.put({
+        await documentClient.send(new PutCommand({
             TableName: property.AUTHORIZE_TABLE,
             Item: {
                 code: "1234567",
@@ -329,7 +344,7 @@ describe("getAuthorizationCode",()=>{
                 redirect_uri: "https://example.com/skill",
                 expires_in: Math.ceil(Date.now()/1000)+5*60
             }
-        }).promise();
+        }));
     });
     it("存在するデータ",async()=>{
         const result = await db.getAuthorizationCode("1234567");
@@ -345,12 +360,12 @@ describe("getAuthorizationCode",()=>{
         expect(result).toBeUndefined();
     });
     afterAll(async()=>{
-        await documentClient.delete({
+        await documentClient.send(new DeleteCommand({
             TableName: property.AUTHORIZE_TABLE,
             Key: {
                 code: "1234567"
             }
-        }).promise();
+        }));
     });
 });
 
@@ -363,12 +378,12 @@ describe("putAccessToken",()=>{
             expect(access_token).toBeDefined();
 
             const hashKey = crypto.createHash("sha512").update(access_token).digest("hex");
-            await documentClient.get({
+            await documentClient.send(new GetCommand({
                 TableName: property.TOKEN_TABLE,
                 Key: {
                     access_token: hashKey
                 }
-            }).promise().then((data)=>{
+            })).then((data)=>{
                 expect(data.Item).not.toBeUndefined();
                 expect(data.Item!.user_id).toBe("id0001");
                 expect(data.Item!.client_id).toBe("alexa-skill");
@@ -379,12 +394,12 @@ describe("putAccessToken",()=>{
             });
 
             // テスト後はデータ削除
-            await documentClient.delete({
+            await documentClient.send(new DeleteCommand({
                 TableName: property.TOKEN_TABLE,
                 Key: {
                     access_token: hashKey
                 }
-            }).promise();
+            }));
         });
         it("google",async()=>{
             process.env.GOOGLE_USER_CLIENT_ID="google";
@@ -436,12 +451,12 @@ describe("putRefreshToken",()=>{
         expect(refresh_token).toBeDefined();
 
         const hashKey = crypto.createHash("sha512").update(refresh_token).digest("hex");
-        await documentClient.get({
+        await documentClient.send(new GetCommand({
             TableName: property.REFRESH_TABLE,
             Key: {
                 refresh_token: hashKey
             }
-        }).promise().then((data)=>{
+        })).then((data)=>{
             expect(data.Item).not.toBeUndefined();
             expect(data.Item!.refresh_token).toBe(hashKey);
             expect(data.Item!.user_id).toBe("id0001");
@@ -453,12 +468,12 @@ describe("putRefreshToken",()=>{
         });
 
         // テスト後はデータ削除
-       await documentClient.delete({
+       await documentClient.send(new DeleteCommand({
             TableName: property.REFRESH_TABLE,
             Key: {
                 refresh_token: hashKey
             }
-        }).promise();
+        }));
     });
 });
 
@@ -466,7 +481,7 @@ describe("getRefreshToken", ()=> {
     const expires_in = Math.ceil(Date.now()/1000)+5*60;
     const cryptedToken = crypto.createHash("sha512").update("refreshtoken001").digest("hex")
     beforeAll(async()=>{
-        await documentClient.put({
+        await documentClient.send(new PutCommand({
             TableName: property.REFRESH_TABLE,
             Item: {
                 refresh_token: cryptedToken,
@@ -474,7 +489,7 @@ describe("getRefreshToken", ()=> {
                 user_id: "id001",
                 expires_in: expires_in
             }
-        }).promise();
+        }));
     });
     it("正常取得", async()=>{
         const result = await db.getRefreshToken("refreshtoken001");
@@ -489,11 +504,11 @@ describe("getRefreshToken", ()=> {
         expect(result).toBeUndefined();
     });
     afterAll(async()=>{
-        await documentClient.delete({
+        await documentClient.send(new DeleteCommand({
             TableName: property.REFRESH_TABLE,
             Key: {
                 refresh_token: cryptedToken
             }
-        }).promise();
+        }));
     });
 });
