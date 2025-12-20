@@ -9,6 +9,8 @@ globals:
   SharedArrayBuffer: readonly
 parserOptions:
   ecmaVersion: 2018
+ignorePatterns:
+  - "backend-dist/**"
 rules: 
   no-unused-vars: 
     - 2
