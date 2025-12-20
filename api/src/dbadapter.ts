@@ -1,8 +1,21 @@
 import property from "./property";
 import * as common from "trash-common";
 const logger = common.getLogger();
-import AWS, { Account, AWSError } from "aws-sdk";
-const documentClient = new AWS.DynamoDB.DocumentClient();
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+    DeleteCommand,
+    DynamoDBDocumentClient,
+    GetCommand,
+    PutCommand,
+    TransactWriteCommand,
+    UpdateCommand,
+    type PutCommandInput
+} from "@aws-sdk/lib-dynamodb";
+const dynamoClient = new DynamoDBClient({ region: process.env.DB_REGION });
+let documentClient = DynamoDBDocumentClient.from(dynamoClient);
+export const setDocumentClient = (client: DynamoDBDocumentClient) => {
+    documentClient = client;
+};
 import crypto from "crypto";
 import {  AccountLinkItem, ActivationCodeItem, CodeItem, SharedScheduleItem, TrashScheduleItem } from "./interface";
 
@@ -11,7 +24,7 @@ const toHash = (value: string): string => {
     return crypto.createHash("sha512").update(value).digest("hex");
 }
 
-const SharedSchedulePutOperation = (shared_id: string, description: string, timestamp: number): AWS.DynamoDB.DocumentClient.Put => {
+const SharedSchedulePutOperation = (shared_id: string, description: string, timestamp: number): PutCommandInput => {
    return {
         TableName: property.SHARED_SCHEDULE_TABLE,
         Item: {
@@ -22,7 +35,7 @@ const SharedSchedulePutOperation = (shared_id: string, description: string, time
     }
 }
 
-const ExistTrashScheduleWithSharedIdPutOperation = (user_id: string, description: string, platform: string, timestamp: number, shared_id: string): AWS.DynamoDB.DocumentClient.Put => {
+const ExistTrashScheduleWithSharedIdPutOperation = (user_id: string, description: string, platform: string, timestamp: number, shared_id: string): PutCommandInput => {
    return  {
         TableName: property.TRASH_SCHEDULE_TABLE,
         Item: {
@@ -38,13 +51,13 @@ const ExistTrashScheduleWithSharedIdPutOperation = (user_id: string, description
 
 
 const getAccountLinkItemByToken = async (token: string): Promise<AccountLinkItem | null> => {
-    return documentClient.get({
+    return documentClient.send(new GetCommand({
         TableName: property.ACCOUNT_LINK_TABLE,
         Key: {
             token: token
         }
-    }).promise().then(item => {
-        if(item.Item) {
+    })).then(item => {
+        if (item.Item) {
             const resultItem : AccountLinkItem = {
                 token: item.Item.token,
                 user_id: item.Item.user_id,
@@ -63,10 +76,10 @@ const getAccountLinkItemByToken = async (token: string): Promise<AccountLinkItem
 }
 
 const putAccountLinkItem = async (accountLinkItem: AccountLinkItem): Promise<boolean> => {
-    return documentClient.put({
+    return documentClient.send(new PutCommand({
         TableName: property.ACCOUNT_LINK_TABLE,
         Item: accountLinkItem
-    }).promise().then(() => {
+    })).then(() => {
         logger.info("put AccountLinkItem: "+JSON.stringify(accountLinkItem));
         return true;
     }).catch(err => {
@@ -76,24 +89,24 @@ const putAccountLinkItem = async (accountLinkItem: AccountLinkItem): Promise<boo
 }
 
 const deleteAccountLinkItemByToken = async(token: string): Promise<boolean>=>{
-    return await documentClient.delete({
+    return await documentClient.send(new DeleteCommand({
         TableName: property.ACCOUNT_LINK_TABLE,
         Key:{
             token: token
         }
-    }).promise().then(_=>{return true}).catch((e: any)=>{
+    })).then(_=>{return true}).catch((e: any)=>{
         logger.error(e);
         return false;
     });
 }
 
 const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleItem | null> => {
-    return documentClient.get({
+    return documentClient.send(new GetCommand({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Key: {
             id: user_id
         }
-    }).promise().then(item=>{
+    })).then(item=>{
         if(item.Item) {
             return {
                 id: item.Item.id,
@@ -113,7 +126,7 @@ const getTrashScheduleByUserId = async (user_id: string): Promise<TrashScheduleI
 }
 
 const setSharedIdToTrashSchedule = async(user_id: string, shared_id: string): Promise<boolean> => {
-    return documentClient.update({
+    return documentClient.send(new UpdateCommand({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Key: {
             id: user_id
@@ -121,7 +134,7 @@ const setSharedIdToTrashSchedule = async(user_id: string, shared_id: string): Pr
         UpdateExpression: "set #shared_id = :shared_id",
         ExpressionAttributeNames: {"#shared_id": "shared_id"},
         ExpressionAttributeValues: {":shared_id": shared_id}
-    }).promise().then(_=>true).catch((err)=>{
+    })).then(_=>true).catch((err)=>{
         logger.error("failed update trash schedule");
         logger.error(err);
         return false;
@@ -130,14 +143,14 @@ const setSharedIdToTrashSchedule = async(user_id: string, shared_id: string): Pr
 }
 
 const putSharedSchedule = async(shared_id: string, schedule: TrashScheduleItem): Promise<boolean> => {
-    return documentClient.put({
+    return documentClient.send(new PutCommand({
         TableName: property.SHARED_SCHEDULE_TABLE,
         Item: {
             shared_id: shared_id,
             description: schedule.description,
             timestamp: schedule.timestamp
         }
-    }).promise().then(_=>true).catch((err)=>{
+    })).then(_=>true).catch((err)=>{
         logger.error("failed put shared schedule");
         logger.error(err);
         return false;
@@ -145,12 +158,12 @@ const putSharedSchedule = async(shared_id: string, schedule: TrashScheduleItem):
 }
 
 const getSharedScheduleBySharedId = async(shared_id: string): Promise<SharedScheduleItem|null> => {
-    return documentClient.get({
+    return documentClient.send(new GetCommand({
         TableName: property.SHARED_SCHEDULE_TABLE,
         Key: {
             shared_id: shared_id
         }
-    }).promise().then((value)=>{
+    })).then((value)=>{
         if(value.Item) {
             return {
                shared_id: value.Item.shared_id ,
@@ -167,26 +180,26 @@ const getSharedScheduleBySharedId = async(shared_id: string): Promise<SharedSche
 }
 
 const putActivationCode = async(activationCodeItem: ActivationCodeItem): Promise<boolean> => {
-    return await documentClient.put({
+    return await documentClient.send(new PutCommand({
         TableName: property.ACTIVATE_TABLE,
         Item: {
             code: activationCodeItem.code,
             shared_id: activationCodeItem.shared_id,
             TTL: activationCodeItem.TTL
         }
-    }).promise().then(_=>{return true}).catch(e=>{
+    })).then(_=>{return true}).catch(e=>{
         logger.error("failed put activation code");
         return false;
     });
 }
 
 const deleteActivationCode = async(code: string): Promise<boolean> => {
-    return await documentClient.delete({
+    return await documentClient.send(new DeleteCommand({
         TableName: property.ACTIVATE_TABLE,
         Key: {
             code: code
         }
-    }).promise().then(_=>{
+    })).then(_=>{
         return true;
     }).catch((e: any)=>{
         logger.error("failed delete activation code");
@@ -196,12 +209,12 @@ const deleteActivationCode = async(code: string): Promise<boolean> => {
 }
 
 const getActivationCode = async(code: string): Promise<ActivationCodeItem | null>=> {
-    return await documentClient.get({
+    return await documentClient.send(new GetCommand({
         TableName: property.ACTIVATE_TABLE,
         Key: {
             code: code
         }
-    }).promise().then(item=>{
+    })).then(item=>{
         if(item.Item) {
             return {
                 code: item.Item.code,
@@ -218,7 +231,7 @@ const getActivationCode = async(code: string): Promise<ActivationCodeItem | null
 }
 
 const insertTrashSchedule = async(trashScheduleItem: TrashScheduleItem, timestamp: number): Promise<boolean> => {
-    return documentClient.put({
+    return documentClient.send(new PutCommand({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Item: {
             id: trashScheduleItem.id,
@@ -227,14 +240,14 @@ const insertTrashSchedule = async(trashScheduleItem: TrashScheduleItem, timestam
             timestamp: timestamp
         },
         ConditionExpression: "attribute_not_exists(id)"
-    }).promise().then(_=>{return true}).catch((e: any)=>{
+    })).then(_=>{return true}).catch((e: any)=>{
        logger.error(e);
        return false;
     });
 }
 
 const putExistTrashSchedule = async(trashScheduleItem: TrashScheduleItem, timestamp: number): Promise<boolean> => {
-    return documentClient.put({
+    return documentClient.send(new PutCommand({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Item: {
             id: trashScheduleItem.id,
@@ -244,14 +257,14 @@ const putExistTrashSchedule = async(trashScheduleItem: TrashScheduleItem, timest
             shared_id: trashScheduleItem.shared_id
         },
         ConditionExpression: "attribute_exists(id)"
-    }).promise().then(_=>{return true}).catch((e: any)=>{
+    })).then(_=>{return true}).catch((e: any)=>{
        logger.error(e);
        return false;
     });
 }
 
 const updateTrashSchedule = async(user_id: string, description: string, timestamp: number): Promise<boolean> =>{
-    return documentClient.update({
+    return documentClient.send(new UpdateCommand({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Key: {
             id: user_id
@@ -266,7 +279,7 @@ const updateTrashSchedule = async(user_id: string, description: string, timestam
             ":timestamp": timestamp
         },
         ConditionExpression: "attribute_exists(id)"
-    }).promise().then(_=>true).catch((err)=> {
+    })).then(_=>true).catch((err)=> {
         logger.error("failed update trash schedule");
         logger.error(err);
         return false;
@@ -274,11 +287,11 @@ const updateTrashSchedule = async(user_id: string, description: string, timestam
 }
 
 const putAuthorizationCode = async(codeItem: CodeItem): Promise<boolean> =>{
-    return documentClient.put({
+    return documentClient.send(new PutCommand({
         TableName: property.AUTHORIZE_TABLE,
         Item: codeItem,
         ConditionExpression: "attribute_not_exists(code)"
-    }).promise().then(_ => {
+    })).then(_ => {
         return true;
     }).catch(err => {
         logger.warn(err);
@@ -287,7 +300,7 @@ const putAuthorizationCode = async(codeItem: CodeItem): Promise<boolean> =>{
 }
 
 const transactionUpdateScheduleAndSharedSchedule = async(shared_id: string, scheduleItem: TrashScheduleItem, timestamp: number): Promise<boolean> => {
-    return documentClient.transactWrite({
+    return documentClient.send(new TransactWriteCommand({
         TransactItems: [
             {
                 Put: SharedSchedulePutOperation(shared_id, scheduleItem.description, timestamp),
@@ -296,7 +309,7 @@ const transactionUpdateScheduleAndSharedSchedule = async(shared_id: string, sche
                 Put: ExistTrashScheduleWithSharedIdPutOperation(scheduleItem.id, scheduleItem.description, scheduleItem.platform || "web", timestamp, shared_id)
             }
         ]
-    }).promise().then(_=> true).catch((err)=>{
+    })).then(_=> true).catch((err)=>{
         logger.error("failed transaction update schedule");
         logger.error(err);
         return false;
@@ -304,7 +317,7 @@ const transactionUpdateScheduleAndSharedSchedule = async(shared_id: string, sche
 }
 
 const updateTrashScheduleTimestamp = async(user_id: string, timestamp: number): Promise<boolean> => {
-    return documentClient.update({
+    return documentClient.send(new UpdateCommand({
         TableName: property.TRASH_SCHEDULE_TABLE,
         Key: {
             id: user_id
@@ -316,7 +329,7 @@ const updateTrashScheduleTimestamp = async(user_id: string, timestamp: number): 
         ExpressionAttributeValues: {
             ":timestamp": timestamp
         }
-    }).promise().then(_=>true).catch(err=>{
+    })).then(_=>true).catch(err=>{
         logger.error("failed update TrashSchedule timestamp");
         logger.error(err);
         return false;
