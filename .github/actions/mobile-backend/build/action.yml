@@ -8,7 +8,7 @@ runs:
       with:
         node-version: '16.x'
     - name: Restore API cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         key: npm-deps-${{ github.ref_name }}-${{ hashFiles('api/src/package-lock.json') }}
         path: api/src/node_modules

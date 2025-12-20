@@ -16,7 +16,7 @@ jobs:
     outputs:
       PR_NUMBER: ${{ steps.pr.outputs.PR_NUMBER }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Get PR number
         id: pr
         run: echo "PR_NUMBER=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
@@ -25,7 +25,7 @@ jobs:
     environment: prod
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: AWS Set up
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -50,7 +50,7 @@ jobs:
     needs: ["get-pr-number"]
     environment: prod
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: AWS Set up
         uses: aws-actions/configure-aws-credentials@v4
         with:
