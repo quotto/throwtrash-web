@@ -13,6 +13,7 @@ export default [
       'node_modules',
       '.next',
       'frontend-dist',
+      'next-env.d.ts',
       // 旧Redux実装・移行済み資産（lint対象外）
       'react/reducers/**',
       'react/actions/**',

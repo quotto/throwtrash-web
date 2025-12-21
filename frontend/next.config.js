@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    experimental: {
-        serverActions: { enabled: true }
-    },
+    output: 'export',
+    experimental: {},
     turbopack: {
         root: __dirname
     }

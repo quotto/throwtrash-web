@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import React from 'react';
 import Providers from './providers/StoreProvider';
 import ReactQueryProvider from './providers/ReactQueryProvider';
-import { dehydrate, QueryClient } from '@tanstack/react-query';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 
 export const metadata: Metadata = {
@@ -11,35 +10,12 @@ export const metadata: Metadata = {
     description: 'Next.js App Router migration'
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-    // SSRでAuthをプリフェッチしてdehydrate
-    const qc = new QueryClient();
-    await qc.prefetchQuery({
-        queryKey: ['auth','session'],
-        queryFn: async () => {
-            try {
-                const apiHost = process.env.API_HOST;
-                const apiStage = process.env.API_STAGE;
-                const apiBase = `https://${apiHost}/${apiStage}`;
-                const res = await fetch(`${apiBase}/user_info`, {
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    cache: 'no-store'
-                });
-                if (!res.ok) throw new Error('ng');
-                return await res.json();
-            } catch {
-                return null;
-            }
-        }
-    });
-    const dehydratedState = dehydrate(qc);
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="ja">
             <body>
                 <AppRouterCacheProvider options={{ key: 'mui' }}>
-                    <ReactQueryProvider dehydratedState={dehydratedState}>
+                    <ReactQueryProvider>
                         <Providers>
                             {children}
                         </Providers>

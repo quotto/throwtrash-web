@@ -44,7 +44,7 @@ export default function TrashSchedule(props: Props) {
                                     {t('TrashSchedule.button.add')}
                                 </Button>
                             )}
-                            <Link href={`/exclude/${i}`} style={{ textDecoration: 'none' }}>
+                            <Link href={`/exclude?trashIndex=${i}`} style={{ textDecoration: 'none' }}>
                                 <Button
                                     color='warning'
                                     variant='outlined'
