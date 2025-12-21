@@ -33,6 +33,7 @@ jobs:
         with:
           back-stage: ${{ vars.BACK_STAGE }}
           front-stage: ${{ vars.FRONT_STAGE }}
+          api-host: ${{ vars.BACKEND_API_ENDPOINT }}
       - uses: ./.github/actions/frontend/deploy
         with:
           front-stage: ${{ vars.FRONT_STAGE }}

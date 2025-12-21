@@ -7,6 +7,9 @@ inputs:
   front-stage:
     description: "The frontend stage"
     required: true
+  api-host:
+    description: "The backend API host (without stage)"
+    required: true
 runs:
   using: composite
   steps:
@@ -32,4 +35,4 @@ runs:
         STAGE: ${{ inputs.back-stage }}
         FRONT_STAGE: ${{ inputs.front-stage }}
         NEXT_PUBLIC_API_STAGE: ${{ inputs.back-stage }}
-        NEXT_PUBLIC_API_HOST: ${{ vars.BACKEND_API_ENDPOINT }}
+        NEXT_PUBLIC_API_HOST: ${{ inputs.api-host }}

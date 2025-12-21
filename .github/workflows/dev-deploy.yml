@@ -112,6 +112,7 @@ jobs:
         with:
           back-stage: ${{ needs.set-stage.outputs.BACK_STAGE }}
           front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
+          api-host: ${{ vars.BACKEND_API_ENDPOINT }}
       - uses: ./.github/actions/frontend/deploy
         with:
           front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
