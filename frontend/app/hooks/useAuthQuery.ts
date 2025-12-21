@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from '@tanstack/react-query';
-import { apiBase } from '@/react/lib/env';
+import { apiBase } from '../../react/lib/env';
 
 export const AUTH_QUERY_KEY = ['auth', 'session'];
 const API_BASE = apiBase;
