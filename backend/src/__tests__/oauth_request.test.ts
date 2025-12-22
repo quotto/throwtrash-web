@@ -32,7 +32,7 @@ describe("oauth_request", () => {
         const headers = response.headers;
         expect(headers).not.toBeUndefined();
         expect(headers!.Location).toBe("https://accountlink.mythrowaway.net/v5/index.html");
-        expect(headers!["Set-Cookie"]).toBe("throwaway-session=sessionid-001;max-age=3600;");
+        expect(headers!["Set-Cookie"]).toBe("throwaway-session=sessionid-001;max-age=3600;Path=/;SameSite=None;Secure;HttpOnly;");
 
         // 保存したセッション
         const session = mockResult["sessionid-001"];

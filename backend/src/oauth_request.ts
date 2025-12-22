@@ -19,7 +19,7 @@ export default async (params: any,session: SessionItem,new_flg: boolean,stage: s
                 }
             };
             if(new_flg) {
-               response.headers!["Set-Cookie"] = `${property.SESSIONID_NAME}=${session.id};max-age=${property.SESSION_MAX_AGE};`;
+               response.headers!["Set-Cookie"] = `${property.SESSIONID_NAME}=${session.id};max-age=${property.SESSION_MAX_AGE};Path=/;SameSite=None;Secure;HttpOnly;`;
             }
             return response;
         }
