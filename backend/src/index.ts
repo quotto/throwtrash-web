@@ -2,7 +2,6 @@ import * as common from "trash-common";
 const logger = common.getLogger();
 process.env.RUNLEVEL === "INFO" ? logger.setLevel_INFO() : logger.setLevel_DEBUG();
 
-import property from "./property";
 import error_def from "./error_def";
 import db from "./dbadapter";
 import user_info from "./user_info";
@@ -16,26 +15,14 @@ import { SessionItem } from "./interface";
 
 import AWSLambda from "aws-lambda";
 import request_authorization_code from "./request_authorization_code";
-
-const extractSessionId = (cookie:string | undefined)=>{
-    if(cookie) {
-        const c_array = cookie.split(";");
-        for(let i=0; i < c_array.length; i++) {
-            const element = c_array[i];
-            const start = element.indexOf(`${property.SESSIONID_NAME}=`);
-            if(start >= 0) {
-                return element.substring(start+(`${property.SESSIONID_NAME}=`.length))
-            }
-        }
-    }
-    return null;
-};
+import { extractSessionIdFromCookieHeader, getCookieHeader } from "./cookie";
 
 exports.handler = async function(event: AWSLambda.APIGatewayEvent ,context: AWSLambda.Context) {
     logger.debug(JSON.stringify(event));
     logger.debug(JSON.stringify(context));
     let session: SessionItem | null | undefined = null;
-    let sessionId: string | null = extractSessionId(event.headers.Cookie);
+    const cookieHeader = getCookieHeader(event.headers, event.multiValueHeaders);
+    let sessionId: string | null = extractSessionIdFromCookieHeader(cookieHeader);
     logger.debug("get sessionId in cookie:"+sessionId);
     if(sessionId) {
         session = await db.getSession(sessionId);

@@ -5,6 +5,7 @@ import {BackendResponse, SessionItem} from "./interface";
 
 export default async (params: any,session: SessionItem,new_flg: boolean,stage: string): Promise<BackendResponse>=> {
     const front_end_stage = process.env.FRONT_END_STAGE || stage;
+    const front_end_host = (process.env.FRONT_END_HOST || property.URL_ACCOUNT_LINK).replace(/\/+$/, "");
     if(params && params.state && params.client_id && params.redirect_uri && params.platform && stage) {
         session.state = params.state;
         session.client_id = params.client_id;
@@ -15,7 +16,7 @@ export default async (params: any,session: SessionItem,new_flg: boolean,stage: s
             const response: BackendResponse =  {
                 statusCode: 301,
                 headers: {
-                    Location: `https://accountlink.mythrowaway.net/${front_end_stage}/index.html`
+                    Location: `${front_end_host}/${front_end_stage}/index.html`
                 }
             };
             if(new_flg) {

@@ -18,6 +18,7 @@ jest.mocked(db.saveSession).mockImplementation(async(session)=>{
 });
 describe("oauth_request", () => {
     it("セッションID新規発行されること,フロントエンドステージの環境変数がない場合はAPI上のパスをステージに使用すること", async () => {
+        process.env.FRONT_END_HOST = "https://dev.accountlink.mythrowaway.net";
         // パラメータはqueryStringParameters,セッション情報,セッション新規発行フラグ,API Gatewayのstage
         const response = await oauth_request({
             state: "123456",
@@ -31,8 +32,9 @@ describe("oauth_request", () => {
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
         expect(headers).not.toBeUndefined();
-        expect(headers!.Location).toBe("https://accountlink.mythrowaway.net/v5/index.html");
+        expect(headers!.Location).toBe("https://dev.accountlink.mythrowaway.net/v5/index.html");
         expect(headers!["Set-Cookie"]).toBe("throwaway-session=sessionid-001;max-age=3600;Path=/;SameSite=None;Secure;HttpOnly;");
+        delete process.env.FRONT_END_HOST;
 
         // 保存したセッション
         const session = mockResult["sessionid-001"];
