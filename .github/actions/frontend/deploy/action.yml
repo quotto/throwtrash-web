@@ -13,4 +13,4 @@ runs:
     - name: S3 Sync
       shell: bash
       run: |
-        aws s3 sync frontend/frontend-dist/${{ inputs.front-stage }} s3://${{ inputs.bucket }}/${{ inputs.front-stage }}
+        aws s3 sync frontend/out s3://${{ inputs.bucket }}/${{ inputs.front-stage }}
