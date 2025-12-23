@@ -4,6 +4,7 @@ import db from "./dbadapter";
 import rp from "request-promise";
 import jwt from "jsonwebtoken";
 import error_def from "./error_def";
+import property from "./property";
 import {BackendResponse, RawTrasScheduleItem, SessionItem } from "./interface";
 
 interface SigninProfile {
@@ -95,7 +96,7 @@ export default async(params: any,session: SessionItem,domain: string,stage: stri
             return {
                 statusCode: 301,
                 headers: {
-                    Location: `https://accountlink.mythrowaway.net/${front_end_stage}/index.html`,
+                    Location: `${property.URL_ACCOUNT_LINK}/${front_end_stage}/index.html`,
                     "Cache-Control": "no-store"
                 }
             }
