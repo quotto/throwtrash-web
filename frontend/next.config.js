@@ -6,6 +6,7 @@ const nextConfig = {
     output: 'export',
     basePath,
     assetPrefix: basePath || undefined,
+    trailingSlash: true,
     experimental: {},
     turbopack: {
         root: __dirname

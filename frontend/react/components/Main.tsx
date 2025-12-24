@@ -23,7 +23,8 @@ export default function Main(props: MainProps) {
             if (res) {
                 (window as any).location = res;
             }
-        } catch {
+        } catch (error: any) {
+            console.error("Regist error", error);
             props.onError(true);
             props.onSubmit(false);
         }
