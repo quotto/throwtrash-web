@@ -26,7 +26,7 @@ export async function submitTrashes(payload: { data: any; offset: number; nextda
     if (!API_BASE) throw new Error('API base not set');
     const res = await fetch(`${API_BASE}/regist`, { ...jsonInit, method: 'POST', body: JSON.stringify(payload) });
     if (!res.ok) throw new Error('regist failed');
-    return res.json();
+    return res.text();
 }
 
 // 外部サービス（ZIPコード）は従来どおり直接呼び出し
