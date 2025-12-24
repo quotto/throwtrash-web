@@ -117,6 +117,12 @@ jobs:
         with:
           front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
           bucket: throwtrash-dev
+      - name: Invalidate CloudFront cache
+        env:
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.AWS_CLOUDFRONT_DST_ID }}
+          FRONT_STAGE: ${{ needs.set-stage.outputs.FRONT_STAGE }}
+        run: |
+          aws cloudfront create-invalidation --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" --paths "/${FRONT_STAGE}/*"
   backend-deploy:
     needs: ["set-stage", "backend-test"]
     environment: dev

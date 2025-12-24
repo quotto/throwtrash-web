@@ -20,7 +20,6 @@ export default function Main(props: MainProps) {
                 offset: new Date().getTimezoneOffset(),
                 nextdayflag: props.nextday_checked ?? true
             });
-            console.log("Regist response:", res);
             if (res) {
                 (window as any).location = res;
             }
