@@ -1,6 +1,6 @@
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TablePagination, TableRow } from '@mui/material';
 import React from 'react';
-import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
+import { ZipcodeStatusEnum } from '../../../app/states/types';
 import { MainProps } from '../../types/props';
 import { loadAddress } from '../../lib/api-client';
 
@@ -12,7 +12,7 @@ export default function AddressSearchDialog(props: MainProps) {
     const paged = address_list.slice(current_page * per_page, current_page * per_page + per_page);
 
     return (
-        <Dialog open={status === ZipcodeStatus.AddressSelect}>
+        <Dialog open={status === ZipcodeStatusEnum.AddressSelect}>
             <DialogTitle id='result-dialog-title'>検索結果</DialogTitle>
             <DialogContent>
                 <DialogContentText>
@@ -36,7 +36,7 @@ export default function AddressSearchDialog(props: MainProps) {
                                             onClick={async () => {
                                                 submitZipcode(true);
                                                 loadAddress(address).then((response) => {
-                                                    changeZipcodeStatus(ZipcodeStatus.ResultSelect, response.data.data);
+                                                    changeZipcodeStatus(ZipcodeStatusEnum.ResultSelect, response.data.data);
                                                 }).catch(console.error)
                                                     .finally(() => submitZipcode(false));
                                             }}
@@ -69,7 +69,7 @@ export default function AddressSearchDialog(props: MainProps) {
             </DialogContent>
             <DialogActions>
                 <Button
-                    onClick={() => changeZipcodeStatus(ZipcodeStatus.None, [])}
+                    onClick={() => changeZipcodeStatus(ZipcodeStatusEnum.None, [])}
                     variant='contained'>
                         戻る
                 </Button>

@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TablePagination, TableRow } from '@mui/material';
 import React from 'react';
-import { ZipcodeStatus } from '../../reducers/ZipcodeReducer';
+import { ZipcodeStatusEnum } from '../../../app/states/types';
 import { MainProps } from '../../types/props';
 
 export default function ResultDialog(props: MainProps) {
@@ -11,7 +11,7 @@ export default function ResultDialog(props: MainProps) {
     const paged = trash_list.slice(current_page * per_page, current_page * per_page + per_page);
 
     return (
-        <Dialog open={status === ZipcodeStatus.ResultSelect}>
+        <Dialog open={status === ZipcodeStatusEnum.ResultSelect}>
             <DialogTitle id='result-dialog-title'>検索結果</DialogTitle>
             <DialogContent>
                 <DialogContentText>
@@ -30,7 +30,7 @@ export default function ResultDialog(props: MainProps) {
                                     }}
                                     onClick={() => {
                                         setPreset(trash);
-                                        changeZipcodeStatus(ZipcodeStatus.None, []);
+                                        changeZipcodeStatus(ZipcodeStatusEnum.None, []);
                                     }}
                                 >
                                     <TableCell component='th' scope='row'>
@@ -59,7 +59,7 @@ export default function ResultDialog(props: MainProps) {
             </DialogContent>
             <DialogActions>
                 <Button
-                    onClick={() => changeZipcodeStatus(ZipcodeStatus.None, [])}
+                    onClick={() => changeZipcodeStatus(ZipcodeStatusEnum.None, [])}
                     variant='contained'>
                         戻る
                 </Button>

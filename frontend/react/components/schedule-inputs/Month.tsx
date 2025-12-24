@@ -3,7 +3,7 @@ import { TextField, InputAdornment } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage, isError } from '../common';
 import { MainProps } from '../../types/props';
-import { Schedule } from '../../reducers/TrashReducer';
+import { Schedule } from '../../../app/states/types';
 
 type Props = {
     trash_index: number;

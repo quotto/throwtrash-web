@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../common';
 import { BiWeekList } from './WeekDayList';
 import { MainProps } from '../../types/props';
-import { Schedule } from '../../reducers/TrashReducer';
+import { Schedule } from '../../../app/states/types';
 
 type Props = {
     trash_index: number;

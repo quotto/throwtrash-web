@@ -3,7 +3,7 @@ import { FormControl, InputLabel, Select, TextField, MenuItem, Stack } from '@mu
 import { useTranslation } from 'react-i18next';
 import { WeekDayList } from './WeekDayList';
 import { MainProps } from '../../types/props';
-import { Schedule, EvWeek as EvWeekType } from '../../reducers/TrashReducer';
+import { Schedule, EvWeek as EvWeekType } from '../../../app/states/types';
 
 type Props = {
     trash_index: number;
