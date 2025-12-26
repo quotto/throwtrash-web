@@ -78,7 +78,7 @@ describe("enable_skill",()=>{
         });
         it("本番:正常終了,paramsのtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
             process.env.SKILL_STAGE="live";
-            process.env.FRONT_END_URL="https://accountlink.mythrowaway.net";
+            process.env.FRONTEND_URL="https://accountlink.mythrowaway.net";
             const mockedGetAccountLinkItemByToken = jest.mocked(db.getAccountLinkItemByToken);
             mockedGetAccountLinkItemByToken.mockImplementation(async (token: String) => {
                 return {
