@@ -91,10 +91,12 @@ export default async(params: APIGatewayProxyEventQueryStringParameters,stage: st
         logger.debug(`Response Enable Skill: ${JSON.stringify(skillResponse)}`);
 
         await db.deleteAccountLinkItemByToken(accountLinkItem.token);
+        const frontend_url = process.env.FRONT_END_URL || "https://accountlink.mythrowaway.net";
+
         return {
             statusCode: 301,
             headers: {
-                Location: `https://accountlink.mythrowaway.net/${stage}/accountlink-complete.html`
+                Location: `${frontend_url}/${stage}/accountlink-complete.html`
             }
         }
     } catch(err: any) {
