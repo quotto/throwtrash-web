@@ -6,8 +6,8 @@ import ReactQueryProvider from './providers/ReactQueryProvider';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 
 export const metadata: Metadata = {
-    title: 'TrashSchedule (App Router)',
-    description: 'Next.js App Router migration'
+    title: '今日のゴミ出し',
+    description: 'ゴミ出しスケジュール管理アプリ'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
