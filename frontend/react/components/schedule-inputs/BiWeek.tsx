@@ -1,60 +1,40 @@
 import React from 'react';
-import { FormHelperText, Select, FormControl, InputLabel, Theme } from '@mui/material';
-import { withStyles, StyleRules, createStyles, WithStyles } from '@mui/styles'
-import { WithTranslation, withTranslation } from 'react-i18next';
+import { FormHelperText, Select, FormControl, InputLabel } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../common';
 import { BiWeekList } from './WeekDayList';
-import { MainProps } from '../../containers/MainContainer';
-import { Schedule } from '../../reducers/TrashReducer';
+import { MainProps } from '../../types/props';
+import { Schedule } from '../../../app/states/types';
 
-const styles = (theme: Theme): StyleRules=>createStyles({
-    OptionWeekFormControl: {
-        'display':'inline-block',
-        'vertical-align':'top',
-        [theme.breakpoints.up('sm')] : {
-            'width':'40%',
-            'min-width':'130px',
-            'max-width':'210px'
-        },
-        [theme.breakpoints.down('xs')]: {
-            'text-align':'left',
-            'width':'50%'
-        }
-    },
-    OptionWeekSelect: {
-        'width':'100%',
-        'text-align':'center'
-    }
-});
+type Props = {
+    trash_index: number;
+    schedule_index: number;
+    target_schedule: Schedule;
+    onChangeInput: MainProps['onChangeInput'];
+};
 
-interface Props extends MainProps , WithStyles<typeof styles>,WithTranslation  { trash_index: number,
-    schedule_index: number,
-    target_schedule: Schedule
+export default function BiWeek(props: Props) {
+    const { t } = useTranslation();
+    const { trash_index, schedule_index, target_schedule, onChangeInput } = props;
+    const error = typeof target_schedule.error !== 'undefined' && target_schedule.error.length > 0;
+    return (
+        <FormControl sx={{ display: 'inline-block', verticalAlign: 'top', width: { xs: '50%', sm: '40%' }, minWidth: 130, maxWidth: 210 }}>
+            <InputLabel htmlFor={`scinput-${trash_index}-${schedule_index}`}>
+                {t('TrashSchedule.select.weekday.label')}
+            </InputLabel>
+            <Select
+                id={`scinput-${trash_index}-${schedule_index}`}
+                label={t('TrashSchedule.select.weekday.label')}
+                name={`scinput-${trash_index}-${schedule_index}`}
+                value={target_schedule.value}
+                onChange={(e) => onChangeInput(trash_index, schedule_index, e.target.value as string)}
+                sx={{ width: '100%', textAlign: 'center' }}
+            >
+                {BiWeekList(t)}
+            </Select>
+            <FormHelperText error={error}>
+                {getErrorMessage(t, target_schedule.error, [])}
+            </FormHelperText>
+        </FormControl>
+    );
 }
-class BiWeek extends React.Component<Props,{}> {
-    render() {
-        return (
-            <FormControl className={this.props.classes.OptionWeekFormControl}>
-                <InputLabel htmlFor={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}>
-                    {this.props.t('TrashSchedule.select.weekday.label')}
-                </InputLabel>
-                <Select
-                    id={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
-                    label={this.props.t('TrashSchedule.select.weekday.label')}
-                    name={`scinput-${this.props.trash_index}-${this.props.schedule_index}`}
-                    value={this.props.target_schedule.value}
-                    onChange={(e) => this.props.onChangeInput(this.props.trash_index, this.props.schedule_index, e.target.value as string)}
-                    className={this.props.classes.OptionWeekSelect}
-                >
-                    {BiWeekList(this.props.t)}
-                </Select>
-                <FormHelperText error={
-                    typeof(this.props.target_schedule.error) != "undefined" && this.props.target_schedule.error.length>0}>
-                    {getErrorMessage(this.props.t,this.props.target_schedule.error,[])}
-                </FormHelperText>
-            </FormControl>
-        );
-    }
-}
-
-export default withStyles(styles)(withTranslation()(BiWeek));

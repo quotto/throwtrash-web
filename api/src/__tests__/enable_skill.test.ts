@@ -55,6 +55,7 @@ describe("enable_skill",()=>{
     })
     describe("正常系",()=>{
         it("開発:正常終了,paramsはtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
+            process.env.FRONTEND_URL="https://dev.accountlink.mythrowaway.net";
             const mockedGetAccountLinkItemByToken = jest.mocked(db.getAccountLinkItemByToken);
             mockedGetAccountLinkItemByToken.mockImplementation(async (token: String) => {
                 return {
@@ -69,7 +70,7 @@ describe("enable_skill",()=>{
             const result = await enable_skill({token:"token-dev",state: "12345",redirect_uri: "https://backend.mythrowaway.net/dev/enable_skill",code:"12345"},"dev") as APIGatewayProxyStructuredResultV2;
 
             expect(result.statusCode).toBe(301);
-            expect(result.headers!.Location).toBe("https://accountlink.mythrowaway.net/dev/accountlink-complete.html");
+            expect(result.headers!.Location).toBe("https://dev.accountlink.mythrowaway.net/dev/accountlink-complete.html");
 
             expect(mockedGetAccountLinkItemByToken).toBeCalledWith("token-dev")
 
@@ -77,6 +78,7 @@ describe("enable_skill",()=>{
         });
         it("本番:正常終了,paramsのtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
             process.env.SKILL_STAGE="live";
+            process.env.FRONTEND_URL="https://accountlink.mythrowaway.net";
             const mockedGetAccountLinkItemByToken = jest.mocked(db.getAccountLinkItemByToken);
             mockedGetAccountLinkItemByToken.mockImplementation(async (token: String) => {
                 return {

@@ -1,4 +1,5 @@
 
+/* eslint-disable import/no-named-as-default-member */
 import ja from './ja.json';
 import en from './en.json';
 import { initReactI18next } from 'react-i18next';
@@ -15,7 +16,7 @@ i18next
         fallbackLng: 'ja',
         whitelist:['en','ja'],
         react :{
-            wait: true
+            useSuspense: false
         }
-    });
+    } as any);
 export default i18next;
