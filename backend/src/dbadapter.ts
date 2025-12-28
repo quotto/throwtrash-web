@@ -1,8 +1,14 @@
 import property from "./property";
 import * as common from "trash-common";
 const logger = common.getLogger();
-import AWS, { AWSError } from "aws-sdk";
-const documentClient = new AWS.DynamoDB.DocumentClient({ region: process.env.DB_REGION });
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DeleteCommand, DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+const dynamoClient = new DynamoDBClient({ region: process.env.DB_REGION });
+let documentClient = DynamoDBDocumentClient.from(dynamoClient);
+
+export const setDocumentClient = (client: DynamoDBDocumentClient) => {
+    documentClient = client;
+};
 import {initializeApp,applicationDefault} from "firebase-admin/app";
 import {getFirestore} from "firebase-admin/firestore";
 initializeApp({
@@ -18,12 +24,12 @@ const toHash = (value: string): string => {
 }
 
 const getRefreshToken = async(refresh_token: string): Promise<RefreshTokenItem | undefined> => {
-    const result = await documentClient.get({
+    const result = await documentClient.send(new GetCommand({
         TableName: property.REFRESH_TABLE,
         Key: {
             refresh_token: toHash(refresh_token)
         }
-    }).promise();
+    }));
     logger.debug("Get RefreshToken:" + JSON.stringify(result));
     return result.Item? result.Item as RefreshTokenItem : undefined;
 }
@@ -41,11 +47,11 @@ const putAccessToken = async(user_id: string,client_id: string,expires_in: numbe
         try {
             if(client_id === process.env.ALEXA_USER_CLIENT_ID) {
                 accessTokenItem.access_token = key;
-                const result = await documentClient.put({
+                const result = await documentClient.send(new PutCommand({
                     TableName: property.TOKEN_TABLE,
                     Item: accessTokenItem,
                     ConditionExpression: "attribute_not_exists(access_token)"
-                }).promise();
+                }));
                 logger.debug(`DynamoDBWriteResult -> ${JSON.stringify(result,null,2)}`)
                 return accessToken;
             } else if(client_id === process.env.GOOGLE_USER_CLIENT_ID) {
@@ -69,7 +75,7 @@ const putRefreshToken = async(user_id: string,client_id: string,expires_in: numb
     while(limit < 5) {
         const refreshToken = common.generateRandomCode(32);
         try {
-            await documentClient.put({
+            await documentClient.send(new PutCommand({
                 TableName: property.REFRESH_TABLE,
                 Item: {
                     refresh_token: toHash(refreshToken),
@@ -78,7 +84,7 @@ const putRefreshToken = async(user_id: string,client_id: string,expires_in: numb
                     client_id: client_id
                 },
                 ConditionExpression: "attribute_not_exists(refresh_token)"
-            }).promise();
+            }));
             logger.debug(`Put RefreshToken:${refreshToken}`);
             return refreshToken;
         } catch(err: any) {
@@ -90,10 +96,10 @@ const putRefreshToken = async(user_id: string,client_id: string,expires_in: numb
 }
 const saveSession = async (session: SessionItem): Promise<boolean> => {
     session.expire = Math.ceil(Date.now()/1000) + property.SESSION_MAX_AGE;
-    return documentClient.put({
+    return documentClient.send(new PutCommand({
         TableName: property.SESSION_TABLE,
         Item: session
-    }).promise().then(() => {
+    })).then(() => {
         logger.info("save session"+JSON.stringify(session));
         return true;
     }).catch(err => {
@@ -104,13 +110,13 @@ const saveSession = async (session: SessionItem): Promise<boolean> => {
 
 const getDataBySigninId = async(signinId: string): Promise<RawTrasScheduleItem | {}>=>{
     logger.debug("get data by signinId:"+signinId);
-    return documentClient.query({
+    return documentClient.send(new QueryCommand({
         TableName: property.SCHEDULE_TABLE,
         IndexName: "signinId-index",
         ExpressionAttributeNames: { "#i": "signinId" } ,
         ExpressionAttributeValues: { ":val": signinId },
         KeyConditionExpression: "#i = :val"
-    }).promise().then((data: AWS.DynamoDB.DocumentClient.QueryOutput)=>{
+    })).then((data)=>{
         if(data.Count && data.Count > 0) {
             logger.debug("get data"+JSON.stringify(data.Items![0]));
             return data.Items![0] as RawTrasScheduleItem;
@@ -123,22 +129,22 @@ const getDataBySigninId = async(signinId: string): Promise<RawTrasScheduleItem |
 }
 
 const deleteSession = async(sessionId: string): Promise<boolean>=>{
-    await documentClient.delete({
+    await documentClient.send(new DeleteCommand({
         TableName: property.SESSION_TABLE,
         Key:{
             id: sessionId
         }
-    }).promise();
+    }));
     return true;
 }
 
 const getAuthorizationCode = async(code: string): Promise<CodeItem | undefined>=>{
-    const result = await documentClient.get({
+    const result = await documentClient.send(new GetCommand({
         TableName: property.AUTHORIZE_TABLE,
         Key: {
             code: code
         }
-    }).promise();
+    }));
     return result.Item? result.Item as CodeItem : undefined;
 }
 
@@ -153,11 +159,11 @@ const putAuthorizationCode = async(user_id:string ,client_id: string,redirect_ur
             expires_in: Math.ceil(Date.now() / 1000 + expires_in)
         };
         try {
-            await documentClient.put({
+            await documentClient.send(new PutCommand({
                 TableName: property.AUTHORIZE_TABLE,
                 Item: codeItem,
                 ConditionExpression: "attribute_not_exists(code)"
-            }).promise();
+            }));
             return codeItem;
         } catch(err: any) {
             logger.warn(err);
@@ -169,12 +175,12 @@ const putAuthorizationCode = async(user_id:string ,client_id: string,redirect_ur
 
 const deleteAuthorizationCode = async(code: string): Promise<boolean> => {
     try {
-        const deleteData = await documentClient.delete({
+        const deleteData = await documentClient.send(new DeleteCommand({
             TableName: property.AUTHORIZE_TABLE,
             Key: {
                 code: code
             }
-        }).promise();
+        }));
         logger.debug(`Delete Authorization Code -> ${JSON.stringify(deleteData)}`);
         return true;
     } catch(err: any) {
@@ -189,7 +195,7 @@ const putTrashSchedule = async(item: any, regist_data: any ): Promise<boolean> =
         Item: item
     };
     logger.debug("regist parameter:"+JSON.stringify(params));
-    await documentClient.put(params).promise();
+    await documentClient.send(new PutCommand(params));
     logger.info(`Regist user(${JSON.stringify(item)})`);
 
     // Googleアシスタントの登録はfirestore登録後にリダイレクトする
@@ -209,12 +215,12 @@ const publishId = async(): Promise<string> =>{
     while(retry < 5) {
         user_id = common.generateUUID("-");
         try {
-            const result = await documentClient.get({
+            const result = await documentClient.send(new GetCommand({
                 TableName: property.SCHEDULE_TABLE,
                 Key: {
                     id: user_id
                 }
-            }).promise();
+            }));
             if(!result.Item) {
                 logger.debug("generate new id:"+user_id);
                 return user_id;
@@ -236,7 +242,7 @@ const getSession = async(sessionId: string): Promise<SessionItem | null | undefi
         },
         TableName: property.SESSION_TABLE
     }
-    return documentClient.get(params).promise().then(async(data)=>{
+    return documentClient.send(new GetCommand(params)).then(async(data)=>{
         return data.Item as SessionItem;
     }).catch(error=>{
         logger.error("Failed getSession.");
@@ -251,11 +257,11 @@ const publishSession = async(): Promise<SessionItem | null>=>{
         expire: Math.ceil((new Date()).getTime() / 1000) + property.SESSION_MAX_AGE
     }
     logger.info("publish new session:"+ JSON.stringify(new_session));
-    return documentClient.put({
+    return documentClient.send(new PutCommand({
         TableName: property.SESSION_TABLE,
         Item: new_session,
         ConditionExpression: "attribute_not_exists(id)"
-    }).promise().then(()=>{
+    })).then(()=>{
         return new_session;
     }).catch((e)=>{
         logger.error("Failed session value.")

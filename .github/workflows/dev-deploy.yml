@@ -28,18 +28,21 @@ jobs:
   frontend-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '14.x'
+          node-version: '22.x'
       - name: Restore frontend cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: frontend/node_modules
           key: npm-deps-${{ github.ref_name }}-${{ hashFiles('frontend/package-lock.json') }}
       - name: Install dependencies
         run: npm ci
+        working-directory: frontend
+      - name: Run frontend lint
+        run: npm run lint
         working-directory: frontend
       - name: Run frontend tests
         run: npm run test
@@ -49,7 +52,7 @@ jobs:
     environment: dev
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Configure AWS CLI
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -58,9 +61,9 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '16.x'
+          node-version: '22.x'
       - name: Restore backend cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: backend/src/node_modules
           key: npm-deps-${{ github.ref_name }}-${{ hashFiles('backend/src/package-lock.json') }}
@@ -78,13 +81,13 @@ jobs:
     needs: set-stage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '16.x'
+          node-version: '22.x'
       - name: Restore API cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: api/src/node_modules
           key: npm-deps-${{ github.ref_name }}-${{ hashFiles('api/src/package-lock.json') }}
@@ -99,26 +102,33 @@ jobs:
     environment: dev
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: AWS Set up
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-tester-role
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-role
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
       - uses: ./.github/actions/frontend/build
         with:
           back-stage: ${{ needs.set-stage.outputs.BACK_STAGE }}
           front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
+          api-host: ${{ vars.BACKEND_API_ENDPOINT }}
       - uses: ./.github/actions/frontend/deploy
         with:
           front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
           bucket: throwtrash-dev
+      - name: Invalidate CloudFront cache
+        env:
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.AWS_CLOUDFRONT_DST_ID }}
+          FRONT_STAGE: ${{ needs.set-stage.outputs.FRONT_STAGE }}
+        run: |
+          aws cloudfront create-invalidation --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" --paths "/${FRONT_STAGE}/*"
   backend-deploy:
     needs: ["set-stage", "backend-test"]
     environment: dev
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: AWS Set up
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -126,6 +136,9 @@ jobs:
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
       - name: build backend
         uses: ./.github/actions/backend/build
+      - name: Set GCP Credentials
+        run: |
+          echo ${{ secrets.GCP_TEST_CREDENTIALS }} | base64 -d > backend/src/backend-dist/serviceAccountKey.json
       - name: Deploy DB
         run: |
           aws cloudformation deploy --template-file backend/cfn/db-template.yml --stack-name throwtrash-backend-db --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset --region=${{ vars.AWS_DEFAULT_REGION }}
@@ -134,13 +147,13 @@ jobs:
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${{ needs.set-stage.outputs.ENV }} --s3-prefix throwtrashbackend
 
-            aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${{ needs.set-stage.outputs.BACK_STAGE }} --parameter-overrides Stage=${{ needs.set-stage.outputs.BACK_STAGE }} FrontendStage=${{ needs.set-stage.outputs.FRONT_STAGE }} AlexaClientID=${{ secrets.ALEXA_CLIENT_ID }} AlexaClientSecret=${{ secrets.ALEXA_CLIENT_SECRET }} GoogleClientID=${{ secrets.GOOGLE_CLIENT_ID }} GoogleClientSecret=${{ secrets.GOOGLE_CLIENT_SECRET }} RunLevel=${{ vars.RUNLEVEL }}  AlexaUserClientID=${{ secrets.ALEXA_USER_CLIENT_ID }} AlexaUserSecret=${{ secrets.ALEXA_USER_SECRET }} GoogleUserClientID=${{ secrets.GOOGLE_USER_CLIENT_ID }} GoogleUserSecret=${{ secrets.GOOGLE_USER_SECRET }} AlexaSkillID=${{ secrets.ALEXA_SKILL_ID }} ApiGatewayOrigin=${{ vars.BACKEND_API_GATEWAY_ORIGIN }} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+            aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${{ needs.set-stage.outputs.BACK_STAGE }} --parameter-overrides Stage=${{ needs.set-stage.outputs.BACK_STAGE }} FrontendStage=${{ needs.set-stage.outputs.FRONT_STAGE }} FrontendHost=${{ vars.FRONT_END_ENDPOINT }} AlexaClientID=${{ secrets.ALEXA_CLIENT_ID }} AlexaClientSecret=${{ secrets.ALEXA_CLIENT_SECRET }} GoogleClientID=${{ secrets.GOOGLE_CLIENT_ID }} GoogleClientSecret=${{ secrets.GOOGLE_CLIENT_SECRET }} RunLevel=${{ vars.RUNLEVEL }}  AlexaUserClientID=${{ secrets.ALEXA_USER_CLIENT_ID }} AlexaUserSecret=${{ secrets.ALEXA_USER_SECRET }} GoogleUserClientID=${{ secrets.GOOGLE_USER_CLIENT_ID }} GoogleUserSecret=${{ secrets.GOOGLE_USER_SECRET }} AlexaSkillID=${{ secrets.ALEXA_SKILL_ID }} ApiGatewayOrigin=${{ vars.BACKEND_API_GATEWAY_ORIGIN }} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
   mobile-backend-deploy:
     needs: ["mobile-backend-test","set-stage"]
     environment: dev
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: AWS Set up
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -155,4 +168,4 @@ jobs:
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${{ needs.set-stage.outputs.ENV }} --s3-prefix throwtrashapi
 
-            aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${{ needs.set-stage.outputs.MOBILE_API_STAGE }} --parameter-overrides RunLevel=${{ vars.RUNLEVEL }} Stage=${{ needs.set-stage.outputs.MOBILE_API_STAGE }} SkillStage=${{ vars.SKILL_STAGE }} AlexaSkillID=${{ secrets.ALEXA_SKILL_ID }} AlexaClientID=${{ secrets.ALEXA_CLIENT_ID }} AlexaClientSecret=${{ secrets.ALEXA_CLIENT_SECRET }} AlexaUserClientID=${{ secrets.ALEXA_USER_CLIENT_ID }} AuthorizationEndpoint=${{ vars.BACKEND_API_ENDPOINT }}/${{ needs.set-stage.outputs.BACK_STAGE }} BackendApiKey=${{ secrets.BACKEND_API_KEY }} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+            aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${{ needs.set-stage.outputs.MOBILE_API_STAGE }} --parameter-overrides RunLevel=${{ vars.RUNLEVEL }} Stage=${{ needs.set-stage.outputs.MOBILE_API_STAGE }} SkillStage=${{ vars.SKILL_STAGE }} AlexaSkillID=${{ secrets.ALEXA_SKILL_ID }} AlexaClientID=${{ secrets.ALEXA_CLIENT_ID }} AlexaClientSecret=${{ secrets.ALEXA_CLIENT_SECRET }} AlexaUserClientID=${{ secrets.ALEXA_USER_CLIENT_ID }} AuthorizationEndpoint=${{ vars.BACKEND_API_ENDPOINT }}/${{ needs.set-stage.outputs.BACK_STAGE }} BackendApiKey=${{ secrets.BACKEND_API_KEY }} FrontEndUrl=${{ vars.FRONT_END_ENDPOINT }} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset

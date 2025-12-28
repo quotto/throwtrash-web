@@ -7,16 +7,19 @@ inputs:
   front-stage:
     description: "The frontend stage"
     required: true
+  api-host:
+    description: "The backend API host (without stage)"
+    required: true
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '14.x'
+        node-version: '22.x'
     - name: Restore frontend cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: frontend/node_modules
         key: npm-deps-${{ github.ref_name }}-${{ hashFiles('frontend/package-lock.json') }}
@@ -26,5 +29,10 @@ runs:
       working-directory: frontend
     - name: Build frontend
       shell: bash
-      run: npm run build -- --env stage=${{ inputs.back-stage }} --env front_stage=${{ inputs.front-stage }}
+      run: npm run build
       working-directory: frontend
+      env:
+        STAGE: ${{ inputs.back-stage }}
+        FRONT_STAGE: ${{ inputs.front-stage }}
+        NEXT_PUBLIC_API_STAGE: ${{ inputs.back-stage }}
+        NEXT_PUBLIC_API_HOST: ${{ inputs.api-host }}

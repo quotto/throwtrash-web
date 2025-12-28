@@ -16,7 +16,7 @@ jobs:
     outputs:
       PR_NUMBER: ${{ steps.pr.outputs.PR_NUMBER }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Get PR number
         id: pr
         run: echo "PR_NUMBER=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
@@ -25,7 +25,7 @@ jobs:
     environment: prod
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: AWS Set up
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -44,13 +44,13 @@ jobs:
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-prod --s3-prefix throwtrashbackend
 
-            aws cloudformation create-change-set --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --template-body file://backend/cfn/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --parameters ParameterKey=Stage,ParameterValue="${{ vars.BACK_STAGE }}" ParameterKey=FrontendStage,ParameterValue="${{ vars.FRONT_STAGE }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=GoogleClientID,ParameterValue="${{ secrets.GOOGLE_CLIENT_ID }}" ParameterKey=GoogleClientSecret,ParameterValue="${{ secrets.GOOGLE_CLIENT_SECRET }}" ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}"  ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AlexaUserSecret,ParameterValue="${{ secrets.ALEXA_USER_SECRET }}" ParameterKey=GoogleUserClientID,ParameterValue="${{ secrets.GOOGLE_USER_CLIENT_ID }}" ParameterKey=GoogleUserSecret,ParameterValue="${{ secrets.GOOGLE_USER_SECRET }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=ApiGatewayOrigin,ParameterValue="${{ vars.BACKEND_API_GATEWAY_ORIGIN }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
+            aws cloudformation create-change-set --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --template-body file://backend/cfn/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --parameters ParameterKey=Stage,ParameterValue="${{ vars.BACK_STAGE }}" ParameterKey=FrontendStage,ParameterValue="${{ vars.FRONT_STAGE }}" ParameterKey=FrontendHost,ParameterValue="${{ vars.FRONT_END_ENDPOINT }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=GoogleClientID,ParameterValue="${{ secrets.GOOGLE_CLIENT_ID }}" ParameterKey=GoogleClientSecret,ParameterValue="${{ secrets.GOOGLE_CLIENT_SECRET }}" ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}"  ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AlexaUserSecret,ParameterValue="${{ secrets.ALEXA_USER_SECRET }}" ParameterKey=GoogleUserClientID,ParameterValue="${{ secrets.GOOGLE_USER_CLIENT_ID }}" ParameterKey=GoogleUserSecret,ParameterValue="${{ secrets.GOOGLE_USER_SECRET }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=ApiGatewayOrigin,ParameterValue="${{ vars.BACKEND_API_GATEWAY_ORIGIN }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
   mobile-backend-changeset:
     runs-on: ubuntu-latest
     needs: ["get-pr-number"]
     environment: prod
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: AWS Set up
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -65,4 +65,4 @@ jobs:
           # API/Lambdaのパッケージングとデプロイ
           aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-prod --s3-prefix throwtrashapi
 
-          aws cloudformation create-change-set --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --template-body file://api/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --parameters ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}" ParameterKey=Stage,ParameterValue="${{ vars.MOBILE_API_STAGE }}" ParameterKey=SkillStage,ParameterValue="${{ vars.SKILL_STAGE }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AuthorizationEndpoint,ParameterValue="${{ vars.BACKEND_API_ENDPOINT }}"/"${{ vars.BACK_STAGE }}" ParameterKey=BackendApiKey,ParameterValue="${{ secrets.BACKEND_API_KEY }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
+          aws cloudformation create-change-set --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --template-body file://api/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --parameters ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}" ParameterKey=Stage,ParameterValue="${{ vars.MOBILE_API_STAGE }}" ParameterKey=SkillStage,ParameterValue="${{ vars.SKILL_STAGE }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AuthorizationEndpoint,ParameterValue="${{ vars.BACKEND_API_ENDPOINT }}"/"${{ vars.BACK_STAGE }}" ParameterKey=BackendApiKey,ParameterValue="${{ secrets.BACKEND_API_KEY }}" ParameterKey=FrontEndUrl,ParameterValue="${{ vars.FRONT_END_ENDPOINT }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
