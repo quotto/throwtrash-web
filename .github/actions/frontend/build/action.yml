@@ -1,14 +1,11 @@
 name: "Frontend Build"
 description: "Build the frontend"
 inputs:
-  back-stage:
-    description: "The backend stage"
-    required: true
   front-stage:
     description: "The frontend stage"
     required: true
-  api-host:
-    description: "The backend API host (without stage)"
+  api-base:
+    description: "The API base for frontend (CloudFront path base)"
     required: true
 runs:
   using: composite
@@ -32,7 +29,5 @@ runs:
       run: npm run build
       working-directory: frontend
       env:
-        STAGE: ${{ inputs.back-stage }}
         FRONT_STAGE: ${{ inputs.front-stage }}
-        NEXT_PUBLIC_API_STAGE: ${{ inputs.back-stage }}
-        NEXT_PUBLIC_API_HOST: ${{ inputs.api-host }}
+        NEXT_PUBLIC_API_BASE: ${{ inputs.api-base }}

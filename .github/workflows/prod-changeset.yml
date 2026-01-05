@@ -3,6 +3,7 @@ name: Production Create Changeset
 permissions:
   contents: read
   id-token: write
+  pull-requests: write
 
 on:
   pull_request:
@@ -66,3 +67,73 @@ jobs:
           aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-prod --s3-prefix throwtrashapi
 
           aws cloudformation create-change-set --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --template-body file://api/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --parameters ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}" ParameterKey=Stage,ParameterValue="${{ vars.MOBILE_API_STAGE }}" ParameterKey=SkillStage,ParameterValue="${{ vars.SKILL_STAGE }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AuthorizationEndpoint,ParameterValue="${{ vars.BACKEND_API_ENDPOINT }}"/"${{ vars.BACK_STAGE }}" ParameterKey=BackendApiKey,ParameterValue="${{ secrets.BACKEND_API_KEY }}" ParameterKey=FrontEndUrl,ParameterValue="${{ vars.FRONT_END_ENDPOINT }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
+
+  cloudfront-diff-comment:
+    needs: ["get-pr-number"]
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: AWS Set up
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-frontend-deploy-role
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Install CDK dependencies
+        run: npm ci
+        working-directory: infra/cdk
+      - name: Run CDK diff (CloudFront)
+        env:
+          CF_STAGE: prod
+          CF_DOMAIN_NAME: ${{ vars.CF_DOMAIN_NAME }}
+          CF_CERT_ARN: ${{ vars.CF_CERT_ARN }}
+          CF_FRONTEND_BUCKET: throwtrash
+          CF_FRONTEND_ORIGIN_PATH: /${{ vars.FRONT_STAGE }}
+          CF_BACKEND_API_DOMAIN: ${{ vars.BACKEND_API_DOMAIN }}
+          CF_BACKEND_API_STAGE: ${{ vars.BACK_STAGE }}
+          CF_MOBILE_API_DOMAIN: ${{ vars.MOBILE_API_DOMAIN }}
+          CF_MOBILE_API_STAGE: ${{ vars.MOBILE_API_STAGE }}
+        run: |
+          set +e
+          npx cdk diff throwtrash-cloudfront-prod --context stage=prod --no-color > cdk-diff.txt
+          echo "CDK_DIFF_EXIT_CODE=$?" >> $GITHUB_ENV
+        working-directory: infra/cdk
+      - name: Add diff to PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'infra/cdk/cdk-diff.txt';
+            let body = '';
+            if (fs.existsSync(path)) {
+              body = fs.readFileSync(path, 'utf8');
+            } else {
+              body = 'cdk diff output not found.';
+            }
+
+            const exitCode = process.env.CDK_DIFF_EXIT_CODE || 'unknown';
+            const maxLength = 60000;
+            if (body.length > maxLength) {
+              body = body.slice(0, maxLength) + '\n... (truncated)';
+            }
+
+            const comment = [
+              '## CloudFront CDK diff (prod)',
+              '',
+              `exit code: ${exitCode}`,
+              '',
+              '```',
+              body || '(no diff output)',
+              '```'
+            ].join('\\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });

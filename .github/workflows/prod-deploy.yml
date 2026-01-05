@@ -31,17 +31,12 @@ jobs:
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
       - uses: ./.github/actions/frontend/build
         with:
-          back-stage: ${{ vars.BACK_STAGE }}
           front-stage: ${{ vars.FRONT_STAGE }}
-          api-host: ${{ vars.BACKEND_API_ENDPOINT }}
+          api-base: ${{ vars.CF_DOMAIN_NAME }}/backend/${{ vars.BACK_STAGE }}
       - uses: ./.github/actions/frontend/deploy
         with:
           front-stage: ${{ vars.FRONT_STAGE }}
           bucket: throwtrash
-      - name: CloudFront Cache Clear
-        run: |
-          # 本番デプロイ時はデプロイステージのキャッシュをクリア
-          aws cloudfront create-invalidation --distribution-id ${{ vars.AWS_CLOUDFRONT_DST_ID }} --paths /${{ vars.FRONT_STAGE }}/*
   backend-deploy:
     needs: ["get-pr-number"]
     environment: prod
@@ -68,3 +63,42 @@ jobs:
       - name: Mobile Backend ChangeSet Execute
         run: |
           aws cloudformation execute-change-set --change-set-name deploy-${{ needs.get-pr-number.outputs.pr_number }} --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --region ${{ vars.AWS_DEFAULT_REGION }}
+
+  cloudfront-deploy:
+    needs: ["frontend-deploy", "backend-deploy", "mobile-backend-deploy"]
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: AWS Set up
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-frontend-deploy-role
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Install CDK dependencies
+        run: npm ci
+        working-directory: infra/cdk
+      - name: Deploy CloudFront (primary)
+        env:
+          CF_STAGE: prod
+          CF_DOMAIN_NAME: ${{ vars.CF_DOMAIN_NAME }}
+          CF_CERT_ARN: ${{ vars.CF_CERT_ARN }}
+          CF_FRONTEND_BUCKET: throwtrash
+          CF_FRONTEND_ORIGIN_PATH: /${{ vars.FRONT_STAGE }}
+          CF_BACKEND_API_DOMAIN: ${{ vars.BACKEND_API_DOMAIN }}
+          CF_BACKEND_API_STAGE: ${{ vars.BACK_STAGE }}
+          CF_MOBILE_API_DOMAIN: ${{ vars.MOBILE_API_DOMAIN }}
+          CF_MOBILE_API_STAGE: ${{ vars.MOBILE_API_STAGE }}
+        run: |
+          npx cdk deploy throwtrash-cloudfront-prod --context stage=prod --require-approval never
+        working-directory: infra/cdk
+      - name: Invalidate CloudFront cache
+        env:
+          STACK_NAME: throwtrash-cloudfront-prod
+        run: |
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
+          aws cloudfront create-invalidation --distribution-id "${DISTRIBUTION_ID}" --paths "/*"

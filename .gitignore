@@ -1,16 +1,16 @@
-frontend/node_modules
 frontend/dist
 frontend/out
 frontend/coverage
 backend/certs
 backend/config.json
-backend/src/node_modules
 backend/src/serviceAccountKey.json
 backend/src/backend-dist
 backend/cfn/package-template.yml
-api/src/node_modules
 api/src/dist
 api/package-template.yml
+**/.next
+**/.env
+node_modules
+**/cdk.out
+# AIエージェント用のワークスペース
 work/
-*/.next
-*/.env
