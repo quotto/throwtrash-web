@@ -179,3 +179,12 @@ Resources:
         group: mobile
         app: throwtrash
       StageName: !Ref Stage
+Outputs:
+  MobileApiDomain:
+    Value: !Sub "${Api}.execute-api.${AWS::Region}.amazonaws.com"
+    Export:
+      Name: !Sub "throwtrash-mobile-api-domain-${Stage}"
+  MobileApiStage:
+    Value: !Ref Stage
+    Export:
+      Name: !Sub "throwtrash-mobile-api-stage-${Stage}"

@@ -92,13 +92,14 @@ jobs:
           CF_DOMAIN_NAME: ${{ vars.CF_DOMAIN_NAME }}
           CF_CERT_ARN: ${{ vars.CF_CERT_ARN }}
           CF_FRONTEND_BUCKET: throwtrash
-          CF_FRONTEND_ORIGIN_PATH: /${{ vars.FRONT_STAGE }}
-          CF_BACKEND_API_DOMAIN: ${{ vars.BACKEND_API_DOMAIN }}
-          CF_BACKEND_API_STAGE: ${{ vars.BACK_STAGE }}
-          CF_MOBILE_API_DOMAIN: ${{ vars.MOBILE_API_DOMAIN }}
-          CF_MOBILE_API_STAGE: ${{ vars.MOBILE_API_STAGE }}
         run: |
           set +e
+          BACKEND_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='BackendApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
+          MOBILE_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='MobileApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
+          export CF_BACKEND_API_DOMAIN="${BACKEND_DOMAIN}"
+          export CF_MOBILE_API_DOMAIN="${MOBILE_DOMAIN}"
+          export CF_BACKEND_API_STAGE="${{ vars.BACK_STAGE }}"
+          export CF_MOBILE_API_STAGE="${{ vars.MOBILE_API_STAGE }}"
           npx cdk diff throwtrash-cloudfront-prod --context stage=prod --no-color > cdk-diff.txt
           echo "CDK_DIFF_EXIT_CODE=$?" >> $GITHUB_ENV
         working-directory: infra/cdk

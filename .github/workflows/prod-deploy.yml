@@ -88,12 +88,13 @@ jobs:
           CF_DOMAIN_NAME: ${{ vars.CF_DOMAIN_NAME }}
           CF_CERT_ARN: ${{ vars.CF_CERT_ARN }}
           CF_FRONTEND_BUCKET: throwtrash
-          CF_FRONTEND_ORIGIN_PATH: /${{ vars.FRONT_STAGE }}
-          CF_BACKEND_API_DOMAIN: ${{ vars.BACKEND_API_DOMAIN }}
-          CF_BACKEND_API_STAGE: ${{ vars.BACK_STAGE }}
-          CF_MOBILE_API_DOMAIN: ${{ vars.MOBILE_API_DOMAIN }}
-          CF_MOBILE_API_STAGE: ${{ vars.MOBILE_API_STAGE }}
         run: |
+          BACKEND_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='BackendApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
+          MOBILE_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='MobileApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
+          export CF_BACKEND_API_DOMAIN="${BACKEND_DOMAIN}"
+          export CF_MOBILE_API_DOMAIN="${MOBILE_DOMAIN}"
+          export CF_BACKEND_API_STAGE="${{ vars.BACK_STAGE }}"
+          export CF_MOBILE_API_STAGE="${{ vars.MOBILE_API_STAGE }}"
           npx cdk deploy throwtrash-cloudfront-prod --context stage=prod --require-approval never
         working-directory: infra/cdk
       - name: Invalidate CloudFront cache

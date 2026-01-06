@@ -203,3 +203,12 @@ Resources:
     Type: "AWS::Lambda::Version"
     Properties:
       FunctionName: !GetAtt LambdaFunction.Arn
+Outputs:
+  BackendApiDomain:
+    Value: !Sub "${Api}.execute-api.${AWS::Region}.amazonaws.com"
+    Export:
+      Name: !Sub "throwtrash-backend-api-domain-${Stage}"
+  BackendApiStage:
+    Value: !Ref Stage
+    Export:
+      Name: !Sub "throwtrash-backend-api-stage-${Stage}"

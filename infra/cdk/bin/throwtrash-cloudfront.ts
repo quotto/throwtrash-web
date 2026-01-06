@@ -32,7 +32,6 @@ const config: CloudFrontStackConfig = {
   domainName: process.env.CF_DOMAIN_NAME as string,
   certificateArn: process.env.CF_CERT_ARN as string,
   frontendBucketName: process.env.CF_FRONTEND_BUCKET as string,
-  frontendOriginPath: process.env.CF_FRONTEND_ORIGIN_PATH,
   backendApiDomain: process.env.CF_BACKEND_API_DOMAIN as string,
   backendApiStage: process.env.CF_BACKEND_API_STAGE as string,
   mobileApiDomain: process.env.CF_MOBILE_API_DOMAIN as string,

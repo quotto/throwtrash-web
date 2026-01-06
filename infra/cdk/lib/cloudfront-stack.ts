@@ -9,7 +9,6 @@ export interface CloudFrontStackConfig {
   domainName: string;
   certificateArn: string;
   frontendBucketName: string;
-  frontendOriginPath?: string;
   backendApiDomain: string;
   backendApiStage: string;
   mobileApiDomain: string;
@@ -42,7 +41,7 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       enableAcceptEncodingGzip: true
     });
 
-    const apiOriginRequestPolicy = cloudfront.OriginRequestPolicy.ALL_VIEWER;
+    const apiOriginRequestPolicy = cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER;
 
     const apiCachePolicyId = cloudfront.CachePolicy.CACHING_DISABLED.cachePolicyId;
 
@@ -50,15 +49,13 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
     const pathRewriteFunction = new cloudfront.Function(this, 'PathRewriteFunction', {
       code: cloudfront.FunctionCode.fromInline(`function handler(event) {
   var request = event.request;
-  var prefix = '/';
-  if (request.uri.indexOf('/backend/') === 0) {
-    prefix = '/backend';
-  } else if (request.uri.indexOf('/mobile/') === 0) {
-    prefix = '/mobile';
-  }
-
-  if (prefix !== '/') {
-    request.uri = request.uri.substring(prefix.length);
+  if (request.uri === '/backend' || request.uri.indexOf('/backend/') === 0) {
+    request.uri = request.uri.substring('/backend'.length);
+    if (request.uri === '') {
+      request.uri = '/';
+    }
+  } else if (request.uri === '/mobile' || request.uri.indexOf('/mobile/') === 0) {
+    request.uri = request.uri.substring('/mobile'.length);
     if (request.uri === '') {
       request.uri = '/';
     }
@@ -207,9 +204,4 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
     });
   }
 
-  private normalizeOriginPath(originPath?: string): string | undefined {
-    if (!originPath) return undefined;
-    if (originPath === '/') return undefined;
-    return originPath.startsWith('/') ? originPath : `/${originPath}`;
-  }
 }
