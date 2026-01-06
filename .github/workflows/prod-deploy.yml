@@ -100,5 +100,5 @@ jobs:
         env:
           STACK_NAME: throwtrash-cloudfront-prod
         run: |
-          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)
-          aws cloudfront create-invalidation --distribution-id "${DISTRIBUTION_ID}" --paths "/*"
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text --region us-east-1)
+          aws cloudfront create-invalidation --distribution-id "${DISTRIBUTION_ID}" --paths "/*" --region us-east-1
