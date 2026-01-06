@@ -40,5 +40,9 @@ const config: CloudFrontStackConfig = {
 };
 
 new ThrowtrashCloudFrontStack(app, `throwtrash-cloudfront-${stage}`, config, {
-  description: `throwtrash CloudFront reverse proxy (${stage})`
+  description: `throwtrash CloudFront reverse proxy (${stage})`,
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: 'us-east-1'
+  }
 });
