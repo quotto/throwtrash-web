@@ -27,7 +27,7 @@ Parameters:
     Type: "String"
   FrontendStage:
     Type: "String"
-  FrontendHost:
+  AppUrl:
     Type: "String"
   ApiGatewayOrigin:
     Type: "String"
@@ -101,8 +101,8 @@ Resources:
           GOOGLE_USER_CLIENT_ID: !Ref GoogleUserClientID
           GOOGLE_USER_SECRET: !Ref GoogleUserSecret
           ALEXA_SKILL_ID: !Ref AlexaSkillID
-          FRONT_END_STAGE: !Ref FrontendStage
-          FRONT_END_HOST: !Ref FrontendHost
+          FRONTEND_STAGE: !Ref FrontendStage
+          APP_URL: !Ref AppUrl
       Tags:
         app: throwtrash
         group: backend

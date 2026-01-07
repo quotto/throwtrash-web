@@ -31,11 +31,11 @@ jobs:
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
       - uses: ./.github/actions/frontend/build
         with:
-          front-stage: ${{ vars.FRONT_STAGE }}
-          api-base: ${{ vars.CF_DOMAIN_NAME }}/backend/${{ vars.BACK_STAGE }}
+          frontend-stage: ${{ vars.FRONTEND_STAGE }}
+          api-base: ${{ vars.CF_DOMAIN_NAME }}/backend/${{ vars.BACKEND_STAGE }}
       - uses: ./.github/actions/frontend/deploy
         with:
-          front-stage: ${{ vars.FRONT_STAGE }}
+          frontend-stage: ${{ vars.FRONTEND_STAGE }}
           bucket: throwtrash
   backend-deploy:
     needs: ["get-pr-number"]
@@ -49,7 +49,7 @@ jobs:
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
       - name: Backend ChangeSet Execute
         run: |
-          aws cloudformation execute-change-set --change-set-name deploy-${{ needs.get-pr-number.outputs.pr_number }} --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --region ${{ vars.AWS_DEFAULT_REGION }}
+          aws cloudformation execute-change-set --change-set-name deploy-${{ needs.get-pr-number.outputs.pr_number }} --stack-name throwtrash-backend-${{ vars.BACKEND_STAGE }} --region ${{ vars.AWS_DEFAULT_REGION }}
   mobile-backend-deploy:
     needs: ["get-pr-number"]
     environment: prod
@@ -89,11 +89,11 @@ jobs:
           CF_CERT_ARN: ${{ vars.CF_CERT_ARN }}
           CF_FRONTEND_BUCKET: throwtrash
         run: |
-          BACKEND_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='BackendApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
+          BACKEND_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-backend-${{ vars.BACKEND_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='BackendApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
           MOBILE_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='MobileApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
           export CF_BACKEND_API_DOMAIN="${BACKEND_DOMAIN}"
           export CF_MOBILE_API_DOMAIN="${MOBILE_DOMAIN}"
-          export CF_BACKEND_API_STAGE="${{ vars.BACK_STAGE }}"
+          export CF_BACKEND_API_STAGE="${{ vars.BACKEND_STAGE }}"
           export CF_MOBILE_API_STAGE="${{ vars.MOBILE_API_STAGE }}"
           npx cdk deploy throwtrash-cloudfront-prod --context stage=prod --require-approval never
         working-directory: infra/cdk

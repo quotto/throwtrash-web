@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       ENV: ${{ steps.set-stage.outputs.ENV }}
-      BACK_STAGE: ${{ steps.set-stage.outputs.BACK_STAGE }}
-      FRONT_STAGE: ${{ steps.set-stage.outputs.FRONT_STAGE }}
+      BACKEND_STAGE: ${{ steps.set-stage.outputs.BACKEND_STAGE }}
+      FRONTEND_STAGE: ${{ steps.set-stage.outputs.FRONTEND_STAGE }}
       MOBILE_API_STAGE: ${{ steps.set-stage.outputs.MOBILE_API_STAGE }}
     steps:
       - name: Set GitHub Actions Env
@@ -22,8 +22,8 @@ jobs:
           echo "ENV=dev" >> $GITHUB_OUTPUT
           # 開発デプロイの場合はブランチ名のハッシュをステージ変数に設定
           branch_hash=$(echo ${{ github.ref_name }} | md5sum | cut -c 1-5)
-          echo "BACK_STAGE=$branch_hash" >> $GITHUB_OUTPUT
-          echo "FRONT_STAGE=$branch_hash" >> $GITHUB_OUTPUT
+          echo "BACKEND_STAGE=$branch_hash" >> $GITHUB_OUTPUT
+          echo "FRONTEND_STAGE=$branch_hash" >> $GITHUB_OUTPUT
           echo "MOBILE_API_STAGE=$branch_hash" >> $GITHUB_OUTPUT
   frontend-test:
     runs-on: ubuntu-latest
@@ -110,18 +110,18 @@ jobs:
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
       - uses: ./.github/actions/frontend/build
         with:
-          front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
-          api-base: ${{ vars.CF_DOMAIN_NAME }}/backend/${{ needs.set-stage.outputs.BACK_STAGE }}
+          frontend-stage: ${{ needs.set-stage.outputs.FRONTEND_STAGE }}
+          api-base: ${{ vars.CF_DOMAIN_NAME }}/backend/${{ needs.set-stage.outputs.BACKEND_STAGE }}
       - uses: ./.github/actions/frontend/deploy
         with:
-          front-stage: ${{ needs.set-stage.outputs.FRONT_STAGE }}
+          frontend-stage: ${{ needs.set-stage.outputs.FRONTEND_STAGE }}
           bucket: throwtrash-dev
       - name: Invalidate CloudFront cache
         env:
           CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.AWS_CLOUDFRONT_DST_ID }}
-          FRONT_STAGE: ${{ needs.set-stage.outputs.FRONT_STAGE }}
+          FRONTEND_STAGE: ${{ needs.set-stage.outputs.FRONTEND_STAGE }}
         run: |
-          aws cloudfront create-invalidation --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" --paths "/${FRONT_STAGE}/*"
+          aws cloudfront create-invalidation --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" --paths "/${FRONTEND_STAGE}/*"
   backend-deploy:
     needs: ["set-stage", "backend-test"]
     environment: dev
@@ -146,7 +146,7 @@ jobs:
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-${{ needs.set-stage.outputs.ENV }} --s3-prefix throwtrashbackend
 
-            aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${{ needs.set-stage.outputs.BACK_STAGE }} --parameter-overrides Stage=${{ needs.set-stage.outputs.BACK_STAGE }} FrontendStage=${{ needs.set-stage.outputs.FRONT_STAGE }} FrontendHost=${{ vars.FRONT_END_ENDPOINT }} AlexaClientID=${{ secrets.ALEXA_CLIENT_ID }} AlexaClientSecret=${{ secrets.ALEXA_CLIENT_SECRET }} GoogleClientID=${{ secrets.GOOGLE_CLIENT_ID }} GoogleClientSecret=${{ secrets.GOOGLE_CLIENT_SECRET }} RunLevel=${{ vars.RUNLEVEL }}  AlexaUserClientID=${{ secrets.ALEXA_USER_CLIENT_ID }} AlexaUserSecret=${{ secrets.ALEXA_USER_SECRET }} GoogleUserClientID=${{ secrets.GOOGLE_USER_CLIENT_ID }} GoogleUserSecret=${{ secrets.GOOGLE_USER_SECRET }} AlexaSkillID=${{ secrets.ALEXA_SKILL_ID }} ApiGatewayOrigin=${{ vars.BACKEND_API_GATEWAY_ORIGIN }} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+            aws cloudformation deploy --template-file backend/cfn/package-template.yml --stack-name throwtrash-backend-${{ needs.set-stage.outputs.BACKEND_STAGE }} --parameter-overrides Stage=${{ needs.set-stage.outputs.BACKEND_STAGE }} FrontendStage=${{ needs.set-stage.outputs.FRONTEND_STAGE }} AppUrl=${{ vars.APP_URL }} AlexaClientID=${{ secrets.ALEXA_CLIENT_ID }} AlexaClientSecret=${{ secrets.ALEXA_CLIENT_SECRET }} GoogleClientID=${{ secrets.GOOGLE_CLIENT_ID }} GoogleClientSecret=${{ secrets.GOOGLE_CLIENT_SECRET }} RunLevel=${{ vars.RUNLEVEL }}  AlexaUserClientID=${{ secrets.ALEXA_USER_CLIENT_ID }} AlexaUserSecret=${{ secrets.ALEXA_USER_SECRET }} GoogleUserClientID=${{ secrets.GOOGLE_USER_CLIENT_ID }} GoogleUserSecret=${{ secrets.GOOGLE_USER_SECRET }} AlexaSkillID=${{ secrets.ALEXA_SKILL_ID }} ApiGatewayOrigin=${{ vars.BACKEND_API_GATEWAY_ORIGIN }} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
   mobile-backend-deploy:
     needs: ["mobile-backend-test","set-stage"]
     environment: dev
@@ -166,7 +166,7 @@ jobs:
         run: |
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-${{ needs.set-stage.outputs.ENV }} --s3-prefix throwtrashapi
-            aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${{ needs.set-stage.outputs.MOBILE_API_STAGE }} --parameter-overrides RunLevel=${{ vars.RUNLEVEL }} Stage=${{ needs.set-stage.outputs.MOBILE_API_STAGE }} SkillStage=${{ vars.SKILL_STAGE }} AlexaSkillID=${{ secrets.ALEXA_SKILL_ID }} AlexaClientID=${{ secrets.ALEXA_CLIENT_ID }} AlexaClientSecret=${{ secrets.ALEXA_CLIENT_SECRET }} AlexaUserClientID=${{ secrets.ALEXA_USER_CLIENT_ID }} AuthorizationEndpoint=${{ vars.BACKEND_API_ENDPOINT }}/${{ needs.set-stage.outputs.BACK_STAGE }} BackendApiKey=${{ secrets.BACKEND_API_KEY }} FrontEndUrl=${{ vars.FRONT_END_ENDPOINT }} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
+            aws cloudformation deploy --template-file api/package-template.yml --stack-name throwtrash-mobile-${{ needs.set-stage.outputs.MOBILE_API_STAGE }} --parameter-overrides RunLevel=${{ vars.RUNLEVEL }} Stage=${{ needs.set-stage.outputs.MOBILE_API_STAGE }} SkillStage=${{ vars.SKILL_STAGE }} AlexaSkillID=${{ secrets.ALEXA_SKILL_ID }} AlexaClientID=${{ secrets.ALEXA_CLIENT_ID }} AlexaClientSecret=${{ secrets.ALEXA_CLIENT_SECRET }} AlexaUserClientID=${{ secrets.ALEXA_USER_CLIENT_ID }} AuthorizationEndpoint=${{ vars.APP_URL }}/backend/${{ needs.set-stage.outputs.BACKEND_STAGE }} BackendApiKey=${{ secrets.BACKEND_API_KEY }} AppUrl=${{ vars.APP_URL }} FrontendStage=${{ needs.set-stage.outputs.FRONTEND_STAGE }} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --no-fail-on-empty-changeset
 
   cloudfront-deploy:
     needs: ["set-stage", "frontend-deploy", "backend-deploy", "mobile-backend-deploy"]
@@ -193,11 +193,11 @@ jobs:
           CF_CERT_ARN: ${{ vars.CF_CERT_ARN }}
           CF_FRONTEND_BUCKET: throwtrash-dev
         run: |
-          BACKEND_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-backend-${{ needs.set-stage.outputs.BACK_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='BackendApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
+          BACKEND_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-backend-${{ needs.set-stage.outputs.BACKEND_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='BackendApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
           MOBILE_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-mobile-${{ needs.set-stage.outputs.MOBILE_API_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='MobileApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
           export CF_BACKEND_API_DOMAIN="${BACKEND_DOMAIN}"
           export CF_MOBILE_API_DOMAIN="${MOBILE_DOMAIN}"
-          export CF_BACKEND_API_STAGE="${{ needs.set-stage.outputs.BACK_STAGE }}"
+          export CF_BACKEND_API_STAGE="${{ needs.set-stage.outputs.BACKEND_STAGE }}"
           export CF_MOBILE_API_STAGE="${{ needs.set-stage.outputs.MOBILE_API_STAGE }}"
           npx cdk deploy throwtrash-cloudfront-dev --context stage=dev --require-approval never
         working-directory: infra/cdk

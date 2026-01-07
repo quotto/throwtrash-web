@@ -1,7 +1,7 @@
 import * as common from "trash-common";
 const logger = common.getLogger();
 logger.setLevel_DEBUG();
-process.env.FRONT_END_STAGE = "dev";
+process.env.FRONTEND_STAGE = "dev";
 import oauth_request from "../oauth_request";
 import db from "../dbadapter";
 import error_def from "../error_def";
@@ -32,7 +32,7 @@ describe("oauth_request", () => {
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
         expect(headers).not.toBeUndefined();
-        expect(headers!.Location).toBe("https://accountlink.mythrowaway.net/dev/index.html");
+        expect(headers!.Location).toBe("https://apps.mythrowaway.net/dev/index.html");
         expect(headers!["Set-Cookie"]).toBe("throwaway-session=sessionid-001;max-age=3600;Path=/;SameSite=None;Secure;HttpOnly;");
 
         // 保存したセッション

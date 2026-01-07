@@ -4,8 +4,9 @@ import error_def from "./error_def";
 import {BackendResponse, SessionItem} from "./interface";
 
 export default async (params: any,session: SessionItem,new_flg: boolean,stage: string): Promise<BackendResponse>=> {
-    const front_end_stage = process.env.FRONT_END_STAGE || stage;
-    const front_end_host = (process.env.FRONT_END_HOST || property.URL_ACCOUNT_LINK).replace(/\/+$/, "");
+    const frontend_stage = process.env.FRONTEND_STAGE || stage;
+    const app_url = (process.env.APP_URL || property.URL_ACCOUNT_LINK).replace(/\/+$/, "");
+
     if(params && params.state && params.client_id && params.redirect_uri && params.platform && stage) {
         session.state = params.state;
         session.client_id = params.client_id;
@@ -16,7 +17,7 @@ export default async (params: any,session: SessionItem,new_flg: boolean,stage: s
             const response: BackendResponse =  {
                 statusCode: 301,
                 headers: {
-                    Location: `${front_end_host}/${front_end_stage}/index.html`
+                    Location: `${app_url}/${frontend_stage}/index.html`
                 }
             };
             if(new_flg) {

@@ -92,11 +92,11 @@ export default async(params: any,session: SessionItem,domain: string,stage: stri
         }
 
         if (await db.saveSession(session)) {
-            const front_end_stage = process.env.FRONT_END_STAGE || stage;
+            const frontend_stage = process.env.FRONTEND_STAGE || stage;
             return {
                 statusCode: 301,
                 headers: {
-                    Location: `${property.URL_ACCOUNT_LINK}/${front_end_stage}/index.html`,
+                    Location: `${property.URL_ACCOUNT_LINK}/${frontend_stage}/index.html`,
                     "Cache-Control": "no-store"
                 }
             }

@@ -7,8 +7,8 @@ import db from "../dbadapter";
 
 import { SessionItem } from "../interface";
 
-const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
-const URL_500 = 'https://accountlink.mythrowaway.net/500.html';
+const URL_400 = 'https://apps.mythrowaway.net/400.html';
+const URL_500 = 'https://apps.mythrowaway.net/500.html';
 
 const mockResult: {[key: string]: SessionItem} = {};
 const mockData = [
@@ -80,7 +80,7 @@ describe('signin', () => {
         const response = await signin({ access_token: 'token-001', service: 'amazon' }, { id: 'session-id001', expire: 999998}, 'backend.mythrowaway.net', 'dev');
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
-        expect(response.headers!.Location).toBe('https://accountlink.mythrowaway.net/dev/index.html')
+        expect(response.headers!.Location).toBe('https://apps.mythrowaway.net/dev/index.html')
         expect(response.headers!['Cache-Control']).toBe('no-store');
 
         // 保存されたセッション
@@ -96,7 +96,7 @@ describe('signin', () => {
         const response = await signin({ code: 'code-001', state: 'google-state-value', service: 'google' }, { id: 'session-id002',  googleState: 'google-state-value',expire: 9999999 },'backend.mythrowaway.net', 'test');
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
-        expect(response.headers!.Location).toBe('https://accountlink.mythrowaway.net/test/index.html');
+        expect(response.headers!.Location).toBe('https://apps.mythrowaway.net/test/index.html');
         expect(response.headers!['Cache-Control']).toBe('no-store');
 
         // 保存されたセッション
@@ -112,7 +112,7 @@ describe('signin', () => {
         const response = await signin({ code: 'code-004', state: 'google-state-value', service: 'google' }, { id: 'session-id003', googleState: 'google-state-value',expire: 9999999 },'backend.mythrowaway.net', 'test');
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
-        expect(response.headers!.Location).toBe('https://accountlink.mythrowaway.net/test/index.html');
+        expect(response.headers!.Location).toBe('https://apps.mythrowaway.net/test/index.html');
         expect(response.headers!['Cache-Control']).toBe('no-store');
 
         // 保存されたセッション

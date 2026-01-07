@@ -5,7 +5,7 @@ const normalizeHost = (host: string): string => {
     return `https://${host}`;
 };
 
-const FRONT_END_HOST = normalizeHost(process.env.FRONT_END_HOST || "accountlink.mythrowaway.net");
+const APP_URL = normalizeHost(process.env.APP_URL || "apps.mythrowaway.net");
 
 export default {
     SESSION_TABLE: "throwtrash-backend-session",
@@ -13,7 +13,7 @@ export default {
     AUTHORIZE_TABLE: "throwtrash-backend-authorization",
     TOKEN_TABLE: "throwtrash-backend-accesstoken",
     REFRESH_TABLE: "throwtrash-backend-refreshtoken",
-    URL_ACCOUNT_LINK: FRONT_END_HOST,
+    URL_ACCOUNT_LINK: APP_URL,
     SESSIONID_NAME:"throwaway-session",
     SESSION_MAX_AGE: 3600 // 60分 * 60秒
 }
