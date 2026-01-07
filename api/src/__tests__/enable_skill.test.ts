@@ -46,6 +46,7 @@ import error_def from "../error_def";
 describe("enable_skill",()=>{
     beforeEach(()=>{
         process.env.APP_URL="https://backend.throwtrash.net/dev"
+        process.env.AUTHORIZATION_ENDPOINT="https://backend.throwtrash.net/dev"
         process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
         process.env.ALEXA_SKILL_ID = "test-skill-id";
         process.env.ALEXA_CLIENT_ID = "alexa-client-id";
