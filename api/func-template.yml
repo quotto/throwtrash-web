@@ -21,11 +21,9 @@ Parameters:
     Type: "String"
   BackendApiKey:
     Type: "String"
-  AppUrl:
+  FrontendUrl:
     Type: "String"
   AuthorizationEndpoint:
-    Type: "String"
-  FrontendStage:
     Type: "String"
 Resources:
   LambdaExecPolicy:
@@ -90,9 +88,8 @@ Resources:
           ALEXA_CLIENT_SECRET: !Ref AlexaClientSecret
           ALEXA_USER_CLIENT_ID: !Ref AlexaUserClientID
           BACKEND_API_KEY: !Ref BackendApiKey
-          APP_URL: !Ref AppUrl
+          FRONTEND_URL: !Ref FrontendUrl
           AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
-          FRONTEND_STAGE: !Ref FrontendStage
       Tags:
         group: mobile
         app: throwtrash

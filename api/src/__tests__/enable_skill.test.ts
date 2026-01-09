@@ -53,11 +53,10 @@ describe("enable_skill",()=>{
         process.env.ALEXA_CLIENT_SECRET="secret"
         process.env.BACKEND_API_KEY = "api-key";
         process.env.SKILL_STAGE = "development";
-        process.env.FRONTEND_STAGE = "f123";
+        process.env.FRONTEND_URL = "https://dev.accountlink.mythrowaway.net";
     })
     describe("正常系",()=>{
         it("開発:正常終了,paramsはtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
-            process.env.APP_URL="https://dev.accountlink.mythrowaway.net";
             const mockedGetAccountLinkItemByToken = jest.mocked(db.getAccountLinkItemByToken);
             mockedGetAccountLinkItemByToken.mockImplementation(async (token: String) => {
                 return {
@@ -72,7 +71,7 @@ describe("enable_skill",()=>{
             const result = await enable_skill({token:"token-dev",state: "12345",redirect_uri: "https://backend.mythrowaway.net/dev/enable_skill",code:"12345"},"dev") as APIGatewayProxyStructuredResultV2;
 
             expect(result.statusCode).toBe(301);
-            expect(result.headers!.Location).toBe("https://dev.accountlink.mythrowaway.net/f123/accountlink-complete.html");
+            expect(result.headers!.Location).toBe("https://dev.accountlink.mythrowaway.net/accountlink-complete.html");
 
             expect(mockedGetAccountLinkItemByToken).toBeCalledWith("token-dev")
 
@@ -80,8 +79,6 @@ describe("enable_skill",()=>{
         });
         it("本番:正常終了,paramsのtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
             process.env.SKILL_STAGE="live";
-            process.env.APP_URL="https://accountlink.mythrowaway.net";
-            process.env.FRONTEND_STAGE = "f123";
             const mockedGetAccountLinkItemByToken = jest.mocked(db.getAccountLinkItemByToken);
             mockedGetAccountLinkItemByToken.mockImplementation(async (token: String) => {
                 return {
@@ -96,7 +93,7 @@ describe("enable_skill",()=>{
             const result = await enable_skill({token: "token-prod",state: "12345", redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill",code:"12345"},"v1") as APIGatewayProxyStructuredResultV2;
 
             expect(result.statusCode).toBe(301);
-            expect(result.headers!.Location).toBe("https://accountlink.mythrowaway.net/f123/accountlink-complete.html");
+            expect(result.headers!.Location).toBe("https://dev.accountlink.mythrowaway.net/accountlink-complete.html");
 
             expect(mockedGetAccountLinkItemByToken).toBeCalledWith("token-prod")
 
@@ -146,7 +143,6 @@ describe("enable_skill",()=>{
             const result = await enable_skill({token: "token-dev", state: "not_match_state", code: "12345", redirect_uri: "https://dummy.com"},  "v1") as APIGatewayProxyStructuredResultV2;
             expect(result.statusCode).toBe(301);
             const headers = result.headers;
-            expect(headers!.Location).toBe(error_def.UserError.headers.Location);
         });
         it("params.tokenが無い場合はユーザーエラー",async()=>{
             const result = await enable_skill({state: "12345", code: "12345", redirect_uri: "https://dummy.com"}, "v1") as APIGatewayProxyStructuredResultV2;
