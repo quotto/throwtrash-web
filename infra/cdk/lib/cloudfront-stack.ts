@@ -95,7 +95,6 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
     includeAliases: boolean;
     pathRewriteFunctionArn: string;
   }): cloudfront.CfnDistribution.DistributionConfigProperty {
-    const originPath = undefined;
     const frontendOriginId = 'FrontendOrigin';
     const backendOriginId = 'BackendApiOrigin';
     const mobileOriginId = 'MobileApiOrigin';
@@ -104,7 +103,6 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       {
         id: frontendOriginId,
         domainName: params.frontendBucket.bucketDomainName,
-        originPath: originPath || undefined,
         s3OriginConfig: {},
         originAccessControlId: params.frontendOriginAccessControlId
       },
