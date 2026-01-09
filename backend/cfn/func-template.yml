@@ -27,7 +27,7 @@ Parameters:
     Type: "String"
   FrontendUrl:
     Type: "String"
-  ApiGatewayOrigin:
+  FrontendOrigin:
     Type: "String"
 Resources:
   LambdaExecPolicy:
@@ -185,11 +185,6 @@ Resources:
         app: throwtrash
         group: backend
       StageName: !Ref Stage
-      Cors:
-        AllowMethods: "'GET,POST'"
-        AllowOrigin: !Sub "'${ApiGatewayOrigin}'"
-        AllowHeaders: "'Content-Type'"
-        AllowCredentials: true
       MethodSettings:
         -
           LoggingLevel: "INFO"
