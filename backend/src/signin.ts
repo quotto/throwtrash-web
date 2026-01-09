@@ -1,4 +1,4 @@
-import { getLogger, TrashData } from "trash-common";
+import { getLogger } from "trash-common";
 const logger = getLogger();
 import db from "./dbadapter";
 import rp from "request-promise";

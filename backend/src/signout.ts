@@ -2,7 +2,6 @@ import { getLogger } from "trash-common";
 const logger = getLogger();
 import property from "./property";
 import db from "./dbadapter";
-import {BackendResponse} from "./interface";
 export default async(session: any)=>{
     if(session.userInfo) {
         logger.info("signout:"+session.userInfo.signinId);
@@ -10,20 +9,12 @@ export default async(session: any)=>{
         await db.saveSession(session);
         return {
             statusCode: 200,
-            body: "signout",
-            headers: {
-                "Access-Control-Allow-Origin": property.FRONTEND_URL,
-                "Access-Control-Allow-Credentials": true
-            }
+            body: "signout"
         }
     }
     logger.warn("not signed in user");
     return {
         statusCode: 200,
-        body: "",
-        headers: {
-            "Access-Control-Allow-Origin": property.FRONTEND_URL,
-            "Access-Control-Allow-Credentials": true
-        }
+        body: ""
     }
 }

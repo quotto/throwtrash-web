@@ -20,8 +20,6 @@ describe('signout', () => {
         const response = await signout({ id: 'sessionId', userInfo: { name: 'testUser', signinId: 'signin-id', signinService: 'amazon' , preset: []} });
         expect(response.statusCode).toBe(200);
         expect(response.body).toBe('signout');
-        expect(response.headers['Access-Control-Allow-Origin']).toBe(property.FRONTEND_URL);
-        expect(response.headers['Access-Control-Allow-Credentials']).toBe(true);
 
         // 保存したセッション
         const session = mockResult["sessionId"];
@@ -32,7 +30,5 @@ describe('signout', () => {
         const response = await signout({ id: 'sessionId' });
         expect(response.statusCode).toBe(200);
         expect(response.body).toBe('');
-        expect(response.headers['Access-Control-Allow-Origin']).toBe(property.FRONTEND_URL);
-        expect(response.headers['Access-Control-Allow-Credentials']).toBe(true);
     });
 })

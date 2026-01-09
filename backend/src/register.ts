@@ -1,6 +1,5 @@
 import {getLogger, Logger, TrashData, TrashSchedule, EvweekValue, checkTrashes, ExcludeDate} from "trash-common";
 const logger: Logger = getLogger();
-import property from "./property";
 import db from "./dbadapter";
 import {BackendResponse, SessionItem} from "./interface";
 
@@ -107,8 +106,6 @@ export default async(body: any,session: SessionItem): Promise<BackendResponse>=>
                 statusCode: 200,
                 body: redirect_url,
                 headers: {
-                    "Access-Control-Allow-Origin": property.FRONTEND_URL,
-                    "Access-Control-Allow-Credentials": true,
                     "Cache-Control": "no-store"
                 }
             }

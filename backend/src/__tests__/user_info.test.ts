@@ -23,15 +23,10 @@ describe('user_info', ()=>{
         );
         expect(response.statusCode).toBe(200);
         expect(response.body).toBe(JSON.stringify({name: 'testUser', preset: test_data_001}));
-        expect(response.headers).not.toBeUndefined();
-        expect(response.headers!['Access-Control-Allow-Origin']).toBe(property.FRONTEND_URL);
-        expect(response.headers!['Access-Control-Allow-Credentials']).toBe(true);
     });
     it('セッションあり,サインインなし',()=>{
         const response = user_info({id: 'sessionid', expire: 9999999});
         expect(response.statusCode).toBe(200);
         expect(response.body).toBe(JSON.stringify({name: "", preset: null}));
-        expect(response.headers!['Access-Control-Allow-Origin']).toBe(property.FRONTEND_URL);
-        expect(response.headers!['Access-Control-Allow-Credentials']).toBe(true);
     });
 })
