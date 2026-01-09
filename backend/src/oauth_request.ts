@@ -3,11 +3,8 @@ import property from "./property";
 import error_def from "./error_def";
 import {BackendResponse, SessionItem} from "./interface";
 
-export default async (params: any,session: SessionItem,new_flg: boolean,stage: string): Promise<BackendResponse>=> {
-    const frontend_stage = process.env.FRONTEND_STAGE || stage;
-    const app_url = (process.env.APP_URL || property.URL_ACCOUNT_LINK).replace(/\/+$/, "");
-
-    if(params && params.state && params.client_id && params.redirect_uri && params.platform && stage) {
+export default async (params: any,session: SessionItem,new_flg: boolean): Promise<BackendResponse>=> {
+    if(params && params.state && params.client_id && params.redirect_uri && params.platform) {
         session.state = params.state;
         session.client_id = params.client_id;
         session.redirect_uri = params.redirect_uri;
@@ -17,7 +14,7 @@ export default async (params: any,session: SessionItem,new_flg: boolean,stage: s
             const response: BackendResponse =  {
                 statusCode: 301,
                 headers: {
-                    Location: `${app_url}/${frontend_stage}/index.html`
+                    Location: `${property.FRONTEND_URL}/index.html`
                 }
             };
             if(new_flg) {

@@ -16,7 +16,7 @@ export default (session: SessionItem): BackendResponse =>{
         statusCode: 200,
         body: JSON.stringify(body),
         headers: {
-            "Access-Control-Allow-Origin": property.URL_ACCOUNT_LINK,
+            "Access-Control-Allow-Origin": property.FRONTEND_URL,
             "Access-Control-Allow-Credentials": true
         }
     }

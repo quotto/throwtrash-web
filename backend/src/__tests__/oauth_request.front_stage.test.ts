@@ -1,7 +1,7 @@
 import * as common from "trash-common";
 const logger = common.getLogger();
 logger.setLevel_DEBUG();
-process.env.FRONTEND_STAGE = "dev";
+process.env.FRONTEND_URL = "https://apps.mythrowaway.net/v5";
 import oauth_request from "../oauth_request";
 import db from "../dbadapter";
 import error_def from "../error_def";
@@ -18,7 +18,7 @@ jest.mocked(db.saveSession).mockImplementation(async(session)=>{
     return false;
 });
 describe("oauth_request", () => {
-    it("フロントエンドステージの環境変数がある場合はその値を利用すること", async () => {
+    it("FRONTEND_URLの環境変数がある場合はその値を利用すること", async () => {
         // パラメータはqueryStringParameters,セッション情報,セッション新規発行フラグ,API Gatewayのstage
         const response = await oauth_request({
             state: "123456",
@@ -26,13 +26,12 @@ describe("oauth_request", () => {
             redirect_uri: "https://xxxx.com",
             platform: "amazon"
         }, { id: "sessionid-001", expire: 99999999 },
-            true,
-            "v5"
+            true
         );
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
         expect(headers).not.toBeUndefined();
-        expect(headers!.Location).toBe("https://apps.mythrowaway.net/dev/index.html");
+        expect(headers!.Location).toBe("https://apps.mythrowaway.net/v5/index.html");
         expect(headers!["Set-Cookie"]).toBe("throwaway-session=sessionid-001;max-age=3600;Path=/;SameSite=None;Secure;HttpOnly;");
 
         // 保存したセッション

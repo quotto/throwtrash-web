@@ -12,7 +12,7 @@ export default async(session: any)=>{
             statusCode: 200,
             body: "signout",
             headers: {
-                "Access-Control-Allow-Origin": property.URL_ACCOUNT_LINK,
+                "Access-Control-Allow-Origin": property.FRONTEND_URL,
                 "Access-Control-Allow-Credentials": true
             }
         }
@@ -22,7 +22,7 @@ export default async(session: any)=>{
         statusCode: 200,
         body: "",
         headers: {
-            "Access-Control-Allow-Origin": property.URL_ACCOUNT_LINK,
+            "Access-Control-Allow-Origin": property.FRONTEND_URL,
             "Access-Control-Allow-Credentials": true
         }
     }

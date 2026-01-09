@@ -107,7 +107,7 @@ export default async(body: any,session: SessionItem): Promise<BackendResponse>=>
                 statusCode: 200,
                 body: redirect_url,
                 headers: {
-                    "Access-Control-Allow-Origin": property.URL_ACCOUNT_LINK,
+                    "Access-Control-Allow-Origin": property.FRONTEND_URL,
                     "Access-Control-Allow-Credentials": true,
                     "Cache-Control": "no-store"
                 }

@@ -44,7 +44,7 @@ describe('register', () => {
             { id: 'sessionid-001', redirect_uri: 'https://xxxx.com', state: 'state-value', client_id: 'alexa-skill', platform: 'amazon', expire: 9999999 });
         expect(response.statusCode).toBe(200);
         expect(response.body).toBe('https://xxxx.com?state=state-value&code=12345');
-        expect(response.headers!['Access-Control-Allow-Origin']).toBe(property.URL_ACCOUNT_LINK);
+        expect(response.headers!['Access-Control-Allow-Origin']).toBe(property.FRONTEND_URL);
         expect(response.headers!['Access-Control-Allow-Credentials']).toBe(true);
         expect(response.headers!['Cache-Control']).toBe("no-store");
 
@@ -76,7 +76,7 @@ describe('register', () => {
         );
         expect(response.statusCode).toBe(200);
         expect(response.body).toBe('https://xxxx.com?state=state-value&code=12345');
-        expect(response.headers!['Access-Control-Allow-Origin']).toBe(property.URL_ACCOUNT_LINK);
+        expect(response.headers!['Access-Control-Allow-Origin']).toBe(property.FRONTEND_URL);
         expect(response.headers!['Access-Control-Allow-Credentials']).toBe(true);
         expect(response.headers!['Cache-Control']).toBe("no-store");
 
@@ -109,7 +109,7 @@ describe('register', () => {
         });
         expect(response.statusCode).toBe(200);
         expect(response.body).toBe('https://xxxx.com?state=state-value&code=12345');
-        expect(response.headers!['Access-Control-Allow-Origin']).toBe(property.URL_ACCOUNT_LINK);
+        expect(response.headers!['Access-Control-Allow-Origin']).toBe(property.FRONTEND_URL);
         expect(response.headers!['Access-Control-Allow-Credentials']).toBe(true);
         expect(response.headers!['Cache-Control']).toBe("no-store");
 
