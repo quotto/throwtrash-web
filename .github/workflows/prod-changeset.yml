@@ -3,6 +3,7 @@ name: Production Create Changeset
 permissions:
   contents: read
   id-token: write
+  pull-requests: write
 
 on:
   pull_request:
@@ -20,8 +21,67 @@ jobs:
       - name: Get PR number
         id: pr
         run: echo "PR_NUMBER=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
+  backend-test:
+    environment: dev
+    permissions:
+      checks: write
+      pull-requests: write
+      id-token: write
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-tester-role
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Restore backend cache
+        uses: actions/cache@v4
+        with:
+          path: backend/src/node_modules
+          key: npm-deps-${{ github.head_ref }}-${{ hashFiles('backend/src/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+        working-directory: backend/src
+      - name: Set GCP Credentials
+        run: |
+          echo ${{ secrets.GCP_TEST_CREDENTIALS }} | base64 -d > backend/src/serviceAccountKey.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/backend/src/serviceAccountKey.json" >> $GITHUB_ENV
+      - name: Run tests and report coverage
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          working-directory: backend/src
+  mobile-backend-test:
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Restore API cache
+        uses: actions/cache@v4
+        with:
+          path: api/src/node_modules
+          key: npm-deps-${{ github.head_ref }}-${{ hashFiles('api/src/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+        working-directory: api/src
+      - name: Run tests and report coverage
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          working-directory: api/src
   backend-changeset:
-    needs: ["get-pr-number"]
+    needs: ["get-pr-number", "backend-test"]
     environment: prod
     runs-on: ubuntu-latest
     steps:
@@ -38,16 +98,26 @@ jobs:
           echo ${{ secrets.GCP_CREDENTIALS }} | base64 -d > backend/src/backend-dist/serviceAccountKey.json
       - name: Create Changeset for Backend DB
         run: |
-          aws cloudformation create-change-set  --stack-name throwtrash-backend-db --template-body file://backend/cfn/db-template.yml --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --region=${{ vars.AWS_DEFAULT_REGION }}
+          if aws cloudformation describe-stacks --stack-name throwtrash-backend-db --region=${{ vars.AWS_DEFAULT_REGION }} >/dev/null 2>&1; then
+            CHANGESET_TYPE=UPDATE
+          else
+            CHANGESET_TYPE=CREATE
+          fi
+          aws cloudformation create-change-set --stack-name throwtrash-backend-db --template-body file://backend/cfn/db-template.yml --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --change-set-type ${CHANGESET_TYPE} --region=${{ vars.AWS_DEFAULT_REGION }}
       - name: Create Changeset for Backend
         run: |
             # API/Lambdaのパッケージングとデプロイ
             aws cloudformation package --template-file backend/cfn/func-template.yml --output-template-file backend/cfn/package-template.yml --s3-bucket lambda-function-deployment-prod --s3-prefix throwtrashbackend
+            if aws cloudformation describe-stacks --stack-name throwtrash-backend-${{ vars.BACKEND_STAGE }} --region=${{ vars.AWS_DEFAULT_REGION }} >/dev/null 2>&1; then
+              CHANGESET_TYPE=UPDATE
+            else
+              CHANGESET_TYPE=CREATE
+            fi
 
-            aws cloudformation create-change-set --stack-name throwtrash-backend-${{ vars.BACK_STAGE }} --template-body file://backend/cfn/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --parameters ParameterKey=Stage,ParameterValue="${{ vars.BACK_STAGE }}" ParameterKey=FrontendStage,ParameterValue="${{ vars.FRONT_STAGE }}" ParameterKey=FrontendHost,ParameterValue="${{ vars.FRONT_END_ENDPOINT }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=GoogleClientID,ParameterValue="${{ secrets.GOOGLE_CLIENT_ID }}" ParameterKey=GoogleClientSecret,ParameterValue="${{ secrets.GOOGLE_CLIENT_SECRET }}" ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}"  ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AlexaUserSecret,ParameterValue="${{ secrets.ALEXA_USER_SECRET }}" ParameterKey=GoogleUserClientID,ParameterValue="${{ secrets.GOOGLE_USER_CLIENT_ID }}" ParameterKey=GoogleUserSecret,ParameterValue="${{ secrets.GOOGLE_USER_SECRET }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=ApiGatewayOrigin,ParameterValue="${{ vars.BACKEND_API_GATEWAY_ORIGIN }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
+            aws cloudformation create-change-set --stack-name throwtrash-backend-${{ vars.BACKEND_STAGE }} --template-body file://backend/cfn/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --change-set-type ${CHANGESET_TYPE} --parameters ParameterKey=Stage,ParameterValue="${{ vars.BACKEND_STAGE }}" ParameterKey=FrontendUrl,ParameterValue="https://${{ vars.CF_DOMAIN_NAME }}/${{ vars.FRONTEND_STAGE }}" ParameterKey=AuthorizationEndpoint,ParameterValue="https://${{ vars.CF_DOMAIN_NAME }}/backend/${{ vars.BACKEND_STAGE }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=GoogleClientID,ParameterValue="${{ secrets.GOOGLE_CLIENT_ID }}" ParameterKey=GoogleClientSecret,ParameterValue="${{ secrets.GOOGLE_CLIENT_SECRET }}" ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}"  ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AlexaUserSecret,ParameterValue="${{ secrets.ALEXA_USER_SECRET }}" ParameterKey=GoogleUserClientID,ParameterValue="${{ secrets.GOOGLE_USER_CLIENT_ID }}" ParameterKey=GoogleUserSecret,ParameterValue="${{ secrets.GOOGLE_USER_SECRET }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
   mobile-backend-changeset:
     runs-on: ubuntu-latest
-    needs: ["get-pr-number"]
+    needs: ["get-pr-number", "mobile-backend-test"]
     environment: prod
     steps:
       - uses: actions/checkout@v4
@@ -59,10 +129,87 @@ jobs:
       - uses: ./.github/actions/mobile-backend/build
       - name: Create Changeset for Mobile Backend DB
         run: |
-          aws cloudformation create-change-set --stack-name throwtrash-mobile-db --template-body file://api/db-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --region=${{ vars.AWS_DEFAULT_REGION }}
+          if aws cloudformation describe-stacks --stack-name throwtrash-mobile-db --region=${{ vars.AWS_DEFAULT_REGION }} >/dev/null 2>&1; then
+            CHANGESET_TYPE=UPDATE
+          else
+            CHANGESET_TYPE=CREATE
+          fi
+          aws cloudformation create-change-set --stack-name throwtrash-mobile-db --template-body file://api/db-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --change-set-type ${CHANGESET_TYPE} --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM --region=${{ vars.AWS_DEFAULT_REGION }}
       - name: Create Changeset for Mobile Backend
         run: |
           # API/Lambdaのパッケージングとデプロイ
           aws cloudformation package --template-file api/func-template.yml --output-template-file api/package-template.yml --s3-bucket lambda-function-deployment-prod --s3-prefix throwtrashapi
+          if aws cloudformation describe-stacks --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --region=${{ vars.AWS_DEFAULT_REGION }} >/dev/null 2>&1; then
+            CHANGESET_TYPE=UPDATE
+          else
+            CHANGESET_TYPE=CREATE
+          fi
 
-          aws cloudformation create-change-set --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --template-body file://api/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --parameters ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}" ParameterKey=Stage,ParameterValue="${{ vars.MOBILE_API_STAGE }}" ParameterKey=SkillStage,ParameterValue="${{ vars.SKILL_STAGE }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AuthorizationEndpoint,ParameterValue="${{ vars.BACKEND_API_ENDPOINT }}"/"${{ vars.BACK_STAGE }}" ParameterKey=BackendApiKey,ParameterValue="${{ secrets.BACKEND_API_KEY }}" ParameterKey=FrontEndUrl,ParameterValue="${{ vars.FRONT_END_ENDPOINT }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
+          aws cloudformation create-change-set --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --template-body file://api/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --change-set-type ${CHANGESET_TYPE} --parameters ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}" ParameterKey=Stage,ParameterValue="${{ vars.MOBILE_API_STAGE }}" ParameterKey=SkillStage,ParameterValue="${{ vars.SKILL_STAGE }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AuthorizationEndpoint,ParameterValue="https://${{ vars.CF_DOMAIN_NAME }}"/backend/"${{ vars.BACKEND_STAGE }}" ParameterKey=BackendApiKey,ParameterValue="${{ secrets.BACKEND_API_KEY }}" ParameterKey=FrontendUrl,ParameterValue="https://${{ vars.CF_DOMAIN_NAME }}/${{ vars.FRONTEND_STAGE }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
+
+  cloudfront-diff-comment:
+    needs: ["backend-changeset", "mobile-backend-changeset"]
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: AWS Set up
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-frontend-deploy-role
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Install CDK dependencies
+        run: npm ci
+        working-directory: infra/cdk
+      - name: Run CDK diff (CloudFront)
+        env:
+          CF_STAGE: prod
+          CF_DOMAIN_NAME: ${{ vars.CF_DOMAIN_NAME }}
+          CF_CERT_ARN: ${{ vars.CF_CERT_ARN }}
+          CF_BACKEND_API_DOMAIN: ${{ vars.CF_BACKEND_API_DOMAIN}}
+          CF_MOBILE_API_DOMAIN: ${{ vars.CF_MOBILE_API_DOMAIN}}
+          CF_FRONTEND_BUCKET: throwtrash
+        run: |
+          set +e
+          npx cdk diff throwtrash-cloudfront-prod --context stage=prod --no-color > cdk-diff.txt
+          echo "CDK_DIFF_EXIT_CODE=$?" >> $GITHUB_ENV
+        working-directory: infra/cdk
+      - name: Add diff to PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'infra/cdk/cdk-diff.txt';
+            let body = '';
+            if (fs.existsSync(path)) {
+              body = fs.readFileSync(path, 'utf8');
+            } else {
+              body = 'cdk diff output not found.';
+            }
+
+            const exitCode = process.env.CDK_DIFF_EXIT_CODE || 'unknown';
+            const maxLength = 60000;
+            if (body.length > maxLength) {
+              body = body.slice(0, maxLength) + '\n... (truncated)';
+            }
+
+            const comment = [
+              '## CloudFront CDK diff (prod)',
+              '',
+              `exit code: ${exitCode}`,
+              '',
+              '```',
+              body || '(no diff output)',
+              '```'
+            ].join('\\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });

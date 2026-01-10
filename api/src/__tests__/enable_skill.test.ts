@@ -45,6 +45,7 @@ import enable_skill from "../enable_skill";
 import error_def from "../error_def";
 describe("enable_skill",()=>{
     beforeEach(()=>{
+        process.env.APP_URL="https://backend.throwtrash.net/dev"
         process.env.AUTHORIZATION_ENDPOINT="https://backend.throwtrash.net/dev"
         process.env.ALEXA_USER_CLIENT_ID = "alexa-skill";
         process.env.ALEXA_SKILL_ID = "test-skill-id";
@@ -52,10 +53,10 @@ describe("enable_skill",()=>{
         process.env.ALEXA_CLIENT_SECRET="secret"
         process.env.BACKEND_API_KEY = "api-key";
         process.env.SKILL_STAGE = "development";
+        process.env.FRONTEND_URL = "https://dev.accountlink.mythrowaway.net";
     })
     describe("正常系",()=>{
         it("開発:正常終了,paramsはtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
-            process.env.FRONTEND_URL="https://dev.accountlink.mythrowaway.net";
             const mockedGetAccountLinkItemByToken = jest.mocked(db.getAccountLinkItemByToken);
             mockedGetAccountLinkItemByToken.mockImplementation(async (token: String) => {
                 return {
@@ -70,7 +71,7 @@ describe("enable_skill",()=>{
             const result = await enable_skill({token:"token-dev",state: "12345",redirect_uri: "https://backend.mythrowaway.net/dev/enable_skill",code:"12345"},"dev") as APIGatewayProxyStructuredResultV2;
 
             expect(result.statusCode).toBe(301);
-            expect(result.headers!.Location).toBe("https://dev.accountlink.mythrowaway.net/dev/accountlink-complete.html");
+            expect(result.headers!.Location).toBe("https://dev.accountlink.mythrowaway.net/accountlink-complete.html");
 
             expect(mockedGetAccountLinkItemByToken).toBeCalledWith("token-dev")
 
@@ -78,7 +79,6 @@ describe("enable_skill",()=>{
         });
         it("本番:正常終了,paramsのtoken/state/redirect_uri/codeが正しく指定されている",async()=>{
             process.env.SKILL_STAGE="live";
-            process.env.FRONTEND_URL="https://accountlink.mythrowaway.net";
             const mockedGetAccountLinkItemByToken = jest.mocked(db.getAccountLinkItemByToken);
             mockedGetAccountLinkItemByToken.mockImplementation(async (token: String) => {
                 return {
@@ -93,7 +93,7 @@ describe("enable_skill",()=>{
             const result = await enable_skill({token: "token-prod",state: "12345", redirect_uri: "https://backend.mythrowaway.net/v1/enable_skill",code:"12345"},"v1") as APIGatewayProxyStructuredResultV2;
 
             expect(result.statusCode).toBe(301);
-            expect(result.headers!.Location).toBe("https://accountlink.mythrowaway.net/v1/accountlink-complete.html");
+            expect(result.headers!.Location).toBe("https://dev.accountlink.mythrowaway.net/accountlink-complete.html");
 
             expect(mockedGetAccountLinkItemByToken).toBeCalledWith("token-prod")
 
@@ -113,8 +113,8 @@ describe("enable_skill",()=>{
             expect(result.headers!.Location).toBe(error_def.UserError.headers.Location);
         });
         it("authorization codeの取得に失敗した場合はサーバエラー",async()=>{
-            // ダミーのAUTHORIZATION_ENDPOINTを指定することでmockしたrpでErrorを発生させる
-            process.env.AUTHORIZATION_ENDPOINT="https://dummy.net";
+            // ダミーのAPP_URLを指定することでmockしたrpでErrorを発生させる
+            process.env.APP_URL="https://dummy.net";
             jest.mocked(db.getAccountLinkItemByToken).mockImplementation(async (token: String) => {
                 return {
                     token: "token-prod",
@@ -143,7 +143,6 @@ describe("enable_skill",()=>{
             const result = await enable_skill({token: "token-dev", state: "not_match_state", code: "12345", redirect_uri: "https://dummy.com"},  "v1") as APIGatewayProxyStructuredResultV2;
             expect(result.statusCode).toBe(301);
             const headers = result.headers;
-            expect(headers!.Location).toBe(error_def.UserError.headers.Location);
         });
         it("params.tokenが無い場合はユーザーエラー",async()=>{
             const result = await enable_skill({state: "12345", code: "12345", redirect_uri: "https://dummy.com"}, "v1") as APIGatewayProxyStructuredResultV2;

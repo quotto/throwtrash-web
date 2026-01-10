@@ -4,13 +4,13 @@ export default {
     ServerError: {
         statusCode: 301,
         headers: {
-            Location: `${property.URL_ACCOUNT_LINK}/500.html`
+            Location: `${property.FRONTEND_URL}/500.html`
         }
     },
     UserError: {
         statusCode: 301,
         headers: {
-            Location: `${property.URL_ACCOUNT_LINK}/400.html`
+            Location: `${property.FRONTEND_URL}/400.html`
         }
     }
 

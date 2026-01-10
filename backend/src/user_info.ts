@@ -1,4 +1,3 @@
-import property from "./property";
 import {BackendResponse} from "./interface";
 import { TrashData } from "trash-common";
 import { SessionItem } from "./interface";
@@ -14,10 +13,6 @@ export default (session: SessionItem): BackendResponse =>{
     }
     return {
         statusCode: 200,
-        body: JSON.stringify(body),
-        headers: {
-            "Access-Control-Allow-Origin": property.URL_ACCOUNT_LINK,
-            "Access-Control-Allow-Credentials": true
-        }
+        body: JSON.stringify(body)
     }
 }
