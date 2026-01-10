@@ -27,8 +27,6 @@ Parameters:
     Type: "String"
   FrontendUrl:
     Type: "String"
-  FrontendOrigin:
-    Type: "String"
 Resources:
   LambdaExecPolicy:
     Type: "AWS::IAM::Policy"
