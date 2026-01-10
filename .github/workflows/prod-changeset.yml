@@ -25,6 +25,8 @@ jobs:
     environment: dev
     permissions:
       checks: write
+      pull-requests: write
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -56,6 +58,8 @@ jobs:
   mobile-backend-test:
     permissions:
       checks: write
+      pull-requests: write
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +80,7 @@ jobs:
         with:
           working-directory: api/src
   backend-changeset:
-    needs: ["get-pr-number"]
+    needs: ["get-pr-number", "backend-test"]
     environment: prod
     runs-on: ubuntu-latest
     steps:
@@ -112,7 +116,7 @@ jobs:
             aws cloudformation create-change-set --stack-name throwtrash-backend-${{ vars.BACKEND_STAGE }} --template-body file://backend/cfn/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --change-set-type ${CHANGESET_TYPE} --parameters ParameterKey=Stage,ParameterValue="${{ vars.BACKEND_STAGE }}" ParameterKey=FrontendUrl,ParameterValue="https://${{ vars.CF_DOMAIN_NAME }}/${{ vars.FRONTEND_STAGE }}" ParameterKey=AuthorizationEndpoint,ParameterValue="https://${{ vars.CF_DOMAIN_NAME }}/backend/${{ vars.BACKEND_STAGE }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=GoogleClientID,ParameterValue="${{ secrets.GOOGLE_CLIENT_ID }}" ParameterKey=GoogleClientSecret,ParameterValue="${{ secrets.GOOGLE_CLIENT_SECRET }}" ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}"  ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AlexaUserSecret,ParameterValue="${{ secrets.ALEXA_USER_SECRET }}" ParameterKey=GoogleUserClientID,ParameterValue="${{ secrets.GOOGLE_USER_CLIENT_ID }}" ParameterKey=GoogleUserSecret,ParameterValue="${{ secrets.GOOGLE_USER_SECRET }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
   mobile-backend-changeset:
     runs-on: ubuntu-latest
-    needs: ["get-pr-number"]
+    needs: ["get-pr-number", "mobile-backend-test"]
     environment: prod
     steps:
       - uses: actions/checkout@v4
