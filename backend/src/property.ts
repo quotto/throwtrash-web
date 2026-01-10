@@ -12,6 +12,7 @@ export default {
     TOKEN_TABLE: "throwtrash-backend-accesstoken",
     REFRESH_TABLE: "throwtrash-backend-refreshtoken",
     FRONTEND_URL: normalizeHost(process.env.FRONTEND_URL || "apps.mythrowaway.net"),
+    AUTHORIZATION_URL: normalizeHost(process.env.AUTHORIZATION_ENDPOINT || "https://apps.mythrowaway.net"),
     SESSIONID_NAME:"throwaway-session",
     SESSION_MAX_AGE: 3600 // 60分 * 60秒
 }

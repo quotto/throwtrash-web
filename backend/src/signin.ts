@@ -33,7 +33,7 @@ const requestAmazonProfile = (access_token: string): Promise<SigninProfile> =>{
     });
 }
 
-const requestGoogleProfile = (code: string,domain: string,stage: string): Promise<SigninProfile> =>{
+const requestGoogleProfile = (code: string): Promise<SigninProfile> =>{
     const options = {
         uri: "https://oauth2.googleapis.com/token",
         method: "POST",
@@ -41,7 +41,7 @@ const requestGoogleProfile = (code: string,domain: string,stage: string): Promis
             code: code,
             client_id: process.env.GOOGLE_CLIENT_ID,
             client_secret: process.env.GOOGLE_CLIENT_SECRET,
-            redirect_uri: `https://${domain}/${stage}/signin?service=google`,
+            redirect_uri: `${property.AUTHORIZATION_URL}/signin?service=google`,
             grant_type: "authorization_code"
         },
         json: true
@@ -62,14 +62,14 @@ const requestGoogleProfile = (code: string,domain: string,stage: string): Promis
     });
 }
 
-export default async(params: any,session: SessionItem,domain: string,stage: string): Promise<BackendResponse> =>{
+export default async(params: any,session: SessionItem): Promise<BackendResponse> =>{
     let service_request = null;
     if (params.service === "amazon" && params.access_token && session) {
         service_request = requestAmazonProfile(params.access_token);
     } else if(params.service === "google"
                 && params.code && params.state
                 && session && params.state === session.googleState) {
-        service_request = requestGoogleProfile(params.code,domain,stage);
+        service_request = requestGoogleProfile(params.code);
     }  else {
         logger.error("invalid parameter ->");
         logger.error(params);

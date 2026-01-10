@@ -78,7 +78,7 @@ import signin from "../signin";
 describe('signin', () => {
     it('login with amazonでは、環境変数FRONTEND_URLが設定されている場合はそのステージをリダイレクト先URLに利用する', async (): Promise<void> => {
         // パラメータはqueryStringParameters,ドメイン名,APIステージ
-        const response = await signin({ access_token: 'token-001', service: 'amazon' }, { id: 'session-id001', expire: 999998}, 'backend.mythrowaway.net', 'dev');
+        const response = await signin({ access_token: 'token-001', service: 'amazon' }, { id: 'session-id001', expire: 999998});
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
         expect(response.headers!.Location).toBe('https://apps.mythrowaway.net/001/index.html')

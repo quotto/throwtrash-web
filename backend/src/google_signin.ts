@@ -1,14 +1,15 @@
 import * as common from "trash-common";
 import db from "./dbadapter";
 import {BackendResponse, SessionItem} from "./interface";
-export default async(session: SessionItem,domain: string,stage: string): Promise<BackendResponse>=>{
+import property from "./property";
+export default async(session: SessionItem): Promise<BackendResponse>=>{
     const endpoint = "https://accounts.google.com/o/oauth2/v2/auth";
     const google_state = common.generateRandomCode(20);
     const option = {
         client_id: process.env.GOOGLE_CLIENT_ID,
         response_type:"code",
         scope:"openid profile",
-        redirect_uri:`https://${domain}/${stage}/signin?service=google`,
+        redirect_uri:`${property.AUTHORIZATION_URL}/signin?service=google`,
         state: google_state,
         login_hint: "mythrowaway.net@gmail.com",
         nonce: common.generateRandomCode(16)

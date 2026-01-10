@@ -47,6 +47,7 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
 
     const frontendOac = this.createOriginAccessControl('FrontendOac');
     const pathRewriteFunction = new cloudfront.Function(this, 'PathRewriteFunction', {
+      functionName: `throwtrash-path-rewrite-${config.stage}`,
       code: cloudfront.FunctionCode.fromInline(`function handler(event) {
   var request = event.request;
   if (request.uri === '/backend' || request.uri.indexOf('/backend/') === 0) {
@@ -134,7 +135,13 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       allowedMethods: ['GET', 'HEAD'],
       cachedMethods: ['GET', 'HEAD'],
       cachePolicyId: params.frontendCachePolicyId,
-      compress: true
+      compress: true,
+      functionAssociations: [
+        {
+          eventType: 'viewer-request',
+          functionArn: params.pathRewriteFunctionArn
+        }
+      ]
     };
 
     const cacheBehaviors: cloudfront.CfnDistribution.CacheBehaviorProperty[] = [

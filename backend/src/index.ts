@@ -38,12 +38,12 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent ,context: AWSL
            return oauth_request(event.queryStringParameters, session, new_session_flg);
        }
    } else if(event.resource === "/google_signin") {
-       if(session && event.requestContext.domainName) {
-           return google_signin(session, event.requestContext.domainName, event.requestContext.stage);
+       if(session) {
+           return google_signin(session);
        }
    } else if(event.resource === "/signin") {
-       if(session && event.requestContext.domainName) {
-           return signin(event.queryStringParameters,session,event.requestContext.domainName,event.requestContext.stage);
+       if(session) {
+           return signin(event.queryStringParameters,session);
        }
    } else if(event.resource === "/signout") {
        if(session) {
