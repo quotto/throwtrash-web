@@ -21,6 +21,56 @@ jobs:
       - name: Get PR number
         id: pr
         run: echo "PR_NUMBER=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
+  backend-test:
+    environment: dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-tester-role
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Restore backend cache
+        uses: actions/cache@v4
+        with:
+          path: backend/src/node_modules
+          key: npm-deps-${{ github.head_ref }}-${{ hashFiles('backend/src/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+        working-directory: backend/src
+      - name: Set GCP Credentials
+        run: |
+          echo ${{ secrets.GCP_TEST_CREDENTIALS }} | base64 -d > backend/src/serviceAccountKey.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/backend/src/serviceAccountKey.json" >> $GITHUB_ENV
+      - name: Run tests and report coverage
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          working-directory: backend/src
+  mobile-backend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Restore API cache
+        uses: actions/cache@v4
+        with:
+          path: api/src/node_modules
+          key: npm-deps-${{ github.head_ref }}-${{ hashFiles('api/src/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+        working-directory: api/src
+      - name: Run tests and report coverage
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          working-directory: api/src
   backend-changeset:
     needs: ["get-pr-number"]
     environment: prod
