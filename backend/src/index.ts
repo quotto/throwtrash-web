@@ -35,7 +35,7 @@ exports.handler = async function(event: AWSLambda.APIGatewayEvent ,context: AWSL
            session = await db.publishSession();
        }
        if(session) {
-           return oauth_request(event.queryStringParameters, session, new_session_flg, event.requestContext.stage);
+           return oauth_request(event.queryStringParameters, session, new_session_flg);
        }
    } else if(event.resource === "/google_signin") {
        if(session && event.requestContext.domainName) {
