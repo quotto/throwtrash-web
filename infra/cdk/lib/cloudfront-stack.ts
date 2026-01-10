@@ -103,13 +103,14 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       {
         id: frontendOriginId,
         domainName: params.frontendBucket.bucketDomainName,
+        originPath: '/',
         s3OriginConfig: {},
         originAccessControlId: params.frontendOriginAccessControlId
       },
       {
         id: backendOriginId,
         domainName: params.config.backendApiDomain,
-        originPath: `/${params.config.backendApiStage}`,
+        originPath: '/',
         customOriginConfig: {
           originProtocolPolicy: 'https-only',
           originSslProtocols: ['TLSv1.2']
@@ -118,7 +119,7 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       {
         id: mobileOriginId,
         domainName: params.config.mobileApiDomain,
-        originPath: `/${params.config.mobileApiStage}`,
+        originPath: '/',
         customOriginConfig: {
           originProtocolPolicy: 'https-only',
           originSslProtocols: ['TLSv1.2']
