@@ -183,8 +183,8 @@ jobs:
           CF_STAGE: dev
           CF_DOMAIN_NAME: ${{ vars.CF_DOMAIN_NAME }}
           CF_CERT_ARN: ${{ vars.CF_CERT_ARN }}
-          CF_BACKEND_API_DOMAIN: ${{ vars.BACKEND_API_DOMAIN }}
-          CF_MOBILE_API_DOMAIN: ${{ vars.MOBILE_API_DOMAIN }}
+          CF_BACKEND_API_DOMAIN: ${{ vars.CF_BACKEND_API_DOMAIN }}
+          CF_MOBILE_API_DOMAIN: ${{ vars.CF_MOBILE_API_DOMAIN }}
           CF_FRONTEND_BUCKET: throwtrash-dev
         run: |
           npx cdk deploy throwtrash-cloudfront-dev --context stage=dev --require-approval never
