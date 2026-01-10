@@ -10,9 +10,7 @@ export interface CloudFrontStackConfig {
   certificateArn: string;
   frontendBucketName: string;
   backendApiDomain: string;
-  backendApiStage: string;
   mobileApiDomain: string;
-  mobileApiStage: string;
 }
 
 export class ThrowtrashCloudFrontStack extends cdk.Stack {

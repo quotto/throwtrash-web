@@ -17,9 +17,7 @@ npx cdk deploy throwtrash-cloudfront-dev --context stage=dev
 - `CF_CERT_ARN`
 - `CF_FRONTEND_BUCKET`
 - `CF_BACKEND_API_DOMAIN`
-- `CF_BACKEND_API_STAGE`
 - `CF_MOBILE_API_DOMAIN`
-- `CF_MOBILE_API_STAGE`
 
 ## .env 例
 ```
@@ -27,7 +25,5 @@ CF_DOMAIN_NAME=dev.mythrowaway.net
 CF_CERT_ARN=arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 CF_FRONTEND_BUCKET=throwtrash-dev
 CF_BACKEND_API_DOMAIN=xxxx.execute-api.ap-northeast-1.amazonaws.com
-CF_BACKEND_API_STAGE=dev
 CF_MOBILE_API_DOMAIN=yyyy.execute-api.ap-northeast-1.amazonaws.com
-CF_MOBILE_API_STAGE=dev
 ```

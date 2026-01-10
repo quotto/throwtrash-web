@@ -119,7 +119,7 @@ jobs:
           aws cloudformation create-change-set --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --template-body file://api/package-template.yml --change-set-name "deploy-${{ needs.get-pr-number.outputs.PR_NUMBER }}" --parameters ParameterKey=RunLevel,ParameterValue="${{ vars.RUNLEVEL }}" ParameterKey=Stage,ParameterValue="${{ vars.MOBILE_API_STAGE }}" ParameterKey=SkillStage,ParameterValue="${{ vars.SKILL_STAGE }}" ParameterKey=AlexaSkillID,ParameterValue="${{ secrets.ALEXA_SKILL_ID }}" ParameterKey=AlexaClientID,ParameterValue="${{ secrets.ALEXA_CLIENT_ID }}" ParameterKey=AlexaClientSecret,ParameterValue="${{ secrets.ALEXA_CLIENT_SECRET }}" ParameterKey=AlexaUserClientID,ParameterValue="${{ secrets.ALEXA_USER_CLIENT_ID }}" ParameterKey=AuthorizationEndpoint,ParameterValue="https://${{ vars.CF_DOMAIN_NAME }}"/backend/"${{ vars.BACKEND_STAGE }}" ParameterKey=BackendApiKey,ParameterValue="${{ secrets.BACKEND_API_KEY }}" ParameterKey=FrontendUrl,ParameterValue="https://${{ vars.CF_DOMAIN_NAME }}/${{ vars.FRONTEND_STAGE }}" --role-arn arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-cfn-role --capabilities CAPABILITY_NAMED_IAM
 
   cloudfront-diff-comment:
-    needs: ["get-pr-number"]
+    needs: ["backend-changeset", "mobile-backend-changeset"]
     environment: prod
     runs-on: ubuntu-latest
     steps:
@@ -141,15 +141,11 @@ jobs:
           CF_STAGE: prod
           CF_DOMAIN_NAME: ${{ vars.CF_DOMAIN_NAME }}
           CF_CERT_ARN: ${{ vars.CF_CERT_ARN }}
+          CF_BACKEND_API_DOMAIN: ${{ vars.CF_BACKEND_API_DOMAIN}}
+          CF_MOBILE_API_DOMAIN: ${{ vars.CF_MOBILE_API_DOMAIN}}
           CF_FRONTEND_BUCKET: throwtrash
         run: |
           set +e
-          BACKEND_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-backend-${{ vars.BACKEND_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='BackendApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
-          MOBILE_DOMAIN=$(aws cloudformation describe-stacks --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --query "Stacks[0].Outputs[?OutputKey=='MobileApiDomain'].OutputValue" --output text --region ${{ vars.AWS_DEFAULT_REGION }})
-          export CF_BACKEND_API_DOMAIN="${BACKEND_DOMAIN}"
-          export CF_MOBILE_API_DOMAIN="${MOBILE_DOMAIN}"
-          export CF_BACKEND_API_STAGE="${{ vars.BACKEND_STAGE }}"
-          export CF_MOBILE_API_STAGE="${{ vars.MOBILE_API_STAGE }}"
           npx cdk diff throwtrash-cloudfront-prod --context stage=prod --no-color > cdk-diff.txt
           echo "CDK_DIFF_EXIT_CODE=$?" >> $GITHUB_ENV
         working-directory: infra/cdk
