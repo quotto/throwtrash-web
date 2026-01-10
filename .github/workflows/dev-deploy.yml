@@ -75,7 +75,7 @@ jobs:
           echo ${{ secrets.GCP_TEST_CREDENTIALS }} | base64 -d > backend/src/serviceAccountKey.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/backend/src/serviceAccountKey.json" >> $GITHUB_ENV
       - name: Run backend tests
-        run: npm run test
+        run: npm run test -- --coverage
         working-directory: backend/src
   mobile-backend-test:
     needs: set-stage

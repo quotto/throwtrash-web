@@ -59,6 +59,10 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
     if (request.uri === '') {
       request.uri = '/';
     }
+  } else if (request.uri.endsWith('/')) {
+    request.uri += 'index.html';
+  } else {
+    request.uri.replace('/?','/index.html?');
   }
   return request;
 }`)
