@@ -47,6 +47,9 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-role
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - name: Backend DB ChangeSet Execute
+        run: |
+          aws cloudformation execute-change-set --change-set-name deploy-${{ needs.get-pr-number.outputs.pr_number }} --stack-name throwtrash-backend-db --region ${{ vars.AWS_DEFAULT_REGION }}
       - name: Backend ChangeSet Execute
         run: |
           aws cloudformation execute-change-set --change-set-name deploy-${{ needs.get-pr-number.outputs.pr_number }} --stack-name throwtrash-backend-${{ vars.BACKEND_STAGE }} --region ${{ vars.AWS_DEFAULT_REGION }}
@@ -60,6 +63,9 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/throwtrash-api-deploy-role
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+      - name: Mobile Backend DB ChangeSet Execute
+        run: |
+          aws cloudformation execute-change-set --change-set-name deploy-${{ needs.get-pr-number.outputs.pr_number }} --stack-name throwtrash-mobile-db --region ${{ vars.AWS_DEFAULT_REGION }}
       - name: Mobile Backend ChangeSet Execute
         run: |
           aws cloudformation execute-change-set --change-set-name deploy-${{ needs.get-pr-number.outputs.pr_number }} --stack-name throwtrash-mobile-${{ vars.MOBILE_API_STAGE }} --region ${{ vars.AWS_DEFAULT_REGION }}
