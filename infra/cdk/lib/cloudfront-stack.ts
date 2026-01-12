@@ -3,6 +3,7 @@ import { Duration } from 'aws-cdk-lib';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
+import * as path from 'path';
 
 export interface CloudFrontStackConfig {
   stage: string;
@@ -45,32 +46,16 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
     const apiCachePolicyId = cloudfront.CachePolicy.CACHING_DISABLED.cachePolicyId;
 
     const frontendOac = this.createOriginAccessControl('FrontendOac');
+    const pathRewriteFunctionPath = path.join(
+      __dirname,
+      'cloudfront',
+      'path-rewrite-function.js'
+    );
     const pathRewriteFunction = new cloudfront.Function(this, 'PathRewriteFunction', {
       functionName: `throwtrash-path-rewrite-${config.stage}`,
-      code: cloudfront.FunctionCode.fromInline(`function handler(event) {
-  var request = event.request;
-  if (request.uri === '/backend' || request.uri.indexOf('/backend/') === 0) {
-    request.uri = request.uri.substring('/backend'.length);
-    if (request.uri === '') {
-      request.uri = '/';
-    }
-  } else if (request.uri === '/mobile' || request.uri.indexOf('/mobile/') === 0) {
-    request.uri = request.uri.substring('/mobile'.length);
-    if (request.uri === '') {
-      request.uri = '/';
-    }
-  } else if (request.uri === '/alarm' || request.uri.indexOf('/alarm/') === 0) {
-    request.uri = request.uri.substring('/alarm'.length);
-    if (request.uri === '') {
-      request.uri = '/';
-    }
-  } else if (request.uri.endsWith('/')) {
-    request.uri += 'index.html';
-  } else {
-    request.uri.replace('/?','/index.html?');
-  }
-  return request;
-}`)
+      code: cloudfront.FunctionCode.fromFile({
+        filePath: pathRewriteFunctionPath
+      })
     });
 
     const baseDistributionConfig = this.buildDistributionConfig({

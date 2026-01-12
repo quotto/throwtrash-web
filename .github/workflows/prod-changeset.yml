@@ -80,6 +80,26 @@ jobs:
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           working-directory: api/src
+
+  cloudfront-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Restore CDK cache
+        uses: actions/cache@v4
+        with:
+          path: infra/cdk/node_modules
+          key: npm-deps-${{ github.head_ref }}-${{ hashFiles('infra/cdk/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+        working-directory: infra/cdk
+      - name: Run CDK unit tests
+        run: npm test
+        working-directory: infra/cdk
   backend-changeset:
     needs: ["get-pr-number", "backend-test"]
     environment: prod
