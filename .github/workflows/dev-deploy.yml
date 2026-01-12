@@ -179,7 +179,7 @@ jobs:
       - name: Install CDK dependencies
         run: npm ci
         working-directory: infra/cdk
-      - name: Deploy CloudFront (primary)
+      - name: Deploy CloudFront
         env:
           CF_STAGE: dev
           CF_DOMAIN_NAME: ${{ vars.CF_DOMAIN_NAME }}

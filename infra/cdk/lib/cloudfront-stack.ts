@@ -180,7 +180,7 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
         targetOriginId: alarmOriginId,
         viewerProtocolPolicy: 'redirect-to-https',
         allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'PATCH', 'DELETE'],
-        cachedMethods: ['HEAD'],
+        cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: params.frontendCachePolicyId,
         compress: true,
         functionAssociations: [
