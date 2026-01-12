@@ -11,6 +11,7 @@ export interface CloudFrontStackConfig {
   frontendBucketName: string;
   backendApiDomain: string;
   mobileApiDomain: string;
+  alarmApiDomain: string;
 }
 
 export class ThrowtrashCloudFrontStack extends cdk.Stack {
@@ -58,6 +59,11 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
     if (request.uri === '') {
       request.uri = '/';
     }
+  } else if (request.uri === '/alarm' || request.uri.indexOf('/alarm/') === 0) {
+    request.uri = request.uri.substring('/alarm'.length);
+    if (request.uri === '') {
+      request.uri = '/';
+    }
   } else if (request.uri.endsWith('/')) {
     request.uri += 'index.html';
   } else {
@@ -101,6 +107,7 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
     const frontendOriginId = 'FrontendOrigin';
     const backendOriginId = 'BackendApiOrigin';
     const mobileOriginId = 'MobileApiOrigin';
+    const alarmOriginId = 'AlarmOrigin';
 
     const origins: cloudfront.CfnDistribution.OriginProperty[] = [
       {
@@ -120,6 +127,14 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       {
         id: mobileOriginId,
         domainName: params.config.mobileApiDomain,
+        customOriginConfig: {
+          originProtocolPolicy: 'https-only',
+          originSslProtocols: ['TLSv1.2']
+        }
+      },
+      {
+        id: alarmOriginId,
+        domainName: params.config.domainName,
         customOriginConfig: {
           originProtocolPolicy: 'https-only',
           originSslProtocols: ['TLSv1.2']
@@ -167,6 +182,21 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
         cachedMethods: ['GET', 'HEAD'],
         cachePolicyId: params.apiCachePolicyId,
         originRequestPolicyId: params.apiOriginRequestPolicyId,
+        compress: true,
+        functionAssociations: [
+          {
+            eventType: 'viewer-request',
+            functionArn: params.pathRewriteFunctionArn
+          }
+        ]
+      },
+      {
+        pathPattern: '/alarm/*',
+        targetOriginId: alarmOriginId,
+        viewerProtocolPolicy: 'redirect-to-https',
+        allowedMethods: ['POST', 'PUT', 'DELETE', 'HEAD'],
+        cachedMethods: ['HEAD'],
+        cachePolicyId: params.frontendCachePolicyId,
         compress: true,
         functionAssociations: [
           {
