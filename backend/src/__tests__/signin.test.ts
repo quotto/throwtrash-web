@@ -7,8 +7,8 @@ import db from "../dbadapter";
 
 import { SessionItem } from "../interface";
 
-const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
-const URL_500 = 'https://accountlink.mythrowaway.net/500.html';
+const URL_400 = 'https://apps.mythrowaway.net/400.html';
+const URL_500 = 'https://apps.mythrowaway.net/500.html';
 
 const mockResult: {[key: string]: SessionItem} = {};
 const mockData = [
@@ -75,12 +75,12 @@ jest.mock("request-promise",()=>({
 
 import signin from "../signin";
 describe('signin', () => {
-    it('amazon', async (): Promise<void> => {
+    it('amazon,環境変数FRONTEND_URLが未設定の場合はデフォルト値がリダイレクト先に指定されること', async (): Promise<void> => {
         // パラメータはqueryStringParameters,ドメイン名,APIステージ
-        const response = await signin({ access_token: 'token-001', service: 'amazon' }, { id: 'session-id001', expire: 999998}, 'backend.mythrowaway.net', 'dev');
+        const response = await signin({ access_token: 'token-001', service: 'amazon' }, { id: 'session-id001', expire: 999998});
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
-        expect(response.headers!.Location).toBe('https://accountlink.mythrowaway.net/dev/index.html')
+        expect(response.headers!.Location).toBe('https://apps.mythrowaway.net/index.html')
         expect(response.headers!['Cache-Control']).toBe('no-store');
 
         // 保存されたセッション
@@ -93,10 +93,10 @@ describe('signin', () => {
         expect(session.userInfo!.signinService).toBe("amazon");
     });
     it('google', async () => {
-        const response = await signin({ code: 'code-001', state: 'google-state-value', service: 'google' }, { id: 'session-id002',  googleState: 'google-state-value',expire: 9999999 },'backend.mythrowaway.net', 'test');
+        const response = await signin({ code: 'code-001', state: 'google-state-value', service: 'google' }, { id: 'session-id002',  googleState: 'google-state-value',expire: 9999999 });
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
-        expect(response.headers!.Location).toBe('https://accountlink.mythrowaway.net/test/index.html');
+        expect(response.headers!.Location).toBe('https://apps.mythrowaway.net/index.html');
         expect(response.headers!['Cache-Control']).toBe('no-store');
 
         // 保存されたセッション
@@ -109,10 +109,10 @@ describe('signin', () => {
         expect(session.userInfo!.signinService).toBe("google");
     })
     it('まだ登録したことがない（idなし）', async () => {
-        const response = await signin({ code: 'code-004', state: 'google-state-value', service: 'google' }, { id: 'session-id003', googleState: 'google-state-value',expire: 9999999 },'backend.mythrowaway.net', 'test');
+        const response = await signin({ code: 'code-004', state: 'google-state-value', service: 'google' }, { id: 'session-id003', googleState: 'google-state-value',expire: 9999999 });
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
-        expect(response.headers!.Location).toBe('https://accountlink.mythrowaway.net/test/index.html');
+        expect(response.headers!.Location).toBe('https://apps.mythrowaway.net/index.html');
         expect(response.headers!['Cache-Control']).toBe('no-store');
 
         // 保存されたセッション
@@ -125,59 +125,59 @@ describe('signin', () => {
         expect(session.userInfo!.signinService).toBe("google");
     })
     it('規定外のサービス', async () => {
-        const response = await signin({ code: '12345', service: 'another' }, { id: 'session-id',expire: 9999999}, 'backend.mythrowaway.net','test');
+        const response = await signin({ code: '12345', service: 'another' }, { id: 'session-id',expire: 9999999});
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
         expect(response.headers!.Location).toBe(URL_400);
     })
     it('サービスへのリクエストエラー', async () => {
-        const response = await signin({ access_token: 'token-002', service: 'amazon' }, { id: 'session-id',expire: 9999999}, 'backend.mythrowaway.net', 'test');
+        const response = await signin({ access_token: 'token-002', service: 'amazon' }, { id: 'session-id',expire: 9999999});
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
         // サービスリクエスト異常はサーバーエラー
         expect(response.headers!.Location).toBe(URL_500);
     });
     it('データ取得で異常', async () => {
-        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id' ,expire: 9999999}, 'backend.mythrowaway.net', 'test');
+        const response = await signin({ access_token: '12345', service: 'amazon' }, { id: 'session-id' ,expire: 9999999});
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
         // 登録データ取得異常はサーバーエラー
         expect(response.headers!.Location).toBe(URL_500);
     });
     it('パラーメーターの不足（Google,codeがない）', async () => {
-        const response = await signin({ service: 'google' }, { id: 'session-id',expire: 9999999}, 'backend.mythrowaway.net', 'test');
+        const response = await signin({ service: 'google' }, { id: 'session-id',expire: 9999999});
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
         expect(response.headers!.Location).toBe(URL_400);
     });
     it('パラーメーターの不足（Google,state不一致）', async () => {
-        const response = await signin({ code: 1234, service: 'google', state: 'invalid-state' }, { id: 'session-id', state: 'valid-state' ,expire: 9999999}, 'backend.mythrowaway.net', 'test');
+        const response = await signin({ code: 1234, service: 'google', state: 'invalid-state' }, { id: 'session-id', state: 'valid-state' ,expire: 9999999});
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
         expect(response.headers!.Location).toBe(URL_400);
     });
     it('パラメーターの不足（Google,stateが無い）', async () => {
-        const response = await signin({ code: '12345', service: 'google' }, { id: 'session-id',expire: 9999999}, 'backend.mythrowaway.net', 'test');
+        const response = await signin({ code: '12345', service: 'google' }, { id: 'session-id',expire: 9999999});
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
         expect(response.headers!.Location).toBe(URL_400);
     });
     it('パラーメーターの不足（amazon,access_tokenが無い）', async () => {
-        const response = await signin({ service: 'amazon' }, { id: 'session-id',expire: 9999999}, 'backend.mythrowaway.net', 'test');
+        const response = await signin({ service: 'amazon' }, { id: 'session-id',expire: 9999999});
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
         expect(response.headers!.Location).toBe(URL_400);
     });
     it('requestAmazonProfileで異常終了',async ()=>{
         try {
-            const response = await signin({ access_token: 'token-003', service: 'amazon' }, { id: 'session-id001', expire: 999998}, 'backend.mythrowaway.net', 'dev');
+            const response = await signin({ access_token: 'token-003', service: 'amazon' }, { id: 'session-id001', expire: 999998});
         } catch(err: any) {
             expect(err.message).toBe("Amazon Signin Failed")
         }
     });
     it("requestGoogleProfileで異常終了",async()=>{
         try {
-            const response = await signin({ code: 'code-003', state: 'google-state-value', service: 'google' }, { id: 'session-id002',  googleState: 'google-state-value',expire: 9999999 },'backend.mythrowaway.net', 'test');
+            const response = await signin({ code: 'code-003', state: 'google-state-value', service: 'google' }, { id: 'session-id002',  googleState: 'google-state-value',expire: 9999999 });
         } catch(err: any) {
             expect(err.message).toBe("Google Signin Failed")
         }

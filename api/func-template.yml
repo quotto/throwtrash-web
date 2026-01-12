@@ -19,11 +19,11 @@ Parameters:
     Type: "String"
   AlexaUserClientID:
     Type: "String"
-  AuthorizationEndpoint:
-    Type: "String"
   BackendApiKey:
     Type: "String"
-  FrontEndUrl:
+  FrontendUrl:
+    Type: "String"
+  AuthorizationEndpoint:
     Type: "String"
 Resources:
   LambdaExecPolicy:
@@ -87,9 +87,9 @@ Resources:
           ALEXA_CLIENT_ID: !Ref AlexaClientID
           ALEXA_CLIENT_SECRET: !Ref AlexaClientSecret
           ALEXA_USER_CLIENT_ID: !Ref AlexaUserClientID
-          AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
           BACKEND_API_KEY: !Ref BackendApiKey
-          FRONTEND_URL: !Ref FrontEndUrl
+          FRONTEND_URL: !Ref FrontendUrl
+          AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
       Tags:
         group: mobile
         app: throwtrash
@@ -179,3 +179,12 @@ Resources:
         group: mobile
         app: throwtrash
       StageName: !Ref Stage
+Outputs:
+  MobileApiDomain:
+    Value: !Sub "${Api}.execute-api.${AWS::Region}.amazonaws.com"
+    Export:
+      Name: !Sub "throwtrash-mobile-api-domain-${Stage}"
+  MobileApiStage:
+    Value: !Ref Stage
+    Export:
+      Name: !Sub "throwtrash-mobile-api-stage-${Stage}"

@@ -17,8 +17,7 @@ jest.mocked(db.saveSession).mockImplementation(async(session)=>{
     return false;
 });
 describe("oauth_request", () => {
-    it("セッションID新規発行されること,フロントエンドステージの環境変数がない場合はAPI上のパスをステージに使用すること", async () => {
-        process.env.FRONT_END_HOST = "https://dev.accountlink.mythrowaway.net";
+    it("セッションID新規発行されること,FRONTEND_URLの環境変数がない場合はデフォルトの値をリダイレクト先に設定していること", async () => {
         // パラメータはqueryStringParameters,セッション情報,セッション新規発行フラグ,API Gatewayのstage
         const response = await oauth_request({
             state: "123456",
@@ -26,15 +25,12 @@ describe("oauth_request", () => {
             redirect_uri: "https://xxxx.com",
             platform: "amazon"
         }, { id: "sessionid-001", expire: 99999999 },
-            true,
-            "v5"
-        );
+            true);
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
         expect(headers).not.toBeUndefined();
-        expect(headers!.Location).toBe("https://dev.accountlink.mythrowaway.net/v5/index.html");
+        expect(headers!.Location).toBe("https://apps.mythrowaway.net/index.html");
         expect(headers!["Set-Cookie"]).toBe("throwaway-session=sessionid-001;max-age=3600;Path=/;SameSite=None;Secure;HttpOnly;");
-        delete process.env.FRONT_END_HOST;
 
         // 保存したセッション
         const session = mockResult["sessionid-001"];
@@ -53,12 +49,11 @@ describe("oauth_request", () => {
             platform: "amazon"
         },
             { id: "sessionid-002", expire: 99999999 },
-            false,
-            "v5");
+            false);
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
         expect(headers).not.toBeUndefined();
-        expect(headers!.Location).toBe("https://accountlink.mythrowaway.net/v5/index.html");
+        expect(headers!.Location).toBe("https://apps.mythrowaway.net/index.html");
         expect(headers!["Set-Cookie"]).toBe(undefined);
 
         // 保存したセッション
@@ -77,8 +72,7 @@ describe("oauth_request", () => {
             platform: "amazon"
         },
             { id: "sessionid-003", expire: 99999999 },
-            false,
-            "v5");
+            false);
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
         expect(headers).not.toBeUndefined();
@@ -89,7 +83,7 @@ describe("oauth_request", () => {
             client_id: "alexa-skill",
             redirect_uri: "https://xxxx.com",
             platform: "amazon",
-        }, {id: "session001",expire: 999999}, true, "dev");
+        }, {id: "session001",expire: 999999}, true);
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
         expect(headers).not.toBeUndefined();
@@ -100,7 +94,7 @@ describe("oauth_request", () => {
             state: "xxxxxx",
             redirect_uri: "https://xxxx.com",
             platform: "amazon",
-        }, {id: "session001", expire:999999}, true, "v5");
+        }, {id: "session001", expire:999999}, true);
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
         expect(headers).not.toBeUndefined();
@@ -111,7 +105,7 @@ describe("oauth_request", () => {
             state: "xxxxxx",
             client_id: "alexa-skill",
             platform: "amazon"
-        }, {id: "session001", expire:999999}, false, "v5");
+        }, {id: "session001", expire:999999}, false);
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
         expect(headers).not.toBeUndefined();
@@ -122,7 +116,7 @@ describe("oauth_request", () => {
             state: "xxxxxx",
             client_id: "alexa-skill",
             redirect_uri: "https://xxxx.com",
-        }, {id: "session001",expire: 9999999}, false, "v5");
+        }, {id: "session001",expire: 9999999}, false);
         expect(response.statusCode).toBe(301);
         const headers = response.headers;
         expect(headers).not.toBeUndefined();

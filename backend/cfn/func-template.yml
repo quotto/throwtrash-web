@@ -25,11 +25,9 @@ Parameters:
     Type: "String"
   AlexaSkillID:
     Type: "String"
-  FrontendStage:
+  FrontendUrl:
     Type: "String"
-  FrontendHost:
-    Type: "String"
-  ApiGatewayOrigin:
+  AuthorizationEndpoint:
     Type: "String"
 Resources:
   LambdaExecPolicy:
@@ -101,8 +99,8 @@ Resources:
           GOOGLE_USER_CLIENT_ID: !Ref GoogleUserClientID
           GOOGLE_USER_SECRET: !Ref GoogleUserSecret
           ALEXA_SKILL_ID: !Ref AlexaSkillID
-          FRONT_END_STAGE: !Ref FrontendStage
-          FRONT_END_HOST: !Ref FrontendHost
+          FRONTEND_URL: !Ref FrontendUrl
+          AUTHORIZATION_ENDPOINT: !Ref AuthorizationEndpoint
       Tags:
         app: throwtrash
         group: backend
@@ -188,11 +186,6 @@ Resources:
         app: throwtrash
         group: backend
       StageName: !Ref Stage
-      Cors:
-        AllowMethods: "'GET,POST'"
-        AllowOrigin: !Sub "'${ApiGatewayOrigin}'"
-        AllowHeaders: "'Content-Type'"
-        AllowCredentials: true
       MethodSettings:
         -
           LoggingLevel: "INFO"
@@ -203,3 +196,12 @@ Resources:
     Type: "AWS::Lambda::Version"
     Properties:
       FunctionName: !GetAtt LambdaFunction.Arn
+Outputs:
+  BackendApiDomain:
+    Value: !Sub "${Api}.execute-api.${AWS::Region}.amazonaws.com"
+    Export:
+      Name: !Sub "throwtrash-backend-api-domain-${Stage}"
+  BackendApiStage:
+    Value: !Ref Stage
+    Export:
+      Name: !Sub "throwtrash-backend-api-stage-${Stage}"

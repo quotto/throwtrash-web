@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
-const frontStage = process.env.FRONT_STAGE || '';
-const basePath = frontStage ? `/${frontStage}` : '';
+const frontendStage = process.env.FRONTEND_STAGE || '';
+const basePath = frontendStage ? `/${frontendStage}` : '';
 
 const nextConfig = {
     output: 'export',

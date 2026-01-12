@@ -1,4 +1,4 @@
-process.env.FRONT_END_STAGE = "001"
+process.env.FRONTEND_URL = "https://apps.mythrowaway.net/001"
 jest.setTimeout(100000);
 import * as common from "trash-common";
 const logger = common.getLogger();
@@ -8,8 +8,8 @@ import db from "../dbadapter";
 
 import { SessionItem } from "../interface";
 
-const URL_400 = 'https://accountlink.mythrowaway.net/400.html';
-const URL_500 = 'https://accountlink.mythrowaway.net/500.html';
+const URL_400 = 'https://apps.mythrowaway.net/400.html';
+const URL_500 = 'https://apps.mythrowaway.net/500.html';
 
 const mockResult: {[key: string]: SessionItem} = {};
 const mockData = [
@@ -76,12 +76,12 @@ jest.mock("request-promise",()=>({
 
 import signin from "../signin";
 describe('signin', () => {
-    it('amazon account linkでは環境変数FRONT_END_STAGEが設定されている場合はそのステージをリダイレクト先URLに利用する', async (): Promise<void> => {
+    it('login with amazonでは、環境変数FRONTEND_URLが設定されている場合はそのステージをリダイレクト先URLに利用する', async (): Promise<void> => {
         // パラメータはqueryStringParameters,ドメイン名,APIステージ
-        const response = await signin({ access_token: 'token-001', service: 'amazon' }, { id: 'session-id001', expire: 999998}, 'backend.mythrowaway.net', 'dev');
+        const response = await signin({ access_token: 'token-001', service: 'amazon' }, { id: 'session-id001', expire: 999998});
         expect(response.statusCode).toBe(301);
         expect(response.headers).not.toBeUndefined();
-        expect(response.headers!.Location).toBe('https://accountlink.mythrowaway.net/001/index.html')
+        expect(response.headers!.Location).toBe('https://apps.mythrowaway.net/001/index.html')
         expect(response.headers!['Cache-Control']).toBe('no-store');
     });
 });
