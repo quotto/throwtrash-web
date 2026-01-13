@@ -41,10 +41,6 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       enableAcceptEncodingGzip: true
     });
 
-    const apiOriginRequestPolicy = cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER;
-
-    const apiCachePolicyId = cloudfront.CachePolicy.CACHING_DISABLED.cachePolicyId;
-
     const frontendOac = this.createOriginAccessControl('FrontendOac');
     const pathRewriteFunctionPath = path.join(
       __dirname,
@@ -61,8 +57,8 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
     const baseDistributionConfig = this.buildDistributionConfig({
       config,
       frontendCachePolicyId: frontendCachePolicy.cachePolicyId,
-      apiOriginRequestPolicyId: apiOriginRequestPolicy.originRequestPolicyId,
-      apiCachePolicyId,
+      apiOriginRequestPolicyId: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER.originRequestPolicyId,
+      apiCachePolicyId: cloudfront.CachePolicy.CACHING_DISABLED.cachePolicyId,
       frontendBucket,
       frontendOriginAccessControlId: frontendOac.attrId,
       includeAliases: true,
@@ -119,7 +115,7 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       },
       {
         id: alarmOriginId,
-        domainName: params.config.domainName,
+        domainName: params.config.alarmApiDomain,
         customOriginConfig: {
           originProtocolPolicy: 'https-only',
           originSslProtocols: ['TLSv1.2']
@@ -181,7 +177,8 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
         viewerProtocolPolicy: 'redirect-to-https',
         allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'PATCH', 'DELETE'],
         cachedMethods: ['GET', 'HEAD'],
-        cachePolicyId: params.frontendCachePolicyId,
+        cachePolicyId: params.apiCachePolicyId,
+        originRequestPolicyId: params.apiOriginRequestPolicyId,
         compress: true,
         functionAssociations: [
           {
