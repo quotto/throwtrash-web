@@ -3,6 +3,7 @@ import { Duration } from 'aws-cdk-lib';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
+import * as path from 'path';
 
 export interface CloudFrontStackConfig {
   stage: string;
@@ -11,6 +12,7 @@ export interface CloudFrontStackConfig {
   frontendBucketName: string;
   backendApiDomain: string;
   mobileApiDomain: string;
+  alarmApiDomain: string;
 }
 
 export class ThrowtrashCloudFrontStack extends cdk.Stack {
@@ -39,39 +41,24 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       enableAcceptEncodingGzip: true
     });
 
-    const apiOriginRequestPolicy = cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER;
-
-    const apiCachePolicyId = cloudfront.CachePolicy.CACHING_DISABLED.cachePolicyId;
-
     const frontendOac = this.createOriginAccessControl('FrontendOac');
+    const pathRewriteFunctionPath = path.join(
+      __dirname,
+      'cloudfront',
+      'path-rewrite-function.js'
+    );
     const pathRewriteFunction = new cloudfront.Function(this, 'PathRewriteFunction', {
       functionName: `throwtrash-path-rewrite-${config.stage}`,
-      code: cloudfront.FunctionCode.fromInline(`function handler(event) {
-  var request = event.request;
-  if (request.uri === '/backend' || request.uri.indexOf('/backend/') === 0) {
-    request.uri = request.uri.substring('/backend'.length);
-    if (request.uri === '') {
-      request.uri = '/';
-    }
-  } else if (request.uri === '/mobile' || request.uri.indexOf('/mobile/') === 0) {
-    request.uri = request.uri.substring('/mobile'.length);
-    if (request.uri === '') {
-      request.uri = '/';
-    }
-  } else if (request.uri.endsWith('/')) {
-    request.uri += 'index.html';
-  } else {
-    request.uri.replace('/?','/index.html?');
-  }
-  return request;
-}`)
+      code: cloudfront.FunctionCode.fromFile({
+        filePath: pathRewriteFunctionPath
+      })
     });
 
     const baseDistributionConfig = this.buildDistributionConfig({
       config,
       frontendCachePolicyId: frontendCachePolicy.cachePolicyId,
-      apiOriginRequestPolicyId: apiOriginRequestPolicy.originRequestPolicyId,
-      apiCachePolicyId,
+      apiOriginRequestPolicyId: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER.originRequestPolicyId,
+      apiCachePolicyId: cloudfront.CachePolicy.CACHING_DISABLED.cachePolicyId,
       frontendBucket,
       frontendOriginAccessControlId: frontendOac.attrId,
       includeAliases: true,
@@ -101,6 +88,7 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
     const frontendOriginId = 'FrontendOrigin';
     const backendOriginId = 'BackendApiOrigin';
     const mobileOriginId = 'MobileApiOrigin';
+    const alarmOriginId = 'AlarmOrigin';
 
     const origins: cloudfront.CfnDistribution.OriginProperty[] = [
       {
@@ -120,6 +108,14 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       {
         id: mobileOriginId,
         domainName: params.config.mobileApiDomain,
+        customOriginConfig: {
+          originProtocolPolicy: 'https-only',
+          originSslProtocols: ['TLSv1.2']
+        }
+      },
+      {
+        id: alarmOriginId,
+        domainName: params.config.alarmApiDomain,
         customOriginConfig: {
           originProtocolPolicy: 'https-only',
           originSslProtocols: ['TLSv1.2']
@@ -162,6 +158,22 @@ export class ThrowtrashCloudFrontStack extends cdk.Stack {
       {
         pathPattern: '/mobile/*',
         targetOriginId: mobileOriginId,
+        viewerProtocolPolicy: 'redirect-to-https',
+        allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'PATCH', 'DELETE'],
+        cachedMethods: ['GET', 'HEAD'],
+        cachePolicyId: params.apiCachePolicyId,
+        originRequestPolicyId: params.apiOriginRequestPolicyId,
+        compress: true,
+        functionAssociations: [
+          {
+            eventType: 'viewer-request',
+            functionArn: params.pathRewriteFunctionArn
+          }
+        ]
+      },
+      {
+        pathPattern: '/alarm/*',
+        targetOriginId: alarmOriginId,
         viewerProtocolPolicy: 'redirect-to-https',
         allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'PATCH', 'DELETE'],
         cachedMethods: ['GET', 'HEAD'],

@@ -6,7 +6,6 @@ backend/config.json
 backend/src/serviceAccountKey.json
 backend/src/backend-dist
 backend/cfn/package-template.yml
-backend/src/__tests__/coverage
 api/src/dist
 api/package-template.yml
 **/.next
@@ -15,3 +14,5 @@ node_modules
 **/cdk.out
 # AIエージェント用のワークスペース
 work/
+# カバレッジレポート
+**/coverage
